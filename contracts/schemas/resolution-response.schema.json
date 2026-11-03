@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "case_id": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "needs_information",
+        "awaiting_approval",
+        "pending",
+        "refunded",
+        "failed",
+        "manual_required",
+        "excluded"
+      ]
+    },
+    "brief": {
+      "type": "string"
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "proposed_amount_minor": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "currency": {
+      "type": "string"
+    },
+    "refund_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "operation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mode": {
+      "enum": [
+        "mock",
+        "sandbox"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "case_id",
+    "status",
+    "brief",
+    "citations",
+    "proposed_amount_minor",
+    "currency",
+    "refund_id",
+    "operation_id",
+    "mode"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "resolution-response"
+}

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "order": {
+    "case_id": "case-demo-1",
+    "order_id": "order-demo-1",
+    "capture_id": "capture-demo-NOT-PAYPAL",
+    "currency": "USD",
+    "paid_minor": 4000,
+    "previously_refunded_minor": 0,
+    "age_days": 30,
+    "quantity": 1
+  },
+  "assessment": {
+    "schema_version": "1.0",
+    "assessment_id": "assessment-demo-1",
+    "case_id": "case-demo-1",
+    "campaign_id": "campaign-demo-1",
+    "campaign_version": 1,
+    "decision": "eligible",
+    "model": "LAMP-100",
+    "batch": "B101",
+    "missing_fields": [],
+    "clarification": null,
+    "evidence": [
+      {
+        "source_id": "confirmed-label",
+        "field": "batch",
+        "value": "B101"
+      }
+    ],
+    "reason": "Confirmed model and batch match this demo campaign. Remedy checks still required.",
+    "mode": "mock"
+  },
+  "remedy_conditions_met": false
+}

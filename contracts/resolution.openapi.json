@@ -1,0 +1,79 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RecallRelay resolution boundary",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8102"
+    }
+  ],
+  "paths": {
+    "/v1/resolutions": {
+      "post": {
+        "summary": "Create/update a case review; NEVER executes money",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/resolution-request.schema.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/resolution-response.schema.json"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Stale campaign or conflicting state"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      }
+    },
+    "/v1/resolutions/{case_id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/resolution-response.schema.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown case"
+          }
+        }
+      }
+    }
+  }
+}

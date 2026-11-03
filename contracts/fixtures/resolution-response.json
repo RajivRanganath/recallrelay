@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "case_id": "case-demo-1",
+  "status": "awaiting_approval",
+  "brief": "Demo only: batch matches. Verify remedy conditions before approval.",
+  "citations": [
+    "confirmed-label"
+  ],
+  "proposed_amount_minor": 4000,
+  "currency": "USD",
+  "refund_id": null,
+  "operation_id": null,
+  "mode": "mock"
+}

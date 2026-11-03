@@ -1,0 +1,79 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RecallRelay evidence boundary",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8101"
+    }
+  ],
+  "paths": {
+    "/v1/assessments": {
+      "post": {
+        "summary": "Assess confirmed label and campaign",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "./schemas/assessment-request.schema.json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/assessment-response.schema.json"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "409": {
+            "description": "Stale campaign or conflicting state"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      }
+    },
+    "/v1/assessments/{case_id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./schemas/assessment-response.schema.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown case"
+          }
+        }
+      }
+    }
+  }
+}

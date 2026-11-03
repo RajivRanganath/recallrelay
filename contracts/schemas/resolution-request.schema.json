@@ -1,0 +1,165 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "order": {
+      "type": "object",
+      "properties": {
+        "case_id": {
+          "type": "string"
+        },
+        "order_id": {
+          "type": "string"
+        },
+        "capture_id": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "paid_minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "previously_refunded_minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "age_days": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "case_id",
+        "order_id",
+        "capture_id",
+        "currency",
+        "paid_minor",
+        "previously_refunded_minor",
+        "age_days",
+        "quantity"
+      ],
+      "additionalProperties": false
+    },
+    "assessment": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "string"
+        },
+        "assessment_id": {
+          "type": "string"
+        },
+        "case_id": {
+          "type": "string"
+        },
+        "campaign_id": {
+          "type": "string"
+        },
+        "campaign_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "decision": {
+          "enum": [
+            "eligible",
+            "excluded",
+            "needs_information"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "batch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "missing_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clarification": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source_id": {
+                "type": "string"
+              },
+              "field": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_id",
+              "field",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "reason": {
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "mock",
+            "ai",
+            "manual"
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "assessment_id",
+        "case_id",
+        "campaign_id",
+        "campaign_version",
+        "decision",
+        "model",
+        "batch",
+        "missing_fields",
+        "clarification",
+        "evidence",
+        "reason",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "remedy_conditions_met": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "order",
+    "assessment",
+    "remedy_conditions_met"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "resolution-request"
+}

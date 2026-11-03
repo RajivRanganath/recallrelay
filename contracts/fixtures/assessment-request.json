@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "campaign": {
+    "campaign_id": "campaign-demo-1",
+    "version": 1,
+    "approved": true,
+    "affected_models": [
+      "LAMP-100"
+    ],
+    "affected_batches": [
+      "B101",
+      "B102"
+    ],
+    "excluded_batches": [
+      "B103"
+    ],
+    "remedy": "refund",
+    "currency": "USD"
+  },
+  "order": {
+    "case_id": "case-demo-1",
+    "order_id": "order-demo-1",
+    "capture_id": "capture-demo-NOT-PAYPAL",
+    "currency": "USD",
+    "paid_minor": 4000,
+    "previously_refunded_minor": 0,
+    "age_days": 30,
+    "quantity": 1
+  },
+  "label": {
+    "image_base64": null,
+    "mime_type": null,
+    "confirmed_model": "LAMP-100",
+    "confirmed_batch": "B101"
+  }
+}

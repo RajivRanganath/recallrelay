@@ -1,0 +1,1 @@
+AI implementation belongs here. Provider-neutral until selected. Structured outputs; untrusted evidence is data, not instructions. No direct payment or approval tools. Evaluate against a deterministic baseline.

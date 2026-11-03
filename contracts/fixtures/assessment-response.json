@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "assessment_id": "assessment-demo-1",
+  "case_id": "case-demo-1",
+  "campaign_id": "campaign-demo-1",
+  "campaign_version": 1,
+  "decision": "eligible",
+  "model": "LAMP-100",
+  "batch": "B101",
+  "missing_fields": [],
+  "clarification": null,
+  "evidence": [
+    {
+      "source_id": "confirmed-label",
+      "field": "batch",
+      "value": "B101"
+    }
+  ],
+  "reason": "Confirmed model and batch match this demo campaign. Remedy checks still required.",
+  "mode": "mock"
+}
