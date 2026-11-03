@@ -30,3 +30,18 @@ Rajiv writes evidence/tests/test_resolution_client.py against the resolution moc
 
 ## Definition of done
 Both: own lane tests green; schema-conformant output; documented mock/provider mode; no secrets; runnable lane README; known failures reported; cross-lane smoke tested. Evidence: uncertain label never auto-eligible. Resolution: AI never approves payment; repeated operation cannot knowingly create a new refund; provider failures remain visible. Real sandbox success requires actual PayPal IDs and read-back, not a mock screenshot.
+
+## Live GitHub tasks
+
+| Owner | Task | Points |
+|---|---|---|
+| @RajivRanganath | [#1](https://github.com/RajivRanganath/recallrelay/issues/1) | 5 |
+| @RajivRanganath | [#2](https://github.com/RajivRanganath/recallrelay/issues/2) | 6 |
+| @RajivRanganath | [#3](https://github.com/RajivRanganath/recallrelay/issues/3) | 4 |
+| @RajivRanganath | [#4](https://github.com/RajivRanganath/recallrelay/issues/4) | 3 |
+| @RajivRanganath | [#5](https://github.com/RajivRanganath/recallrelay/issues/5) | 2 |
+| @VismayaM2005 | [#6](https://github.com/RajivRanganath/recallrelay/issues/6) | 5 |
+| @VismayaM2005 | [#7](https://github.com/RajivRanganath/recallrelay/issues/7) | 6 |
+| @VismayaM2005 | [#8](https://github.com/RajivRanganath/recallrelay/issues/8) | 4 |
+| @VismayaM2005 | [#9](https://github.com/RajivRanganath/recallrelay/issues/9) | 3 |
+| @VismayaM2005 | [#10](https://github.com/RajivRanganath/recallrelay/issues/10) | 2 |
