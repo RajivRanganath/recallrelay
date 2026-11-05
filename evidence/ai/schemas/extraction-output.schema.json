@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lane-local label proposal; not the shared assessment contract",
+  "type": "object",
+  "properties": {
+    "model": {"$ref": "#/$defs/field"},
+    "batch": {"$ref": "#/$defs/field"}
+  },
+  "required": ["model", "batch"],
+  "additionalProperties": false,
+  "$defs": {
+    "field": {
+      "type": "object",
+      "properties": {
+        "value": {"type": ["string", "null"], "maxLength": 128},
+        "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "uncertain": {"type": "boolean"}
+      },
+      "required": ["value", "confidence", "uncertain"],
+      "additionalProperties": false
+    }
+  }
+}
