@@ -1,0 +1,244 @@
+{
+  "evaluation_kind": "fixture-policy-replay",
+  "dataset_version": "synthetic-labels-v1",
+  "policy_version": "fixture-policy-1",
+  "adapter": "synthetic-fixture-lookup-v1",
+  "mode": "mock",
+  "runtime": "3.11.16",
+  "image_recognition_measured": false,
+  "confidence_calibrated": false,
+  "cases": 12,
+  "checks": 60,
+  "failures": [],
+  "limitation": "Known-image lookup with authored outputs; checks policy/plumbing only. No model, OCR, human study, extraction accuracy or user-savings evidence.",
+  "results": [
+    {
+      "case_id": "clear-png",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "decisions": {
+        "typed": "eligible",
+        "proposal_after_confirmation": "eligible"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "clear-jpeg",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "decisions": {
+        "typed": "eligible",
+        "proposal_after_confirmation": "eligible"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "excluded-batch",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "decisions": {
+        "typed": "excluded",
+        "proposal_after_confirmation": "excluded"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "other-model",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-200",
+        "batch": "B101"
+      },
+      "decisions": {
+        "typed": "excluded",
+        "proposal_after_confirmation": "excluded"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "unknown-batch",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B999"
+      },
+      "decisions": {
+        "typed": "excluded",
+        "proposal_after_confirmation": "excluded"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "missing-model",
+      "mode": "mock",
+      "observed_fields": {
+        "model": null,
+        "batch": "B101"
+      },
+      "decisions": {
+        "typed": "needs_information",
+        "proposal_after_confirmation": "needs_information"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "missing-batch",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "decisions": {
+        "typed": "needs_information",
+        "proposal_after_confirmation": "needs_information"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "blurred",
+      "mode": "mock",
+      "observed_fields": {
+        "model": null,
+        "batch": null
+      },
+      "decisions": {
+        "typed": "needs_information",
+        "proposal_after_confirmation": "needs_information"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "cropped",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "decisions": {
+        "typed": "needs_information",
+        "proposal_after_confirmation": "needs_information"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "instruction-note",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "decisions": {
+        "typed": "excluded",
+        "proposal_after_confirmation": "excluded"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "conflicting-batches",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "decisions": {
+        "typed": "needs_information",
+        "proposal_after_confirmation": "needs_information"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    },
+    {
+      "case_id": "low-confidence",
+      "mode": "mock",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "decisions": {
+        "typed": "eligible",
+        "proposal_after_confirmation": "needs_information"
+      },
+      "checks": {
+        "proposal_fields": true,
+        "unconfirmed_stays_unresolved": true,
+        "typed": true,
+        "proposal_after_confirmation": true,
+        "clarification": true
+      }
+    }
+  ]
+}

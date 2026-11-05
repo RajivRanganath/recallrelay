@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RecallRelay synthetic customer evidence demo.">
+  <title>Check your label · RecallRelay</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a class="brand" href="/">RecallRelay</a><span class="tag">Synthetic demo</span></header>
+  <main>
+    <div class="intro"><p class="eyebrow">Customer evidence · case-demo-1</p><h1>Start with the label.</h1><p>Confirm the model and batch on your product. We’ll check whether those identifiers match the demo campaign.</p></div>
+    <p class="notice">Fictional products and orders only. This local demo cannot authorize a refund or determine whether a product is safe.</p>
+    <div class="workspace">
+      <section aria-labelledby="label-title">
+        <p class="step">01 / Your label</p><h2 id="label-title">Choose a sample or add a photo</h2>
+        <label for="sample">Synthetic label sample</label>
+        <div class="inline"><select id="sample"><option value="clear">Clear label</option><option value="blurred">Unreadable batch</option><option value="excluded">Excluded batch</option></select><button type="button" id="load-sample" class="secondary">Use sample</button></div>
+        <figure id="sample-preview"><div class="label-print"><strong>RELAY HOME</strong><span>Table lamp</span><span id="sample-model">MODEL LAMP-100</span><span id="sample-batch">BATCH B101</span><small>SYNTHETIC · NOT A REAL PRODUCT</small></div><figcaption>Canned sample for the mock assistant.</figcaption></figure>
+        <figure id="photo-preview" hidden><img id="photo" alt="Your selected synthetic product label"><figcaption>Local preview only. No OCR is running.</figcaption></figure>
+        <label for="upload">Or upload a synthetic label photo</label><input id="upload" type="file" accept="image/png,image/jpeg" aria-describedby="upload-help">
+        <p id="upload-help" class="hint">PNG or JPEG, up to 2 MiB. Photos are handled transiently and are not saved. Read the identifiers yourself.</p>
+        <button type="button" id="suggest-image" class="secondary" hidden>Suggest from fixture image (mock)</button>
+        <p id="fixture-help" class="hint" hidden>Only the 12 repository fixture images are recognized by exact bytes. Other photos use typed entry. No OCR is running.</p>
+        <button type="button" id="remove-photo" class="text-button" hidden>Remove photo</button>
+        <p id="proposal-note" class="mode-note">Mock assistant · sample values are suggestions. No AI provider is connected.</p>
+      </section>
+      <section aria-labelledby="confirm-title">
+        <p class="step">02 / Confirm the details</p><h2 id="confirm-title">What does the label say?</h2>
+        <form id="assessment-form">
+          <label for="model">Model</label><input id="model" name="model" maxlength="128" autocomplete="off" placeholder="For example, LAMP-100">
+          <label for="batch">Batch</label><input id="batch" name="batch" maxlength="128" autocomplete="off" placeholder="Leave blank if unreadable" aria-describedby="batch-help"><p id="batch-help" class="hint">An unreadable or uncertain identifier stays unresolved.</p>
+          <label class="checkbox"><input type="checkbox" id="confirmed" required><span>I checked these values against the label. Anything I cannot confirm is blank.</span></label>
+          <button type="submit" id="assess">Check campaign match</button>
+        </form>
+        <p id="message" role="status" aria-live="polite"></p>
+        <section id="result" class="result" tabindex="-1" aria-labelledby="decision" hidden><p id="result-mode" class="eyebrow"></p><h3 id="decision"></h3><p id="reason"></p><p id="clarification" class="clarification" hidden></p><p id="assessment-id" class="hint"></p></section>
+      </section>
+    </div>
+    <section class="status-section" aria-labelledby="status-title"><div><p class="step">03 / Merchant follow-up</p><h2 id="status-title">Resolution status</h2><p>This reads the separate resolution service. Checking a label does not create a merchant case.</p></div><div><button type="button" id="refresh-status" class="secondary">Read demo case status</button><p id="resolution" role="status" aria-live="polite">No status requested yet.</p></div></section>
+    <footer>Campaign-demo-1 · version 1 · USD · one unit<br>Extraction: mock samples / Assessment: confirmed text + rules / Payments: none</footer>
+  </main>
+</body>
+</html>
