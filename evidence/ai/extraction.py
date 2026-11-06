@@ -1,4 +1,5 @@
 """Provider-neutral proposal boundary. No assessment, storage or payment tools."""
+from dataclasses import dataclass, field
 import json
 import math
 from pathlib import Path
@@ -18,23 +19,34 @@ OUTPUT_VALIDATOR = Draft202012Validator(json.loads(
 
 
 class ExtractionUnavailable(RuntimeError):
-    pass
+    def __init__(self, message, *, code='unavailable'):
+        super().__init__(message)
+        valid = isinstance(code, str) and (
+            code in {'unavailable', 'network', 'deadline', 'busy', 'invalid_response', 'invalid_proposal'}
+            or re.fullmatch(r'http_[45][0-9]{2}', code))
+        self.code = code if valid else 'unavailable'
 
 
 class InvalidProposal(ValueError):
     pass
 
 
+@dataclass(frozen=True)
+class ExtractionResult:
+    fields: dict = field(repr=False)
+    provenance: dict
+
+
 class LabelExtractor(Protocol):
     """Adapters must use bounded provider timeouts and return untrusted field data.
 
     Implementations receive only a validated synthetic image, no campaign, order,
-    approval state, database handle or tool registry. No live implementation ships.
+    approval state, database handle or tool registry. Adapters have no authority to assess or approve.
     """
     mode: str
     provider_name: str
 
-    def extract(self, image: DecodedImage) -> dict:
+    def extract(self, image: DecodedImage) -> dict | ExtractionResult:
         ...
 
 
@@ -74,7 +86,13 @@ class ExtractionService:
         if not isinstance(image, DecodedImage):
             raise InvalidInput('A decoded image is required for extraction')
         try:
-            return normalize_proposal(self.adapter.extract(image), self.adapter.mode)
-        except Exception:
-            # Provider errors/output may contain secrets or image data. Never echo them.
-            raise ExtractionUnavailable('Extraction unavailable; enter the identifiers manually.') from None
+            raw = self.adapter.extract(image)
+            if isinstance(raw, ExtractionResult):
+                result = normalize_proposal(raw.fields, self.adapter.mode)
+                result['source'] = raw.provenance
+                return result
+            return normalize_proposal(raw, self.adapter.mode)
+        except Exception as error:
+            # Preserve only allowlisted diagnostic codes, never provider messages.
+            code = error.code if isinstance(error, ExtractionUnavailable) else 'unavailable'
+            raise ExtractionUnavailable('Extraction unavailable; enter the identifiers manually.', code=code) from None

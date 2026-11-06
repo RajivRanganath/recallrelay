@@ -1,3 +1,24 @@
+# 6 November 2026: OmniRoute continuation
+
+The pushed 5 November checkpoint was rechecked: all 57 original evidence tests passed. The local continuation adds an opt-in image adapter using the existing IIT KGP OmniRoute key source, with no copied credentials or new runtime dependencies. Default extraction remains mock; v1 assessment fields and deterministic confirmation remain unchanged.
+
+Critical findings and fixes in this continuation:
+- The UI previously hardcoded mock extraction and an 8-second request timeout. It now reads configured mode, labels AI proposals separately, and allows the backend's supervised call to finish. Health describes configuration, not reachability.
+- An HTTP success alone did not establish usable extraction. Truncated generation, refusals, tool-call output, malformed JSON, and invalid proposals fail closed.
+- Auto/smart did not produce usable image proposals in the initial three-case run. A diagnostic observed HTTP 429. An explicit vision route returned HTTP 200 with finish_reason length at a small token budget. After revising generation settings and the prompt, the final development run returned 12/12 proposals matching all 24 authored reference fields.
+- Spawned workers enforce a bounded local wait even for trickling responses; stalled workers are terminated and reaped. That does not cancel accepted upstream work or establish billing guarantees.
+- Gateway payload logging is separate from application logging. The startup no-log environment attempt did not take effect; the reused key's persisted no_log flag was enabled, and five earlier payload artifacts from this session were removed while preserving summaries and older history. Later observed gateway calls stored no payload artifacts.
+
+Observed final checks: 70 evidence tests; 3 shared contract checks; 60 fixture-policy checks; dependency consistency, JavaScript syntax, and whitespace checks. Chrome checked confirmation and failure behavior with explicitly stubbed AI responses; live-provider results were captured separately. See [current runbook](RUNBOOK.md).
+
+The final live run is a tuned synthetic development smoke, not a reviewed holdout, human study, calibrated-confidence result, production claim, or general prompt-injection guarantee. Actual resolution-service integration, authentication, real-data storage, independent evaluation, and final demo remain pending. Changes were verified locally before this feature commit.
+
+---
+
+# Historical review: 5 November 2026
+
+The following records the prior checkpoint and its limits at that time.
+
 # Critical review and next-stage verification
 
 5 November 2026. Rajiv's feature branch: `work/rajiv-evidence-intake`. Review covers the local synthetic prototype, not a production or live-provider release.

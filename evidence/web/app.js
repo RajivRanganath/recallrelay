@@ -4,14 +4,15 @@ let image = null;
 let previewUrl = null;
 let uploadGeneration = 0;
 let busy = false;
+let extractionMode = null;
 const labels = {eligible: 'Identifiers match', excluded: 'Outside this campaign', needs_information: 'A detail needs attention'};
 
-async function request(path, body) {
+async function request(path, body, timeout = 8000) {
   const response = await fetch(path, {
     method: body === undefined ? 'GET' : 'POST',
     headers: body === undefined ? {} : {'Content-Type': 'application/json'},
     body: body === undefined ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(8000)
+    signal: AbortSignal.timeout(timeout)
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
@@ -36,7 +37,7 @@ function releasePhoto(clearInput = true) {
 }
 function lock(value) {
   busy = value;
-  for (const id of ['assess', 'load-sample', 'upload', 'remove-photo', 'model', 'batch', 'confirmed', 'sample', 'suggest-image']) $(id).disabled = value;
+  for (const id of ['assess', 'load-sample', 'upload', 'remove-photo', 'model', 'batch', 'confirmed', 'sample', 'suggest-image']) $(id).disabled = value || (id === 'suggest-image' && extractionMode === null);
 }
 $('model').addEventListener('input', invalidate);
 $('batch').addEventListener('input', invalidate);
@@ -108,13 +109,15 @@ $('suggest-image').addEventListener('click', async () => {
   $('model').value = '';
   $('batch').value = '';
   lock(true);
-  $('message').textContent = 'Looking up the known synthetic fixture…';
+  $('message').textContent = extractionMode === 'ai' ? 'Reading the synthetic label through OmniRoute…' : 'Looking up the known synthetic fixture…';
   try {
-    const data = await request('/demo/image-extraction', image);
+    const data = await request('/demo/image-extraction', image, 40000);
     $('model').value = data.model || '';
     $('batch').value = data.batch || '';
-    $('proposal-note').textContent = `Mock fixture adapter · ${data.notice} Confidence values are authored test inputs, not measured probabilities.`;
-    $('message').textContent = data.clarification || 'Mock suggestions loaded. Check both fields and confirm before assessment.';
+    $('proposal-note').textContent = data.mode === 'ai'
+      ? `AI proposal · ${data.notice} Served model: ${data.source?.served_model || 'unreported'}. Confidence is self-reported and uncalibrated.`
+      : `Mock fixture adapter · ${data.notice} Confidence values are authored test inputs, not measured probabilities.`;
+    $('message').textContent = data.clarification || 'Suggestions loaded. Check both fields and confirm before assessment.';
   } catch (error) {
     $('proposal-note').textContent = 'No extraction result · Typed entry remains available.';
     $('message').textContent = error.message;
@@ -122,7 +125,7 @@ $('suggest-image').addEventListener('click', async () => {
 });
 $('remove-photo').addEventListener('click', () => {
   releasePhoto(); invalidate();
-  $('proposal-note').textContent = 'Typed entry · No AI provider is connected.';
+  $('proposal-note').textContent = 'Typed entry · No extraction is running.';
 });
 $('assessment-form').addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -157,3 +160,23 @@ $('refresh-status').addEventListener('click', async () => {
   } catch (error) { $('resolution').textContent = `Status unavailable. ${error.message}`; }
   finally { $('refresh-status').disabled = false; }
 });
+
+async function configureExtraction() {
+  try {
+    const health = await request('/health');
+    extractionMode = health.extraction_mode;
+    const live = extractionMode === 'ai';
+    $('suggest-image').textContent = live ? 'Read label with AI' : 'Suggest from fixture image (mock)';
+    $('fixture-help').textContent = live
+      ? 'This sends the synthetic photo through the configured OmniRoute gateway. Review and confirm every suggestion.'
+      : 'Only the 12 repository fixtures are recognized by exact bytes. Other photos use typed entry. No OCR is running.';
+    $('extraction-status').textContent = live ? 'Extraction: AI via OmniRoute (configured)' : 'Extraction: mock samples';
+    $('proposal-note').textContent = live ? 'OmniRoute configured · Images are read only when you select “Read label with AI”.' : 'Mock assistant · sample values are suggestions. No live AI provider is selected.';
+    $('photo-caption').textContent = 'Local preview. Use the suggestion button or type the identifiers yourself.';
+  } catch {
+    extractionMode = null;
+    $('suggest-image').disabled = true;
+    $('fixture-help').textContent = 'Could not read extraction configuration. Typed entry remains available.';
+  }
+}
+configureExtraction();

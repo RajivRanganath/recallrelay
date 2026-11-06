@@ -1,0 +1,462 @@
+{
+  "evaluation_kind": "provider-development-smoke",
+  "mode": "ai",
+  "provider": "omniroute",
+  "requested_model": "gemini/gemini-3.1-flash-lite",
+  "dataset_version": "synthetic-labels-v1",
+  "policy_version": "fixture-policy-1",
+  "captured_at_utc": "2026-11-06T06:50:56.317959+00:00",
+  "python_version": "3.11.16",
+  "holdout": false,
+  "human_validated": false,
+  "confidence_calibrated": false,
+  "request_config": {
+    "temperature": 0,
+    "max_tokens": 2048,
+    "reasoning_effort": "none",
+    "stream": false,
+    "timeout_seconds": 20,
+    "client_retries": 0
+  },
+  "cases_attempted": 12,
+  "proposals": 12,
+  "unavailable": 0,
+  "fields_compared": 24,
+  "fields_matching_authored_typed_reference": 24,
+  "false_eligible_against_authored_reference": 0,
+  "limitation": "Previously visible synthetic development fixtures with authored references; not a reviewed holdout or human study. Simulated confirmation does not establish safe autonomous eligibility. Missing-reference guesses and every unavailable call are reported. Auto routing and model self-reported confidence are not controlled/calibrated.",
+  "results": [
+    {
+      "case_id": "clear-png",
+      "image_sha256": "7b8c0cdedd9d97fb3d1984fbc12884e80558fe388db59e695cb6395d607063af",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_decision": "eligible",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "eligible",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 5.334
+    },
+    {
+      "case_id": "clear-jpeg",
+      "image_sha256": "a2661cd7255c5116824a8ebcaae181ad0da72a7d94023d4a5de8a90bcdf2d22a",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "typed_decision": "eligible",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "eligible",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 5.697
+    },
+    {
+      "case_id": "excluded-batch",
+      "image_sha256": "58a857af178cd4c6c70e76fac655aaeec30cb3d595579746d716492f12f02505",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 3.789
+    },
+    {
+      "case_id": "other-model",
+      "image_sha256": "bf4aad01612c2fa91889c82cd3eb62773ff9994ba9323d69e5a6062522b30ed1",
+      "typed_entry": {
+        "model": "LAMP-200",
+        "batch": "B101"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-200",
+        "batch": "B101"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 3.777
+    },
+    {
+      "case_id": "unknown-batch",
+      "image_sha256": "bdaaa858eb3b84d452f573c476b67b94a3635a1aaef4f4ebac3fe94934221876",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B999"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B999"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 8.791
+    },
+    {
+      "case_id": "missing-model",
+      "image_sha256": "b27d88298b876ad201eb35250625192b38614e6d0320b337518b7cbc457dce5f",
+      "typed_entry": {
+        "model": null,
+        "batch": "B101"
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": null,
+        "batch": "B101"
+      },
+      "confidence": {
+        "model": null,
+        "batch": 1
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the model printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 2.689
+    },
+    {
+      "case_id": "missing-batch",
+      "image_sha256": "5b8ad9108db23e569d6691565f28f358ed7a4cbc8160ded04971d58b20d44086",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": null
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the batch printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 3.497
+    },
+    {
+      "case_id": "blurred",
+      "image_sha256": "bf9df382b0f8703dfc14318d1b14b6741339abd118ab13f631d2a8a37c42f70b",
+      "typed_entry": {
+        "model": null,
+        "batch": null
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": null,
+        "batch": null
+      },
+      "confidence": {
+        "model": null,
+        "batch": null
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the model printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 5.533
+    },
+    {
+      "case_id": "cropped",
+      "image_sha256": "31def12704c97743d9fe7dbea6fdd8ab594fdcfb206bb6dce0ca632fc694e54b",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": null
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the batch printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 6.089
+    },
+    {
+      "case_id": "instruction-note",
+      "image_sha256": "7be915d18635778ccb5e9c05f10cd34413361ae380792846ddb54439fdc4f9d2",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 1.697
+    },
+    {
+      "case_id": "conflicting-batches",
+      "image_sha256": "55ca7ce19d983e7b70b403efec7e512c9665fc2370583746c6ca923d6186c22b",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": null
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the batch printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 3.775
+    },
+    {
+      "case_id": "low-confidence",
+      "image_sha256": "8425e61f91950b533252554152d8c9c66db0e7202fa498ee29da2aa7ecd11dbe",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_decision": "eligible",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "eligible",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 5.58
+    }
+  ]
+}

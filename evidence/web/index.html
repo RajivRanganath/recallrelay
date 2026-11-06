@@ -19,7 +19,7 @@
         <label for="sample">Synthetic label sample</label>
         <div class="inline"><select id="sample"><option value="clear">Clear label</option><option value="blurred">Unreadable batch</option><option value="excluded">Excluded batch</option></select><button type="button" id="load-sample" class="secondary">Use sample</button></div>
         <figure id="sample-preview"><div class="label-print"><strong>RELAY HOME</strong><span>Table lamp</span><span id="sample-model">MODEL LAMP-100</span><span id="sample-batch">BATCH B101</span><small>SYNTHETIC · NOT A REAL PRODUCT</small></div><figcaption>Canned sample for the mock assistant.</figcaption></figure>
-        <figure id="photo-preview" hidden><img id="photo" alt="Your selected synthetic product label"><figcaption>Local preview only. No OCR is running.</figcaption></figure>
+        <figure id="photo-preview" hidden><img id="photo" alt="Your selected synthetic product label"><figcaption id="photo-caption">Local preview. No extraction is running.</figcaption></figure>
         <label for="upload">Or upload a synthetic label photo</label><input id="upload" type="file" accept="image/png,image/jpeg" aria-describedby="upload-help">
         <p id="upload-help" class="hint">PNG or JPEG, up to 2 MiB. Photos are handled transiently and are not saved. Read the identifiers yourself.</p>
         <button type="button" id="suggest-image" class="secondary" hidden>Suggest from fixture image (mock)</button>
@@ -40,7 +40,7 @@
       </section>
     </div>
     <section class="status-section" aria-labelledby="status-title"><div><p class="step">03 / Merchant follow-up</p><h2 id="status-title">Resolution status</h2><p>This reads the separate resolution service. Checking a label does not create a merchant case.</p></div><div><button type="button" id="refresh-status" class="secondary">Read demo case status</button><p id="resolution" role="status" aria-live="polite">No status requested yet.</p></div></section>
-    <footer>Campaign-demo-1 · version 1 · USD · one unit<br>Extraction: mock samples / Assessment: confirmed text + rules / Payments: none</footer>
+    <footer>Campaign-demo-1 · version 1 · USD · one unit<br><span id="extraction-status">Extraction: checking configuration</span> / Assessment: confirmed text + rules / Payments: none</footer>
   </main>
 </body>
 </html>
