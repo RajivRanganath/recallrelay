@@ -1,3 +1,21 @@
+# 6 November 2026: inbound request-limit continuation
+
+Started `work/rajiv-request-limits` from merged main `c13ec97` after verifying PR #14 merged and its evidence/shared-contract CI passed. The local tree was clean. The resolution branch still points to the original scaffold; actual merchant integration cannot be established from it.
+
+The prior socket inactivity timeout allowed an observed header trickle to take 6.05 seconds and still return HTTP 200. The evidence server now admits at most eight active handlers and enforces a ten-second total receive budget from handler setup through the complete body, including the request line and headers. Rejected excess connections receive a best-effort 503 then close before application work; split writers can instead see a connection failure. Deadline expiry interrupts reads and rejects/closes incomplete input before storage. Parseable timed-out requests attempt a 408 response; an actively uploading peer may instead observe a reset; malformed/incomplete lines may receive another parse error or close.
+
+Completed input cancels the receive watchdog before validation/AI/storage work. A capacity slot lasts through response and connection cleanup. Shutdown joins admitted handlers and their watchdogs. These controls do not interrupt accepted work, provide a total application response deadline, bound CPU use or OS scheduling/backlog behavior, or establish production availability under sustained flooding. Existing upstream deadlines and synthetic-only boundaries still apply.
+
+The nine new local regressions cover trickling lines/headers/bodies, a shared header/body receive budget, concurrent admission and excess rejection before storage, accepted work completing beyond the receive deadline, recovery after invalid/disconnected requests, and shutdown cleanup. Authored traffic, short test budgets and temporary SQLite databases only; no live AI, payments, credentials, provider-report changes, shared contract changes or resolution-lane changes.
+
+Follow-up review reproduced a shutdown failure after an injected handler-thread start failure: the inherited registry tried to join an unstarted thread. The server now tracks only successfully started workers and releases admission capacity after a failed start; two added regressions verify clean shutdown and recovery. A rerun also observed socket resets while a peer kept trickling data after rejection. The trickle tests accept a bounded rejection or reset, still reject successful responses, verify ongoing traffic before expiry, and check no persistence and recovered capacity.
+
+Final local verification on Python 3.11.16: 92 evidence tests with ResourceWarnings treated as errors, 4 Node UI tests, 3 shared-contract tests, the unchanged 1-test resolution starter suite, and 12 fixture cases / 60 policy checks passed. All nine focused request-limit tests passed, including injected worker-start failure and shutdown cleanup. JavaScript syntax, dependency consistency and whitespace checks passed. Existing pinned dependencies were reused; no fresh install, browser recheck, live-provider evaluation or production load test is claimed. Hosted CI is reported separately from these pre-commit local checks.
+
+Actual resolution integration, merchant handoff, independent holdout labels, authentication/private-data support and a recorded demo remain pending. Git records the commit and publication status of this continuation.
+
+---
+
 # 6 November 2026: critical review of the full evidence lane
 
 Scope: current branch `work/rajiv-provider-http-validation`, including assessment rules, storage, image/JSON intake, inbound and upstream HTTP boundaries, extraction, UI state, evaluation code/reports, evidence CI, and the frozen contracts read-only. The review did not change the resolution lane, shared contracts/mocks/tests, or root configuration. This record describes the feature-branch changes and their pre-commit validation.
