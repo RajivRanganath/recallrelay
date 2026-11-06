@@ -68,10 +68,11 @@ The demo has no cross-origin write support and restricts Host to loopback names.
 evidence/.venv/bin/python -B -m unittest discover -s evidence/tests -v
 evidence/.venv/bin/python -B -m evidence.evals.run --check
 node --check evidence/web/app.js
+node --test evidence/tests/test_web.js
 git diff --check
 ```
 
-Direct runtime requirements live in `evidence/requirements.txt`; the tested transitive pins live in `evidence/requirements.lock.txt`. Evidence CI installs the lock and runs lane tests plus the fixture-policy replay. See [Rajiv's runbook](../docs/rajiv/RUNBOOK.md) for observed checks and remaining work. Passing these synthetic checks does not measure extraction accuracy, customer savings, live integration or payment behavior.
+Direct runtime requirements live in `evidence/requirements.txt`; the tested transitive pins live in `evidence/requirements.lock.txt`. Evidence CI installs the lock and runs lane tests, the fixture-policy replay, and dependency-free Node UI state regressions. See [Rajiv's runbook](../docs/rajiv/RUNBOOK.md) for observed checks and remaining work. Passing these synthetic checks does not measure extraction accuracy, customer savings, live integration or payment behavior.
 
 Customer-side HTTP integration smoke (temporary databases and loopback fixtures only):
 

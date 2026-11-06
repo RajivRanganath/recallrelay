@@ -1,3 +1,41 @@
+# 6 November 2026: critical review of the full evidence lane
+
+Scope: current branch `work/rajiv-provider-http-validation`, including assessment rules, storage, image/JSON intake, inbound and upstream HTTP boundaries, extraction, UI state, evaluation code/reports, evidence CI, and the frozen contracts read-only. The review did not change the resolution lane, shared contracts/mocks/tests, or root configuration. This record describes the feature-branch changes and their pre-commit validation.
+
+## Additional findings reproduced and fixed
+
+1. **Ambiguous inbound headers could still save an assessment.** Six raw HTTP cases returned 200 before the fix: duplicate JSON Content-Type, conflicting Content-Type, duplicate Origin with a later foreign origin, an empty Origin, empty Transfer-Encoding, and an empty first transfer header hiding a later chunked header. POST now requires one JSON Content-Type, at most one exact same-origin Origin when supplied, no Transfer-Encoding headers, and one ASCII decimal length. The regression verifies 400/403 responses and no persisted assessment. Origin/Host checks remain request guards, not service authentication.
+2. **Late configuration could disable suggestions or overwrite provenance.** Preparing a photo before `/health` completed left suggestions disabled; a late AI configuration response also overwrote a loaded mock sample's source note. Unknown health modes were presented as mock. Three asynchronous state regressions failed before the fix. Configuration now accepts only mock/ai, reconciles controls with the current busy state, preserves the current proposal note, and visibly reports unavailable configuration while leaving typed entry usable. A fourth regression confirms configuration completion cannot unlock a busy operation. These dependency-free Node tests now run in evidence CI.
+3. **The live evaluation command could succeed despite wrong fields.** An offline adapter returned B999 for the eligible clear-label reference: one field mismatch, an excluded outcome, no false eligibility, and no unavailable call; the command previously exited successfully. It now writes the full report and exits nonzero on any field mismatch as well as unavailable/false-eligible results. Tests cover both failing and matching CLI outcomes without provider calls. Conservative abstentions against a non-null authored reference also count as field mismatches; the report retains the distinction.
+
+The preceding gateway fix was also rechecked: all twelve malformed-response variants fail closed, valid framing still succeeds, and the targeted checks retain no child workers or automatic retries.
+
+## Final observed verification
+
+A temporary source-only export containing the current edits and new test file passed 83 evidence tests on Python 3.11.16 with ResourceWarnings treated as errors, 4 Node UI tests, 3 shared contract tests, the unchanged 1-test resolution starter suite, and 12 fixture cases / 60 policy checks. JavaScript syntax, dependency consistency, and whitespace checks passed. The export used the existing pinned interpreter; this was not a fresh network dependency install. No ignored database or virtual environment was copied. Basic credential-pattern scanning found no matches in tracked/unignored text files; this is not a comprehensive secret or dependency-vulnerability audit. The updated CI step was exercised locally, not by a new hosted CI run.
+
+An actual in-app browser check against a temporary mock-mode evidence server verified sample provenance, separate confirmation, a manual matching assessment, edit invalidation, unresolved blank-batch clarification, and a visible status dependency failure. The delayed-health cases used deterministic DOM doubles, not browser network interception. The browser check did not cover live AI, every viewport, or full accessibility. No provider credentials were read and no live AI/payment calls were made in this review; previous provider reports remain unchanged.
+
+## Material work still pending
+
+- Actual resolution-service integration, canonical merchant handoff, and recorded demo. The current service source/branch is a scaffold; mock HTTP success cannot establish those outcomes.
+- Separately reviewed holdout labels, broader provider injection evaluation, and any human completion/savings study. The 12-case provider report was used during development; its 24 matching fields are not general accuracy or calibrated-confidence evidence.
+- Authentication and authorization, private real-data handling, and operational request limits before any real-data use. The current loopback threaded server has an inactivity timeout, not an application-wide inbound request deadline or bounded HTTP thread pool. No production availability claim follows from the bounded upstream clients.
+
+---
+
+# 6 November 2026: AI gateway response-validation continuation
+
+Started `work/rajiv-provider-http-validation` from merged main `601773f` after verifying evidence PRs #11–#13 were merged. The prior 78-test evidence suite passed before edits. This review found that the OmniRoute worker's response-header checks were weaker than the resolution client's: duplicate Content-Type and unsupported/repeated Transfer-Encoding could be accepted with an otherwise usable JSON proposal.
+
+The focused regression reproduced seven accepted malformed response variants against the unchanged gateway client. The updated worker rejects them before parsing proposal JSON. All twelve malformed-header variants now produce sanitized `invalid_response` failures without retries or remaining child workers. Positive checks preserve length-delimited, chunked, and connection-delimited JSON, including capacity recovery on the same adapter after a rejected response. The focused gateway/evaluation module passed all 15 tests.
+
+Final continuation verification on Python 3.11.16: all 80 evidence tests passed with ResourceWarnings treated as errors; 3 shared contract tests and 12 fixture cases / 60 policy checks passed. Dependency consistency, JavaScript syntax, and whitespace checks passed. The initial shared-test attempt could not bind its mock socket in the read-only sandbox; it passed after rerunning with loopback access. Temporary storage and loopback tests required access beyond that sandbox.
+
+The gateway is an authored loopback test server with a synthetic key; this work does not measure live gateway compatibility, image recognition, model injection resistance, or provider availability. The prompt, model/request settings, credential sources, and recorded provider development reports remain unchanged. Actual merchant-service integration and independently reviewed holdout evaluation remain pending. At this earlier stage the changes were local; the full continuation is recorded in the critical review above.
+
+---
+
 # 6 November 2026: resolution-status continuation
 
 Continues from `a8484dd` on Rajiv's existing evidence branch. The checkpoint's status client had socket inactivity timeouts: a peer sending headers or body bytes slowly could extend waiting indefinitely. Both new trickle regressions failed against the unchanged checkpoint implementation and pass against the supervised client. The new design terminates/reaps stalled child workers after the configured local wait and rejects excess work at a two-worker per-client limit. Cleanup adds to the configured wait; this is a local dependency-wait bound, not a production availability guarantee.
@@ -6,7 +44,7 @@ HTTP framing is now checked before parsing the bounded response: duplicate lengt
 
 Observed focused checks: 13 resolution client/integration tests passed. Full customer-to-mock HTTP checks verify the unchanged committed mock, seven authored contract statuses, visible sanitized failures, manual assessment during dependency failure, and no evidence mutation from status reads. Synthetic status relay, including `refunded`, is not merchant integration or payment evidence. The current continuation does not call OmniRoute or a payment provider, nor alter existing provider reports. Actual resolution integration, independently reviewed holdout, authentication, and final demo remain unfinished.
 
-Final continuation checks: 78 evidence tests with ResourceWarnings treated as errors, 3 shared contract tests, 60 fixture-policy checks, dependency consistency, JavaScript syntax, and whitespace checks all passed. Changes remain local and uncommitted.
+Final continuation checks: 78 evidence tests with ResourceWarnings treated as errors, 3 shared contract tests, 60 fixture-policy checks, dependency consistency, JavaScript syntax, and whitespace checks all passed. These changes were subsequently committed as `82ad673` and merged through PR #13.
 
 ---
 

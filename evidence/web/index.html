@@ -22,10 +22,10 @@
         <figure id="photo-preview" hidden><img id="photo" alt="Your selected synthetic product label"><figcaption id="photo-caption">Local preview. No extraction is running.</figcaption></figure>
         <label for="upload">Or upload a synthetic label photo</label><input id="upload" type="file" accept="image/png,image/jpeg" aria-describedby="upload-help">
         <p id="upload-help" class="hint">PNG or JPEG, up to 2 MiB. Photos are handled transiently and are not saved. Read the identifiers yourself.</p>
-        <button type="button" id="suggest-image" class="secondary" hidden>Suggest from fixture image (mock)</button>
+        <button type="button" id="suggest-image" class="secondary" hidden disabled>Suggest from fixture image (mock)</button>
         <p id="fixture-help" class="hint" hidden>Only the 12 repository fixture images are recognized by exact bytes. Other photos use typed entry. No OCR is running.</p>
         <button type="button" id="remove-photo" class="text-button" hidden>Remove photo</button>
-        <p id="proposal-note" class="mode-note">Mock assistant · sample values are suggestions. No AI provider is connected.</p>
+        <p id="proposal-note" class="mode-note">Choose a sample, select a photo, or enter the identifiers yourself.</p>
       </section>
       <section aria-labelledby="confirm-title">
         <p class="step">02 / Confirm the details</p><h2 id="confirm-title">What does the label say?</h2>

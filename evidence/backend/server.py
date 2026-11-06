@@ -81,20 +81,22 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                 self.reply(403, {'error': 'Loopback Host required'})
                 return
             # Browser writes must be same-origin. Internal callers may omit Origin.
-            origin = self.headers.get('Origin')
-            if origin and origin != f'http://{self.headers.get("Host")}':
+            origins = self.headers.get_all('Origin', [])
+            if (len(origins) > 1
+                    or (origins and origins[0] != f'http://{self.headers.get("Host")}')):
                 self.reply(403, {'error': 'Cross-origin writes are disabled'})
                 return
             if self.path not in ('/v1/assessments', '/demo/assessments', '/demo/extraction', '/demo/image-extraction'):
                 self.reply(404, {'error': 'Not found'})
                 return
             try:
-                if self.headers.get('Transfer-Encoding'):
+                if self.headers.get_all('Transfer-Encoding', []):
                     raise InvalidInput('Transfer encoding is not supported')
-                if self.headers.get_content_type() != 'application/json':
+                if (len(self.headers.get_all('Content-Type', [])) != 1
+                        or self.headers.get_content_type() != 'application/json'):
                     raise InvalidInput('Content-Type must be application/json')
                 lengths = self.headers.get_all('Content-Length', [])
-                if len(lengths) != 1 or not lengths[0].isdigit():
+                if len(lengths) != 1 or not lengths[0].isascii() or not lengths[0].isdigit():
                     raise InvalidInput('Expected one valid Content-Length')
                 size = int(lengths[0])
                 if not 0 < size <= MAX_BODY_BYTES:
