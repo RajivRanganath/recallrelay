@@ -1,9 +1,9 @@
 # Customer evidence UI
 
-Buildless HTML/CSS/JS served by `python -m evidence.backend.server` from the repository root. No Node packages or frontend build are required. Use synthetic data only.
+Served by the evidence backend on loopback; no separate framework or runtime dependencies.
 
-The UI covers mock sample suggestions, transient photo preview, a known-fixture extraction button, typed identifiers, explicit confirmation, one targeted clarification, assessment result and resolution status/error display. All dynamic evidence and provider text uses `textContent`. Editing identifiers hides stale results and requires confirmation again. The browser cannot submit campaign/order flags through the demo endpoint.
+The UI reads the configured extraction mode from `/health`. Mock samples remain explicitly mock. Image suggestions use either exact fixture lookup or opt-in OmniRoute AI, labeled separately. AI success displays the served model and warns that confidence is self-reported and uncalibrated. Health reports configuration, not provider reachability.
 
-Native form controls, visible focus rings, live status text and responsive stacked/two-column layouts. See [the runbook](../../docs/rajiv/RUNBOOK.md) for browser verification scope. This is a local prototype with no customer authentication, genuine OCR or automatic merchant case creation.
+Uploading only prepares a preview. The user selects the suggestion button to submit a synthetic image. Suggestions never check the confirmation box or create an assessment. Editing identifiers, replacing an image, and extraction failure clear old authority. The image request waits up to 40 seconds so the backend's supervised 20-second call can finish; other requests retain an 8-second browser timeout.
 
-The image-suggestion button calls `/demo/image-extraction`, clears prior suggestions/results/confirmation and labels its output as fixture-only. Conflicting/low-confidence fields remain blank. Unknown-image and provider failures show an error without prefilled fields. No genuine OCR is running.
+The observed Chrome check used explicit stub AI success/failure responses to verify mode labels, separate confirmation, manual assessment, edit invalidation, failure handling, photo removal, and mock labels. Genuine provider calls were evaluated separately. No new cross-browser or full accessibility certification is claimed.

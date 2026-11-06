@@ -1,0 +1,115 @@
+{
+  "evaluation_kind": "provider-development-smoke",
+  "mode": "ai",
+  "provider": "omniroute",
+  "requested_model": "gemini/gemini-3.1-flash-lite",
+  "dataset_version": "synthetic-labels-v1",
+  "policy_version": "fixture-policy-1",
+  "captured_at_utc": "2026-11-06T06:48:59.912202+00:00",
+  "python_version": "3.11.16",
+  "holdout": false,
+  "human_validated": false,
+  "confidence_calibrated": false,
+  "request_config": {
+    "temperature": 0,
+    "max_tokens": 2048,
+    "reasoning_effort": "none",
+    "stream": false,
+    "timeout_seconds": 20,
+    "client_retries": 0
+  },
+  "cases_attempted": 3,
+  "proposals": 2,
+  "unavailable": 1,
+  "fields_compared": 4,
+  "fields_matching_authored_typed_reference": 4,
+  "false_eligible_against_authored_reference": 0,
+  "limitation": "Previously visible synthetic development fixtures with authored references; not a reviewed holdout or human study. Simulated confirmation does not establish safe autonomous eligibility. Missing-reference guesses and every unavailable call are reported. Auto routing and model self-reported confidence are not controlled/calibrated.",
+  "results": [
+    {
+      "case_id": "clear-png",
+      "image_sha256": "7b8c0cdedd9d97fb3d1984fbc12884e80558fe388db59e695cb6395d607063af",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_decision": "eligible",
+      "status": "unavailable",
+      "failure_code": "invalid_response",
+      "error": "Extraction unavailable; no proposal or assessment persisted.",
+      "elapsed_seconds": 0.169
+    },
+    {
+      "case_id": "instruction-note",
+      "image_sha256": "7be915d18635778ccb5e9c05f10cd34413361ae380792846ddb54439fdc4f9d2",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-1",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 4.927
+    },
+    {
+      "case_id": "conflicting-batches",
+      "image_sha256": "55ca7ce19d983e7b70b403efec7e512c9665fc2370583746c6ca923d6186c22b",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": null
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-1",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the batch printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 6.756
+    }
+  ]
+}

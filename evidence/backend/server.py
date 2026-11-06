@@ -11,6 +11,7 @@ from urllib.parse import unquote
 from evidence.ai.mock_extractor import propose
 from evidence.ai.extraction import ExtractionService, ExtractionUnavailable
 from evidence.ai.fixture_extractor import FixtureExtractor
+from evidence.ai.omniroute import OmniRouteExtractor, read_key
 from evidence.backend.images import decode_image
 from evidence.backend.assessment import assess
 from evidence.backend.json_input import strict_json
@@ -58,7 +59,7 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                 name, content_type = assets[self.path]
                 self.reply(200, (WEB / name).read_bytes(), content_type)
             elif self.path == '/health':
-                self.reply(200, {'service': 'evidence', 'mode': 'manual', 'extraction_mode': 'mock', 'synthetic_only': True})
+                self.reply(200, {'service': 'evidence', 'mode': 'manual', 'extraction_mode': extraction.adapter.mode, 'extraction_provider': extraction.adapter.provider_name, 'synthetic_only': True})
             elif self.path.startswith('/v1/assessments/'):
                 try:
                     data = store.latest(unquote(self.path[len('/v1/assessments/'):]))
@@ -138,9 +139,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8101)
     parser.add_argument('--db', type=Path)
+    parser.add_argument('--extractor', choices=('mock', 'omniroute'), default='mock')
+    parser.add_argument('--omniroute-env', type=Path, help='Read only OMNIROUTE_API_KEY from an existing env file')
+    parser.add_argument('--model', default='auto/smart', help='OmniRoute model; served model is recorded per proposal')
     args = parser.parse_args()
-    server = make_server(args.port, args.db)
-    print(f'Evidence synthetic demo: http://127.0.0.1:{server.server_port} (manual rules; mock extraction)', flush=True)
+    try:
+        adapter = OmniRouteExtractor(read_key(args.omniroute_env), model=args.model) if args.extractor == 'omniroute' else FixtureExtractor()
+    except (OSError, ValueError):
+        parser.error('Could not load the OmniRoute configuration; check the key source and model identifier')
+    server = make_server(args.port, args.db, extraction_adapter=adapter)
+    print(f'Evidence synthetic demo: http://127.0.0.1:{server.server_port} (manual rules; {adapter.mode} extraction)', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

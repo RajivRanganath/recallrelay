@@ -19,4 +19,23 @@ To deliberately rebuild a fresh candidate dataset for review (not during evaluat
 evidence/.venv/bin/python -B -m evidence.evals.build_fixtures --output evidence/.local/candidate-fixtures
 ```
 
-Next: freeze a separately reviewed holdout set, capture genuine provider outputs with model/version/configuration, compare field errors, unsafe eligibility and clarification outcomes against typed entry on identical cases, and report every denominator/failure. Never evaluate a fixture lookup as if it were a model.
+## Opt-in provider development smoke
+
+`live.py` calls OmniRoute on the frozen images. It validates all selected hashes before any call, never uses `mock_output` as model output, and compares normalized proposals with the authored `typed_entry` reference. Those references describe visibility conservatively; they are not human annotations. The fixture-only low-confidence expectation is not reused as a live-model target.
+
+```sh
+evidence/.venv/bin/python -B -m evidence.evals.live --omniroute-env /absolute/path/to/existing/.env --model gemini/gemini-3.1-flash-lite --output evidence/.local/provider-development.json
+```
+
+Use repeated `--case CASE_ID` to limit calls. Calls use the configured provider account and may consume quota. A report includes every attempted case, unavailable calls and sanitized failure codes, per-field comparisons, guessed reference-missing fields, and simulated-confirmation decisions. Failed calls stay in the attempt denominator and contribute no fabricated field comparisons. The CLI exits nonzero for unavailable calls or false eligible decisions against authored references. Field mismatches are reported even when they do not change eligibility; inspect the rows, not just the exit status.
+
+Observed 6 November reports:
+- `omniroute-smoke-initial.json`: auto/smart, 512-token request, 0/3 usable proposals.
+- `omniroute-smoke-vision.json`: explicit gemini/gemini-3.1-flash-lite, 2048 tokens, prompt label-image-1, 2/3 usable proposals; one invalid response remained.
+- `omniroute-development.json`: explicit route, 2048 tokens, prompt label-image-2, 12/12 usable proposals, 24/24 fields matching authored typed-entry references, zero false eligible simulated outcomes against those references. The served model tag was gemini-3.1-flash-lite. Confidence remains uncalibrated.
+
+A separate diagnostic observed auto-route HTTP 429, and HTTP 200 responses with finish_reason length were rejected during generation tuning. No request/response bodies or images are included in these reports. Gateway payload logging is a separate setting: it was enabled initially, then disabled for the reused key; this session's five earlier payload artifacts were removed while keeping status summaries.
+
+These are development results after inspecting failures and tuning the request. They are not holdout accuracy, a robust prompt-injection result, or human approval/completion evidence. One instruction-bearing synthetic label and one conflicting label are included; this does not generalize to arbitrary attacks. Simulated confirmation is analysis only, with no persistence, merchant handoff, or payment.
+
+Next: freeze a separately reviewed holdout, record actual served model/configuration and unknown backend revision, and evaluate field errors, clarification, and unsafe simulated eligibility against typed entry with every denominator and failure visible. Human review and a real completion study remain pending.
