@@ -1,4 +1,16 @@
-# 6 November 2026: OmniRoute continuation
+# 6 November 2026: resolution-status continuation
+
+Continues from `a8484dd` on Rajiv's existing evidence branch. The checkpoint's status client had socket inactivity timeouts: a peer sending headers or body bytes slowly could extend waiting indefinitely. Both new trickle regressions failed against the unchanged checkpoint implementation and pass against the supervised client. The new design terminates/reaps stalled child workers after the configured local wait and rejects excess work at a two-worker per-client limit. Cleanup adds to the configured wait; this is a local dependency-wait bound, not a production availability guarantee.
+
+HTTP framing is now checked before parsing the bounded response: duplicate lengths/types, conflicting Content-Length/Transfer-Encoding, unsupported/repeated transfer encodings, and invalid lengths fail closed. Valid chunked and connection-delimited JSON still work. No new runtime dependency or v1 field change was needed.
+
+Observed focused checks: 13 resolution client/integration tests passed. Full customer-to-mock HTTP checks verify the unchanged committed mock, seven authored contract statuses, visible sanitized failures, manual assessment during dependency failure, and no evidence mutation from status reads. Synthetic status relay, including `refunded`, is not merchant integration or payment evidence. The current continuation does not call OmniRoute or a payment provider, nor alter existing provider reports. Actual resolution integration, independently reviewed holdout, authentication, and final demo remain unfinished.
+
+Final continuation checks: 78 evidence tests with ResourceWarnings treated as errors, 3 shared contract tests, 60 fixture-policy checks, dependency consistency, JavaScript syntax, and whitespace checks all passed. Changes remain local and uncommitted.
+
+---
+
+# Historical checkpoint: 6 November 2026 OmniRoute continuation
 
 The pushed 5 November checkpoint was rechecked: all 57 original evidence tests passed. The local continuation adds an opt-in image adapter using the existing IIT KGP OmniRoute key source, with no copied credentials or new runtime dependencies. Default extraction remains mock; v1 assessment fields and deterministic confirmation remain unchanged.
 

@@ -53,7 +53,7 @@ Editing identifiers invalidates the displayed result and clears confirmation. Mi
 - `/demo/assessments`: browser accepts only a label. Campaign/order come from the synthetic fixture held by the server.
 - `/demo/extraction`: allowlisted canned sample ID, `mode: mock`, no persistence.
 - `/demo/image-extraction`: bounded, decoded image → provider-neutral interface → configured fixture lookup or OmniRoute adapter. Unknown fixture images, provider failures or malformed outputs produce visible 503 errors, without an assessment or silent fallback. Suggestions must be confirmed separately.
-- `/demo/resolution-status`: read-only GET for the server-held synthetic case. Strict schema and case-ID validation, bounded response, timeout, no redirects, visible 404/503 failures.
+- `/demo/resolution-status`: read-only GET for the server-held synthetic case. Strict schema and case-ID validation, a 64 KiB response cap, unambiguous HTTP framing, no redirects/retries, and visible 404/503 failures. A supervised two-second local wait covers the HTTP operation, including trickling headers/bodies; worker cleanup follows. At most two status workers run per client; excess requests fail visibly without an upstream call.
 - `/health`: reports manual assessment and the configured extraction mode/provider separately, without probing the gateway.
 
 Each assessment has a new ID when confirmed data changes. History is retained, exact repeats of the latest request reuse its saved response, and GET survives restart. A case cannot change campaign identity or order snapshot. Older campaign versions and changed rules at the same version return 409; a higher campaign version may be reassessed. These local behaviors are not an exactly-once guarantee.
@@ -72,6 +72,14 @@ git diff --check
 ```
 
 Direct runtime requirements live in `evidence/requirements.txt`; the tested transitive pins live in `evidence/requirements.lock.txt`. Evidence CI installs the lock and runs lane tests plus the fixture-policy replay. See [Rajiv's runbook](../docs/rajiv/RUNBOOK.md) for observed checks and remaining work. Passing these synthetic checks does not measure extraction accuracy, customer savings, live integration or payment behavior.
+
+Customer-side HTTP integration smoke (temporary databases and loopback fixtures only):
+
+```sh
+evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_resolution*.py' -v
+```
+
+This checks the unchanged resolution mock, all seven authored v1 status values, visible dependency failures, and manual assessment during those failures. Status reads do not create or change an evidence assessment. The mock merchant record remains separate from customer assessment; a synthetic `refunded` response is not payment evidence. Integration against the actual resolution implementation is still pending.
 
 The fixture dataset has 12 fictional label variants. Its 60 replay checks validate adapter/uncertainty/confirmation plumbing and the authored typed-entry baseline, not image recognition or human completion. See [evaluation scope](evals/README.md) and [critical review](../docs/rajiv/REVIEW.md).
 
