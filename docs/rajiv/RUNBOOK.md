@@ -1,6 +1,24 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 6 November 2026. Branch: `work/rajiv-evidence-intake`, based on pushed intake commit `1dc3155`. OmniRoute changes were verified locally before this feature commit. No public deployment, merchant message, payment, contract change, or other-lane edit occurred.
+Checkpoint: 6 November 2026. Branch: `work/rajiv-evidence-intake`, continuing from OmniRoute commit `a8484dd`. The current local continuation hardens the read-only resolution client and adds customer-side HTTP integration checks. No public deployment, merchant message, payment, contract change, or other-lane edit occurred.
+
+## Current continuation: resolution status and mock integration
+
+The status client now supervises the complete HTTP operation with a two-second local wait, followed by worker cleanup. This replaces socket-inactivity-only protection: trickling headers or body bytes can no longer keep the caller waiting indefinitely. Timeout/failure workers are terminated and reaped; the per-client two-worker limit rejects saturation without an upstream call. There are no retries, redirects, payment calls, or new runtime dependencies. Name resolution and HTTP reads run in the supervised child; schema and case-ID checks remain in the parent.
+
+Response validation rejects duplicate Content-Length, conflicting length/transfer headers, unsupported or repeated transfer encodings, invalid/oversized lengths, and duplicate Content-Type. Valid JSON responses with one length, chunked framing, or connection-delimited framing remain supported within the response cap and wait limit.
+
+Observed focused verification: 13 client/integration tests passed. Replaying the new slow-header and slow-body regression against the unchanged `a8484dd` client produced both expected failures; the updated client passes them and leaves no child worker behind. Full customer HTTP checks use temporary SQLite databases, the unchanged committed resolution mock, and authored response servers. They cover all seven v1 status values, sanitized 404/503 failures, no assessment creation/change from status reads, and usable manual assessment during dependency failures. Authored `refunded` output is only a relay test; no payment provider is called.
+
+Final continuation verification on Python 3.11.16: all 78 evidence tests passed with ResourceWarnings treated as errors; 3 shared contract tests passed; the fixture replay passed 12 cases / 60 checks with zero failures. Dependency consistency, JavaScript syntax, and whitespace checks passed. Temporary-file and loopback access were required beyond the read-only sandbox. Changes are local and uncommitted at this checkpoint.
+
+Run just this continuation's integration checks:
+
+```sh
+evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_resolution*.py' -v
+```
+
+Actual resolution-service integration, merchant handoff, independent holdout review, and recorded demo remain pending. Existing provider development reports are unchanged; this continuation made no live AI calls. The sections below retain the preceding OmniRoute checkpoint's setup and observed results; previously running processes must be checked before reuse.
 
 ## Run and demonstrate
 
@@ -30,7 +48,7 @@ Upload a synthetic fixture → **Read label with AI** → review model/batch sug
 
 The unchanged resolution mock can run separately on 8102. The evidence client reads its canned status only; it does not create a merchant case or move money.
 
-## Verification and results
+## Verification and results at the preceding OmniRoute checkpoint
 
 Final observed evidence suite: 70 tests on Python 3.11.16 with ResourceWarnings treated as errors. Shared contract checks: 3 tests. Fixture-policy replay: 12 cases / 60 checks / zero failures, still mock. Dependency consistency, JavaScript syntax, and whitespace checks passed. Initial sandbox attempts could not create temporary files or bind sockets; verification used approved temporary-file/loopback access instead.
 
