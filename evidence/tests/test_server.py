@@ -82,6 +82,36 @@ class ServerTests(unittest.TestCase):
             with self.subTest(headers=headers):
                 self.assertEqual(self.call('/v1/assessments', fixture(), headers)[0], code)
 
+    def test_ambiguous_request_headers_are_rejected_without_persistence(self):
+        raw = json.dumps(fixture()).encode()
+        origin = self.url
+        variants = [
+            ([('Content-Type', 'application/json'), ('Content-Type', 'text/plain')], 400),
+            ([('Content-Type', 'application/json'), ('Content-Type', 'application/json')], 400),
+            ([('Origin', origin), ('Origin', 'https://untrusted.example')], 403),
+            ([('Origin', '')], 403),
+            ([('Transfer-Encoding', '')], 400),
+            ([('Transfer-Encoding', ''), ('Transfer-Encoding', 'chunked')], 400),
+        ]
+        port = int(self.url.rsplit(':', 1)[1])
+        for headers, expected in variants:
+            with self.subTest(headers=headers):
+                connection = HTTPConnection('127.0.0.1', port, timeout=3)
+                try:
+                    connection.putrequest('POST', '/v1/assessments')
+                    if not any(name == 'Content-Type' for name, value in headers):
+                        connection.putheader('Content-Type', 'application/json')
+                    connection.putheader('Content-Length', str(len(raw)))
+                    for name, value in headers:
+                        connection.putheader(name, value)
+                    connection.endheaders(raw)
+                    response = connection.getresponse()
+                    response.read()
+                    self.assertEqual(response.status, expected)
+                finally:
+                    connection.close()
+                self.assertEqual(self.call('/v1/assessments/case-demo-1')[0], 404)
+
     def test_bad_requests_do_not_echo_untrusted_values(self):
         body = fixture()
         body['secret'] = 'DO-NOT-ECHO-THIS'

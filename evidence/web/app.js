@@ -164,6 +164,7 @@ $('refresh-status').addEventListener('click', async () => {
 async function configureExtraction() {
   try {
     const health = await request('/health');
+    if (!['mock', 'ai'].includes(health.extraction_mode)) throw new Error('Invalid extraction configuration.');
     extractionMode = health.extraction_mode;
     const live = extractionMode === 'ai';
     $('suggest-image').textContent = live ? 'Read label with AI' : 'Suggest from fixture image (mock)';
@@ -171,12 +172,14 @@ async function configureExtraction() {
       ? 'This sends the synthetic photo through the configured OmniRoute gateway. Review and confirm every suggestion.'
       : 'Only the 12 repository fixtures are recognized by exact bytes. Other photos use typed entry. No OCR is running.';
     $('extraction-status').textContent = live ? 'Extraction: AI via OmniRoute (configured)' : 'Extraction: mock samples';
-    $('proposal-note').textContent = live ? 'OmniRoute configured · Images are read only when you select “Read label with AI”.' : 'Mock assistant · sample values are suggestions. No live AI provider is selected.';
     $('photo-caption').textContent = 'Local preview. Use the suggestion button or type the identifiers yourself.';
   } catch {
     extractionMode = null;
     $('suggest-image').disabled = true;
     $('fixture-help').textContent = 'Could not read extraction configuration. Typed entry remains available.';
+    $('extraction-status').textContent = 'Extraction: configuration unavailable · typed entry available';
+  } finally {
+    lock(busy);
   }
 }
 configureExtraction();

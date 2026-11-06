@@ -1,8 +1,34 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 6 November 2026. Branch: `work/rajiv-evidence-intake`, continuing from OmniRoute commit `a8484dd`. The current local continuation hardens the read-only resolution client and adds customer-side HTTP integration checks. No public deployment, merchant message, payment, contract change, or other-lane edit occurred.
+Checkpoint: 6 November 2026. Branch: `work/rajiv-provider-http-validation`, based on merged `origin/main` commit `601773f`. Evidence PRs [#11](https://github.com/RajivRanganath/recallrelay/pull/11), [#12](https://github.com/RajivRanganath/recallrelay/pull/12), and [#13](https://github.com/RajivRanganath/recallrelay/pull/13) were verified merged before starting this continuation.
 
-## Current continuation: resolution status and mock integration
+## Critical follow-up review
+
+The full-lane review also fixed six accepted ambiguous inbound-header variants, late-health UI state/provenance races, and a provider-evaluation exit status that ignored field errors when they did not cause false eligibility. The CLI now saves the complete report and fails any field mismatch. Details, reproduced failures, and material remaining gaps are recorded at the top of [the critical review](REVIEW.md).
+
+Final source-only export verification: 83 evidence tests with ResourceWarnings treated as errors, 4 dependency-free Node UI state tests, 3 shared contract tests, the unchanged 1-test resolution starter suite, and 12 fixture cases / 60 policy checks all passed. JavaScript syntax, dependency consistency, and whitespace checks passed. The export reused the installed pinned interpreter; no fresh dependency install or hosted CI run is claimed. The actual browser check covered sample/confirmation, edit invalidation, missing-batch clarification, and visible dependency failure in mock mode. The asynchronous configuration regressions use DOM doubles. No new live AI calls were made and existing provider reports are unchanged.
+
+Run the added UI checks with `node --test evidence/tests/test_web.js`; evidence CI now includes this command. This feature-branch checkpoint changes only `evidence/**`, `docs/rajiv/**`, and the owned `.github/workflows/evidence.yml`; Git records its commit and publication status. The previous 80-test gateway verification below records the stage before this critical follow-up.
+
+## Current continuation: AI gateway response validation
+
+The OmniRoute client now applies the same strict HTTP response checks as the resolution-status client: exactly one JSON Content-Type, no duplicate or conflicting length/transfer headers, only a single chunked transfer encoding when present, and a bounded ASCII decimal Content-Length. Invalid responses produce sanitized `invalid_response` failures; typed entry remains available. Valid length-delimited, chunked, and connection-delimited JSON responses remain supported. No prompt, model, request configuration, credential, provider report, or v1 contract changed.
+
+Before changing the client, the new regression reproduced seven accepted malformed responses: duplicate JSON Content-Type, conflicting Content-Type, gzip transfer encoding, identity transfer encoding, empty transfer encoding, repeated chunked headers, and a gzip/chunked list. All twelve malformed-header cases now fail closed. Valid framing succeeds on the same adapter after a failure, confirming that capacity is released. Tests also check one upstream request per attempt and no remaining child workers. The focused gateway/evaluation test module passed all 15 tests using an authored loopback gateway and synthetic key; this continuation made no live AI calls.
+
+Final continuation verification on Python 3.11.16: all 80 evidence tests passed with ResourceWarnings treated as errors; 3 shared contract tests and 12 fixture cases / 60 policy checks passed. Dependency consistency, JavaScript syntax, and whitespace checks passed. The initial shared-test attempt could not bind its mock socket in the read-only sandbox; it passed after rerunning with loopback access. Temporary storage and loopback tests required access beyond that sandbox.
+
+The full continuation changes only `evidence/**`, `docs/rajiv/**`, and the owned `.github/workflows/evidence.yml`. The resolution branch still points to the scaffold, so actual merchant-service integration, independently reviewed holdout evaluation, and the recorded demo remain pending. No public deployment, merchant message, payment, contract change, or other-lane edit occurred.
+
+Run the focused checks:
+
+```sh
+evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_omniroute.py' -v
+```
+
+## Previous checkpoint: resolution status and mock integration
+
+Committed as `82ad673` and subsequently merged through PR #13. This section records that checkpoint's verification; its source branch was `work/rajiv-evidence-intake`.
 
 The status client now supervises the complete HTTP operation with a two-second local wait, followed by worker cleanup. This replaces socket-inactivity-only protection: trickling headers or body bytes can no longer keep the caller waiting indefinitely. Timeout/failure workers are terminated and reaped; the per-client two-worker limit rejects saturation without an upstream call. There are no retries, redirects, payment calls, or new runtime dependencies. Name resolution and HTTP reads run in the supervised child; schema and case-ID checks remain in the parent.
 
@@ -10,7 +36,7 @@ Response validation rejects duplicate Content-Length, conflicting length/transfe
 
 Observed focused verification: 13 client/integration tests passed. Replaying the new slow-header and slow-body regression against the unchanged `a8484dd` client produced both expected failures; the updated client passes them and leaves no child worker behind. Full customer HTTP checks use temporary SQLite databases, the unchanged committed resolution mock, and authored response servers. They cover all seven v1 status values, sanitized 404/503 failures, no assessment creation/change from status reads, and usable manual assessment during dependency failures. Authored `refunded` output is only a relay test; no payment provider is called.
 
-Final continuation verification on Python 3.11.16: all 78 evidence tests passed with ResourceWarnings treated as errors; 3 shared contract tests passed; the fixture replay passed 12 cases / 60 checks with zero failures. Dependency consistency, JavaScript syntax, and whitespace checks passed. Temporary-file and loopback access were required beyond the read-only sandbox. Changes are local and uncommitted at this checkpoint.
+Final continuation verification on Python 3.11.16: all 78 evidence tests passed with ResourceWarnings treated as errors; 3 shared contract tests passed; the fixture replay passed 12 cases / 60 checks with zero failures. Dependency consistency, JavaScript syntax, and whitespace checks passed. Temporary-file and loopback access were required beyond the read-only sandbox. These changes were subsequently committed as `82ad673` and merged through PR #13.
 
 Run just this continuation's integration checks:
 

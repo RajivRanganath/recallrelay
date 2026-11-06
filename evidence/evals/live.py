@@ -98,7 +98,8 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps({key: value for key, value in report.items() if key != 'results'}, indent=2))
-    if report['unavailable'] or report['false_eligible_against_authored_reference']:
+    if (report['unavailable'] or report['false_eligible_against_authored_reference']
+            or report['fields_matching_authored_typed_reference'] != report['fields_compared']):
         raise SystemExit(1)
 
 

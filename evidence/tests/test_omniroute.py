@@ -32,6 +32,8 @@ class Gateway:
         self.requests = []
         self.drip = False
         self.length = None
+        self.response_headers = None
+        self.chunked = False
 
     def __enter__(self):
         gateway = self
@@ -42,9 +44,12 @@ class Gateway:
                 raw = self.rfile.read(int(self.headers['Content-Length']))
                 gateway.requests.append((self.path, self.headers.get('Authorization'), json.loads(raw)))
                 self.send_response(gateway.status)
-                for key, value in gateway.headers.items():
+                headers = gateway.response_headers
+                if headers is None:
+                    headers = list(gateway.headers.items()) + [('Content-Length', str(
+                        gateway.length if gateway.length is not None else len(gateway.body)))]
+                for key, value in headers:
                     self.send_header(key, value)
-                self.send_header('Content-Length', str(gateway.length if gateway.length is not None else len(gateway.body)))
                 self.end_headers()
                 try:
                     if gateway.drip:
@@ -52,6 +57,9 @@ class Gateway:
                             self.wfile.write(bytes([byte]))
                             self.wfile.flush()
                             time.sleep(.05)
+                    elif gateway.chunked:
+                        self.wfile.write(f'{len(gateway.body):x}\r\n'.encode()
+                                         + gateway.body + b'\r\n0\r\n\r\n')
                     else:
                         self.wfile.write(gateway.body)
                 except (BrokenPipeError, ConnectionResetError):
@@ -176,6 +184,57 @@ class OmniRouteTests(unittest.TestCase):
                     ExtractionService(self.adapter(gateway)).propose(self.image)
                 self.assertEqual(len(gateway.requests), before + 1)
 
+    def test_ambiguous_gateway_headers_fail_closed_without_retry(self):
+        before_workers = {p.pid for p in multiprocessing.active_children()}
+        with Gateway() as gateway:
+            content_type = [('Content-Type', 'application/json')]
+            length = [('Content-Length', str(len(gateway.body)))]
+            variants = [
+                (length, False),
+                (content_type + content_type + length, False),
+                (content_type + [('Content-Type', 'text/html')] + length, False),
+                (content_type + [('Transfer-Encoding', 'gzip')], False),
+                (content_type + [('Transfer-Encoding', 'identity')], False),
+                (content_type + [('Transfer-Encoding', '')], False),
+                (content_type + [('Transfer-Encoding', 'chunked'),
+                                 ('Transfer-Encoding', 'chunked')], True),
+                (content_type + [('Transfer-Encoding', 'gzip, chunked')], False),
+                (content_type + length + length, False),
+                (content_type + length + [('Transfer-Encoding', 'chunked')], True),
+                (content_type + [('Content-Length', '+123')], False),
+                (content_type + [('Content-Length', '123, 123')], False),
+            ]
+            adapter = self.adapter(gateway)
+            for headers, chunked in variants:
+                gateway.response_headers, gateway.chunked = headers, chunked
+                before_calls = len(gateway.requests)
+                with self.subTest(headers=headers):
+                    with self.assertRaises(ExtractionUnavailable) as caught:
+                        ExtractionService(adapter).propose(self.image)
+                    self.assertEqual(caught.exception.code, 'invalid_response')
+                    self.assertNotIn('synthetic-test-key', str(caught.exception))
+                    self.assertEqual(len(gateway.requests), before_calls + 1)
+                    self.assertEqual({p.pid for p in multiprocessing.active_children()}, before_workers)
+
+    def test_unambiguous_gateway_framing_remains_usable_after_a_failure(self):
+        with Gateway() as gateway:
+            adapter = self.adapter(gateway)
+            gateway.response_headers = [('Content-Type', 'text/html')]
+            with self.assertRaises(ExtractionUnavailable):
+                ExtractionService(adapter).propose(self.image)
+            for framing in ('length', 'chunked', 'connection'):
+                gateway.response_headers = [('Content-Type', 'application/json; charset=utf-8')]
+                gateway.chunked = framing == 'chunked'
+                if framing == 'length':
+                    gateway.response_headers.append(('Content-Length', str(len(gateway.body))))
+                elif gateway.chunked:
+                    gateway.response_headers.append(('Transfer-Encoding', 'chunked'))
+                with self.subTest(framing=framing):
+                    result = ExtractionService(adapter).propose(self.image)
+                    self.assertEqual((result['model'], result['batch']), ('LAMP-100', 'B101'))
+                    self.assertEqual(result['source']['served_model'], 'test/vision')
+            self.assertEqual(len(gateway.requests), 4)
+
     def test_trickling_response_is_terminated_and_worker_is_reaped(self):
         before = {p.pid for p in multiprocessing.active_children()}
         with Gateway() as gateway:
@@ -250,6 +309,57 @@ class ProviderSmokeTests(unittest.TestCase):
         missing = next(row for row in report['results'] if row['case_id'] == 'missing-model')
         self.assertEqual(missing['guessed_reference_missing'], ['model'])
         self.assertEqual(report['fields_compared'], 4)
+
+    def test_cli_fails_field_errors_even_without_false_eligibility_and_saves_report(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from evidence.evals.live import main
+        class WrongBatch:
+            mode = 'ai'
+            provider_name = 'offline-test-double'
+            model = 'test/vision'
+            timeout = 1
+            def extract(self, image):
+                fields = raw_output()
+                fields['batch']['value'] = 'B999'
+                return fields
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder) / 'report.json'
+            with patch('sys.argv', ['live', '--case', 'clear-png', '--output', str(output)]), \
+                    patch('evidence.evals.live.read_key', return_value='synthetic-test-key'), \
+                    patch('evidence.evals.live.OmniRouteExtractor', return_value=WrongBatch()), \
+                    redirect_stdout(StringIO()):
+                with self.assertRaises(SystemExit) as caught:
+                    main()
+            self.assertEqual(caught.exception.code, 1)
+            report = json.loads(output.read_text())
+            self.assertEqual(report['unavailable'], 0)
+            self.assertEqual(report['false_eligible_against_authored_reference'], 0)
+            self.assertEqual(report['fields_compared'], 2)
+            self.assertEqual(report['fields_matching_authored_typed_reference'], 1)
+            self.assertEqual(report['results'][0]['observed_fields']['batch'], 'B999')
+
+    def test_cli_accepts_matching_reference_fields_and_saves_report(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from evidence.evals.live import main
+        class Matching:
+            mode = 'ai'
+            provider_name = 'offline-test-double'
+            model = 'test/vision'
+            timeout = 1
+            def extract(self, image):
+                return raw_output()
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder) / 'report.json'
+            with patch('sys.argv', ['live', '--case', 'clear-png', '--output', str(output)]), \
+                    patch('evidence.evals.live.read_key', return_value='synthetic-test-key'), \
+                    patch('evidence.evals.live.OmniRouteExtractor', return_value=Matching()), \
+                    redirect_stdout(StringIO()):
+                main()
+            report = json.loads(output.read_text())
+            self.assertEqual(report['fields_matching_authored_typed_reference'], 2)
+            self.assertEqual(report['cases_attempted'], 1)
 
     def test_changed_dataset_and_mock_adapter_are_rejected_before_calls(self):
         from evidence.evals.live import evaluate
