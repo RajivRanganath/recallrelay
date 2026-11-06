@@ -1,6 +1,26 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 6 November 2026. Branch: `work/rajiv-provider-http-validation`, based on merged `origin/main` commit `601773f`. Evidence PRs [#11](https://github.com/RajivRanganath/recallrelay/pull/11), [#12](https://github.com/RajivRanganath/recallrelay/pull/12), and [#13](https://github.com/RajivRanganath/recallrelay/pull/13) were verified merged before starting this continuation.
+Checkpoint: 6 November 2026. Branch: `work/rajiv-request-limits`, based on merged `origin/main` commit `c13ec97`. PR [#14](https://github.com/RajivRanganath/recallrelay/pull/14) was verified merged; its evidence and shared-contract CI passed. Git records the commit and publication status of this continuation.
+
+## Current continuation: inbound request limits
+
+Reproduced on the merged checkpoint: a request trickling header bytes for 6.05 seconds still received HTTP 200 despite the five-second socket inactivity timeout. The evidence server now uses a non-blocking eight-handler admission cap and a single ten-second receive deadline covering the request line, headers and body. An excess connection gets a best-effort JSON 503 then closes before application work. A client still writing may see a connection failure instead. Expired input is rejected/closed before assessment persistence; parseable timed-out requests attempt a 408 response; an actively uploading peer may instead observe a reset.
+
+Each admitted handler owns one receive watchdog. Completed input cancels it before JSON/image validation, AI or storage processing; cleanup joins it, releases capacity and closes the connection. Server close waits for admitted handlers. This does not cancel or roll back accepted application work and is not a total response deadline or production availability guarantee. Slow CPU work, OS scheduling/backlog behavior and sustained flooding are not bounded by the receive budget.
+
+Focused local tests use shorter budgets, temporary databases and loopback sockets. They cover trickling lines/headers/bodies, one shared header/body budget, two admitted concurrent assessments with further requests rejected before storage, completion after the receive budget, disconnected/rejected-request recovery, and shutdown joining an incomplete request. No live AI/payment calls or credentials are used. Actual merchant integration, independent holdout review, authentication/private-data support and the recorded demo remain pending. Only evidence code/tests/docs and Rajiv documentation change.
+
+```sh
+evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_request_limits.py' -v
+```
+
+Follow-up review reproduced a shutdown failure after an injected handler-thread start failure: the inherited registry tried to join an unstarted thread. The server now tracks only successfully started workers and releases admission capacity after a failed start; two added regressions verify clean shutdown and recovery. A rerun also observed socket resets while a peer kept trickling data after rejection. The trickle tests accept a bounded rejection or reset, still reject successful responses, verify ongoing traffic before expiry, and check no persistence and recovered capacity.
+
+Final local verification on Python 3.11.16: 92 evidence tests with ResourceWarnings treated as errors, 4 Node UI tests, 3 shared-contract tests, the unchanged 1-test resolution starter suite, and 12 fixture cases / 60 policy checks passed. All nine focused request-limit tests passed, including injected worker-start failure and shutdown cleanup. JavaScript syntax, dependency consistency and whitespace checks passed. Existing pinned dependencies were reused; no fresh install, browser recheck, live-provider evaluation or production load test is claimed. Hosted CI is reported separately from these pre-commit local checks.
+
+## Previous checkpoint: merged HTTP and UI review
+
+The following sections retain the pre-commit checks for `ef8d93e`, subsequently merged through PR #14. The earlier continuation was based on `601773f`; PRs #11–#13 were already merged.
 
 ## Critical follow-up review
 
@@ -10,7 +30,7 @@ Final source-only export verification: 83 evidence tests with ResourceWarnings t
 
 Run the added UI checks with `node --test evidence/tests/test_web.js`; evidence CI now includes this command. This feature-branch checkpoint changes only `evidence/**`, `docs/rajiv/**`, and the owned `.github/workflows/evidence.yml`; Git records its commit and publication status. The previous 80-test gateway verification below records the stage before this critical follow-up.
 
-## Current continuation: AI gateway response validation
+## Earlier continuation: AI gateway response validation
 
 The OmniRoute client now applies the same strict HTTP response checks as the resolution-status client: exactly one JSON Content-Type, no duplicate or conflicting length/transfer headers, only a single chunked transfer encoding when present, and a bounded ASCII decimal Content-Length. Invalid responses produce sanitized `invalid_response` failures; typed entry remains available. Valid length-delimited, chunked, and connection-delimited JSON responses remain supported. No prompt, model, request configuration, credential, provider report, or v1 contract changed.
 
