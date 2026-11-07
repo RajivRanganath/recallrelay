@@ -39,3 +39,16 @@ A separate diagnostic observed auto-route HTTP 429, and HTTP 200 responses with 
 These are development results after inspecting failures and tuning the request. They are not holdout accuracy, a robust prompt-injection result, or human approval/completion evidence. One instruction-bearing synthetic label and one conflicting label are included; this does not generalize to arbitrary attacks. Simulated confirmation is analysis only, with no persistence, merchant handoff, or payment.
 
 Next: freeze a separately reviewed holdout, record actual served model/configuration and unknown backend revision, and evaluate field errors, clarification, and unsafe simulated eligibility against typed entry with every denominator and failure visible. Human review and a real completion study remain pending.
+
+## Frozen development evaluations
+
+Create an offline plan and verify it without credentials:
+
+```sh
+evidence/.venv/bin/python -B -m evidence.evals.plan --model gemini/gemini-3.1-flash-lite --output evidence/.local/development-plan.json
+evidence/.venv/bin/python -B -m evidence.evals.plan --check evidence/.local/development-plan.json
+```
+
+The plan fingerprints selected images, the entire manifest including references, relevant source/schemas/lock file, model/URL/timeout and Python/Pillow/jsonschema versions. Preflight rejects duplicate cases/hashes, malformed references and typed decisions inconsistent with the deterministic rules before a provider call. `live.py --plan PATH` verifies the setup before reading credentials, defaults to the frozen model/timeout/cases, refuses an existing output file, and records the plan fingerprint and checked snapshot in its report. Pass the same `--manifest PATH` to freeze/check/replay a custom synthetic v1 dataset. Runs without a plan remain supported and record a snapshot with a null plan fingerprint.
+
+The committed `plans/development-v1.json` is an offline setup record, not a new provider result. Exact code/runtime checks can intentionally fail after an update; keep the old record and create a new named plan rather than rewriting it. Existing reports are unchanged. See [the evaluation runbook](../../docs/rajiv/EVALUATION.md) for opt-in replay, what is checked, and human-review limits. Current plans and reports stay explicitly development-only, with holdout/human validation false.

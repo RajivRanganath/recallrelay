@@ -1,8 +1,18 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 6 November 2026. Branch: `work/rajiv-request-limits`, based on merged `origin/main` commit `c13ec97`. PR [#14](https://github.com/RajivRanganath/recallrelay/pull/14) was verified merged; its evidence and shared-contract CI passed. Git records the commit and publication status of this continuation.
+Checkpoint: 7 November 2026. Branch: `work/rajiv-eval-freeze`, based on merged main `a445754`. PR [#15](https://github.com/RajivRanganath/recallrelay/pull/15) is merged and its evidence/shared-contract CI passed. Git records this continuation's commit/publication status.
 
-## Current continuation: inbound request limits
+## Current continuation: frozen development evaluations
+
+The evaluator now validates synthetic references and their typed decisions before provider calls. Offline plan creation/checking reads no credentials. Planned live runs verify the manifest/images, source/schema/lock hashes, selected case order, provider/model/URL/timeout and Python/Pillow/jsonschema versions before reading a key; reports retain the checked snapshot and plan fingerprint. Model/timeout/case overrides must match and planned output cannot overwrite an existing report. Existing unplanned commands remain supported.
+
+The committed [development plan](../../evidence/evals/plans/development-v1.json) was created and checked offline for all twelve current fixtures. It is not a provider result, human review or holdout. Earlier provider reports remain unchanged. See [the evaluation runbook](EVALUATION.md) for the offline commands and opt-in provider replay. No credentials were read and no live AI or payment calls were made in this continuation.
+
+Local verification on Python 3.11.16: 104 evidence tests with ResourceWarnings treated as errors (including 12 new offline evaluation-plan tests), 4 Node UI tests, 3 shared-contract tests, the unchanged resolution starter test, and 12 fixture cases / 60 policy checks passed. The committed development plan was created and verified offline. Dependency consistency, JavaScript syntax and whitespace checks passed. Existing pinned dependencies were reused; no fresh install, browser recheck, live-provider run or human study is claimed. Hosted CI is reported separately from these pre-commit local checks.
+
+## Previous checkpoint: inbound request limits
+
+The following records `work/rajiv-request-limits`, based on `c13ec97`, committed as `af1600c` and merged through PR #15.
 
 Reproduced on the merged checkpoint: a request trickling header bytes for 6.05 seconds still received HTTP 200 despite the five-second socket inactivity timeout. The evidence server now uses a non-blocking eight-handler admission cap and a single ten-second receive deadline covering the request line, headers and body. An excess connection gets a best-effort JSON 503 then closes before application work. A client still writing may see a connection failure instead. Expired input is rejected/closed before assessment persistence; parseable timed-out requests attempt a 408 response; an actively uploading peer may instead observe a reset.
 

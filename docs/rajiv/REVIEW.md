@@ -1,3 +1,17 @@
+# 7 November 2026: frozen evaluation-plan continuation
+
+Started `work/rajiv-eval-freeze` from merged main `a445754` after verifying PR #15 merged with evidence/shared-contract CI passing. The resolution branch remains the original scaffold; actual merchant integration remains pending.
+
+Added an offline development-evaluation plan and replay preflight. The selected input bytes and the entire authored-reference manifest are hashed; duplicate IDs/hashes, malformed references, repeated/unknown selectors, path escapes/symlinks, invalid images and typed decisions inconsistent with deterministic rules fail before extraction. Planned replay also checks model/timeout/URL, source/schema/lock hashes and Python/Pillow/jsonschema versions before reading credentials. Reports carry the plan fingerprint and checked snapshot. An offline `--check` verifies a plan without credential access; plans and planned reports refuse to overwrite existing files.
+
+Twelve new offline tests cover plan creation/checking/replay, drift in references/pixels/code/runtime/configuration/selection, malformed/edited plans, false review flags, and preflight before key reads or report overwrites. Existing gateway/evaluation tests still pass. The committed twelve-case plan is a development setup record only; no provider result is generated, no prior report is rewritten, and holdout/human validation remain false. The fingerprint does not authenticate reviewers, prove an unseen dataset or pin the remote backend. Human-reviewed holdout labels and human completion/effort measurement remain pending.
+
+Local verification on Python 3.11.16: 104 evidence tests with ResourceWarnings treated as errors (including 12 new offline evaluation-plan tests), 4 Node UI tests, 3 shared-contract tests, the unchanged resolution starter test, and 12 fixture cases / 60 policy checks passed. The committed development plan was created and verified offline. Dependency consistency, JavaScript syntax and whitespace checks passed. Existing pinned dependencies were reused; no fresh install, browser recheck, live-provider run or human study is claimed. Hosted CI is reported separately from these pre-commit local checks.
+
+See [the evaluation runbook](EVALUATION.md). No live provider/payment calls or credentials were used; only evidence evaluation/tests/docs and Rajiv documentation change. No shared contract or resolution file is edited. Git records the commit and publication status.
+
+---
+
 # 6 November 2026: inbound request-limit continuation
 
 Started `work/rajiv-request-limits` from merged main `c13ec97` after verifying PR #14 merged and its evidence/shared-contract CI passed. The local tree was clean. The resolution branch still points to the original scaffold; actual merchant integration cannot be established from it.
