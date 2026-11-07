@@ -1,0 +1,95 @@
+"""Resolution-only SQLite case state. Money-related states are never overwritten by a review."""
+from contextlib import contextmanager
+import json
+import sqlite3
+from pathlib import Path
+
+LOCKED_STATUSES = {'pending', 'refunded', 'failed'}
+
+
+class AlreadyInProgress(ValueError):
+    pass
+
+
+class ApprovalConflict(ValueError):
+    pass
+
+
+class CaseStore:
+    def __init__(self, path):
+        self.path = str(path)
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        with self.connect() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS cases (case_id TEXT PRIMARY KEY, status TEXT NOT NULL, response TEXT NOT NULL, request TEXT)')
+            db.execute('''CREATE TABLE IF NOT EXISTS operations (
+                operation_id TEXT PRIMARY KEY, case_id TEXT NOT NULL UNIQUE, amount_minor INTEGER NOT NULL,
+                approved_by TEXT NOT NULL, assessment_id TEXT NOT NULL, campaign_version INTEGER NOT NULL,
+                capture_id TEXT NOT NULL, currency TEXT NOT NULL)''')
+
+    @contextmanager
+    def connect(self):
+        db = sqlite3.connect(self.path, timeout=5)
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
+
+    def latest(self, case_id):
+        with self.connect() as db:
+            row = db.execute('SELECT response FROM cases WHERE case_id=?', (case_id,)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def operation(self, case_id):
+        with self.connect() as db:
+            db.row_factory = sqlite3.Row
+            row = db.execute('SELECT * FROM operations WHERE case_id=?', (case_id,)).fetchone()
+        return dict(row) if row else None
+
+    def save_review(self, request, response):
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT status FROM cases WHERE case_id=?', (response['case_id'],)).fetchone()
+            if row and row[0] in LOCKED_STATUSES:
+                raise AlreadyInProgress('Case already has a refund in progress or finished')
+            db.execute('INSERT INTO cases(case_id,status,response,request) VALUES(?,?,?,?) '
+                       'ON CONFLICT(case_id) DO UPDATE SET status=excluded.status, response=excluded.response, request=excluded.request',
+                       (response['case_id'], response['status'], json.dumps(response, sort_keys=True),
+                        json.dumps(request, sort_keys=True)))
+        return response
+
+    def claim_refund(self, case_id, operation_id, approval, pending_response):
+        """Atomically bind an approval and persist the operation ID before any PayPal call.
+
+        Returns (response, claimed). Only the caller that gets claimed=True may start the refund.
+        """
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT status, response, request FROM cases WHERE case_id=?', (case_id,)).fetchone()
+            if not row:
+                raise ApprovalConflict('No reviewed case exists')
+            status, response, request = row[0], json.loads(row[1]), row[2]
+            existing = db.execute('SELECT operation_id FROM operations WHERE case_id=?', (case_id,)).fetchone()
+            if existing:
+                if existing[0] != operation_id:
+                    raise ApprovalConflict('Case was approved with different details')
+                return response, False  # Repeated approval: report state, never start a second refund.
+            if status != 'awaiting_approval' or not request:
+                raise ApprovalConflict('Case is not awaiting approval')
+            snapshot = json.loads(request)
+            order, assessment = snapshot['order'], snapshot['assessment']
+            bound = (assessment['assessment_id'], assessment['campaign_version'], order['capture_id'], response['proposed_amount_minor'])
+            if bound != (approval['assessment_id'], approval['campaign_version'], approval['capture_id'], approval['amount_minor']):
+                raise ApprovalConflict('Approval does not match the reviewed assessment, campaign, capture and amount')
+            db.execute('INSERT INTO operations VALUES(?,?,?,?,?,?,?,?)',
+                       (operation_id, case_id, approval['amount_minor'], approval['approved_by'],
+                        approval['assessment_id'], approval['campaign_version'], approval['capture_id'], order['currency']))
+            db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?',
+                       ('pending', json.dumps(pending_response, sort_keys=True), case_id))
+        return pending_response, True
+
+    def finish(self, case_id, response):
+        with self.connect() as db:
+            db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?',
+                       (response['status'], json.dumps(response, sort_keys=True), case_id))
+        return response
