@@ -43,3 +43,7 @@ evidence/.venv/bin/python -B -m evidence.evals.plan --check evidence/evals/plans
 ```
 
 Tests use synthetic placeholders and patched adapter outputs, plus the existing authored loopback gateway tests. No provider account, payments, merchant integration, real customer data or human-study result is involved.
+
+## Audit authored references offline
+
+`evidence.evals.review prepare --output NEW_DIRECTORY` exports a blank standalone form with checked images and a packet fingerprint; `review check --packet PATH --review PATH --output NEW_REPORT` validates a returned self-reported record and retains disagreements. Neither command calls a provider or changes labels/plans/reports. All outputs stay development-only with holdout/human-validation false. The declaration must be completed by an actual reviewer, not an agent. See [the label-review instructions](LABEL-REVIEW.md) for exact commands, exit codes, limits and adjudication. This audits existing development references; a separately reviewed holdout and human timing study remain pending.

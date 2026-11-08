@@ -29,4 +29,4 @@ jobs:
         env:
           RECALLRELAY_RESOLUTION_SOURCE: ${{ github.workspace }}/.integration-resolution
       - run: python -m evidence.evals.run --check
-      - run: node --test evidence/tests/test_web.js
+      - run: node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js

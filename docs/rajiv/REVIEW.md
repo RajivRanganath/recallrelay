@@ -1,3 +1,17 @@
+# 8 November 2026: offline reference-review packet
+
+Started `work/rajiv-label-review` from merged main `c80da2e` after verifying PR #18 merged with passing checks. Added an offline exporter for the existing twelve synthetic development images and a strict self-reported record checker. The standalone page embeds hash-checked pixels, uses opaque sample IDs and blank transcription/readability controls, and omits authored answers/mock proposals/provider output from form data. Image text can reveal fixture names; it is explicitly not a blinded study or holdout.
+
+A person supplies a name/alias, independently reads each image, chooses readable/missing/unreadable/conflicting for both fields and explicitly checks the declaration before a local JSON download. Changing away from readable clears stale values. The checker verifies full coverage, manifest/image/packet identity, UTC timestamp shape, declaration and value/readability consistency, then preserves disagreements against authored typed-entry values. It never rewrites references or changes validation flags. Complete disagreements produce a report and exit 1; malformed/drifted input or existing output fails with exit 2. Identity, visual work and timestamps remain self-reported, not authenticated.
+
+A blank local packet was exported under ignored `evidence/.local/label-review-development-v2/`. An actual browser check verified initially blank/disabled fields, readable-field enabling, clearing a temporary `AUTOMATED-UI-TEST` value on uncertainty, and resetting all controls to blank. The reviewer declaration remains unchecked and no completed human record was generated. Unit-test records and DOM-double exports are explicitly synthetic tooling checks, not review results. The page uses embedded data images and a no-network content policy; the local preview serves only that packet directory on loopback.
+
+Local verification on Python 3.11.16: all 123 evidence tests passed with ResourceWarnings treated as errors and actual-service checks enabled, including nine new offline review tests. Seven Node UI tests (three new), three shared-contract tests, the unchanged one-test resolution starter suite, 12 fixture cases / 60 policy checks, committed development-plan verification, dependency consistency, workflow YAML parsing and whitespace checks passed. Existing pinned dependencies were reused. Hosted checks are reported separately; no fresh install, live-provider run or human review is claimed.
+
+Existing plans, authored fixture bytes/references and provider reports are unchanged. This makes reference auditing practical; independent labels, adjudication, a future supported holdout protocol and human effort measurement remain pending. See [LABEL-REVIEW.md](LABEL-REVIEW.md) for commands, sharing/privacy limits, checker semantics and the actual human step. Only evidence evaluation/tests/CI and Rajiv documentation change. Git records commit/publication status.
+
+---
+
 # 8 November 2026: customer demo rehearsal
 
 Started `work/rajiv-demo-rehearsal` from merged main `4114744` after verifying PR #17 merged with passing checks. Added `python -m evidence.demo`: a one-command, loopback-only customer rehearsal using explicit mock fixture extraction, the unchanged committed resolution mock and an initially empty temporary evidence database. A supplied loopback resolution URL selects only an externally owned status dependency; the launcher does not create a merchant case or stop that external service. Owned servers and temporary storage are cleaned up on normal context exit or Ctrl+C.
