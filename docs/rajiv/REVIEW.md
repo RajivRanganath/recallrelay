@@ -1,3 +1,19 @@
+# 8 November 2026: reserve evaluation reports before calls
+
+Started `work/rajiv-eval-output` from merged main `e55f431` after verifying PR #19 merged with passing checks. Offline regressions reproduced unplanned report overwrite (including a symlink target), calls completing before an invalid parent path failed, and two competing CLI runs reaching extraction for one output. The key/preflight reservation check also failed against the unchanged evaluator. All reproduction used temporary synthetic files and patched adapters, not a provider account or historical report.
+
+Both planned and unplanned commands now create required parents and exclusively open the final report path before reading a key or extracting. Existing files/directories/symlinks and invalid parents fail before those actions. The reservation remains open through evaluation/report writing and closes on success, credential failure or write/close error; a competing run cannot claim the same existing output path. Normal unavailable/mismatch results are still saved with their original CLI failure semantics. Later I/O errors are sanitized, exit nonzero, warn that calls may have occurred and do not cause an automatic retry.
+
+A credential error after reservation leaves an empty closed file, not a result. Interruption or later write/close failure can also leave incomplete output; this is path preflight/overwrite protection, not atomic writing, journaling, crash recovery, immutable filesystem integrity or upstream cancellation. Use a fresh path for any new attempt. Programmatic `evaluate()` remains in-memory; no report schema, prompt, generation configuration or scoring rule changes.
+
+The evaluator source hash intentionally changed. Preserved `development-v1.json` unchanged and created/verified `development-v2.json` offline for the same twelve authored development cases and explicit vision route. The new plan is setup evidence only, with holdout/human validation false, and is not retroactively attached to historical provider runs. Fixture/reference bytes and provider reports remain untouched.
+
+Local verification on Python 3.11.16: 130 evidence tests passed with ResourceWarnings treated as errors and actual-service integration enabled, including seven new output-path/competing-run/cleanup regressions. Seven Node UI tests, three shared-contract tests, the unchanged one-test resolution starter suite, 12 fixture cases / 60 policy checks, new development-v2 plan verification, dependency consistency and whitespace checks passed. The unchanged v1 plan correctly rejected the new evaluator source. Existing pinned dependencies were reused; no provider credentials, live AI/payment calls, fresh dependency install or new browser check were used. Hosted CI is reported separately.
+
+Only evidence evaluation/tests/plans and Rajiv documentation change. Human reference review, adjudication, a supported separately reviewed holdout, completion-effort measurement and the jointly recorded demo remain pending. Git records commit/publication status.
+
+---
+
 # 8 November 2026: offline reference-review packet
 
 Started `work/rajiv-label-review` from merged main `c80da2e` after verifying PR #18 merged with passing checks. Added an offline exporter for the existing twelve synthetic development images and a strict self-reported record checker. The standalone page embeds hash-checked pixels, uses opaque sample IDs and blank transcription/readability controls, and omits authored answers/mock proposals/provider output from form data. Image text can reveal fixture names; it is explicitly not a blinded study or holdout.

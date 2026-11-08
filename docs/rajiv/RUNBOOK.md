@@ -1,8 +1,20 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 8 November 2026. Branch: `work/rajiv-label-review`, based on merged main `c80da2e`. PR [#18](https://github.com/RajivRanganath/recallrelay/pull/18) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
+Checkpoint: 8 November 2026. Branch: `work/rajiv-eval-output`, based on merged main `e55f431`. PR [#19](https://github.com/RajivRanganath/recallrelay/pull/19) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
 
-## Current continuation: offline development-reference review
+## Current continuation: report output reservation
+
+Planned and unplanned provider evaluation commands now reserve a new report file before reading a key or extracting. Existing files/directories/symlinks, invalid parent paths and competing claims fail before provider work. Later write/close errors are visible and do not retry calls. A configuration failure can leave an empty reserved file; interruption or later I/O failure can leave incomplete output. This does not provide atomic writing, journaling, crash recovery or cancellation of accepted upstream work. Always select a fresh path for a new attempt.
+
+The current offline setup is `evidence/evals/plans/development-v2.json`. The unchanged v1 plan is historical and intentionally rejects the changed evaluator hash. No provider results, references or fixture bytes were rewritten, and no new provider result is claimed. See [the evaluation instructions](EVALUATION.md) for exact behavior and limits.
+
+Local verification on Python 3.11.16: 130 evidence tests passed with ResourceWarnings treated as errors and actual-service integration enabled, including seven new output-path/competing-run/cleanup regressions. Seven Node UI tests, three shared-contract tests, the unchanged one-test resolution starter suite, 12 fixture cases / 60 policy checks, new development-v2 plan verification, dependency consistency and whitespace checks passed. The unchanged v1 plan correctly rejected the new evaluator source. Existing pinned dependencies were reused; no provider credentials, live AI/payment calls, fresh dependency install or new browser check were used. Hosted CI is reported separately.
+
+Human reference review and effort measurement, holdout protocol work, and the jointly recorded demo remain pending. Historical sections below retain their original scope.
+
+## Previous checkpoint: offline development-reference review
+
+The following records `fea0c71`, merged through PR #19.
 
 Use `evidence.evals.review prepare --output NEW_DIRECTORY` to export a blank standalone form with hash-checked images and a packet identity record. An actual person supplies field observations and a reviewer declaration, then downloads JSON locally. `review check --packet PATH --review PATH --output NEW_REPORT` validates complete self-reported coverage and preserves disagreements against authored references. It never rewrites labels or enables holdout/human-validation flags. See [the review instructions](LABEL-REVIEW.md).
 

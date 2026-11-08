@@ -94,19 +94,27 @@ def main():
         public_adapter = OmniRouteExtractor('synthetic-offline-preflight', model=model, timeout=timeout)
         if plan is not None:
             verify(plan, dataset, public_adapter)
-            if args.output.exists():
-                raise ValueError('Frozen-run output already exists; choose a new report path')
     except (OSError, ValueError, TypeError, KeyError):
         parser.error('Evaluation preflight failed; check the dataset, plan, model, timeout and output path')
     try:
-        adapter = OmniRouteExtractor(read_key(args.omniroute_env), model=model, timeout=timeout)
+        # Reserve the final path before credentials or quota-consuming work. Both
+        # planned and legacy runs must preserve any existing file or symlink.
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        destination = args.output.open('x')
     except (OSError, ValueError):
-        parser.error('Could not load the OmniRoute key/model configuration')
-    report = _evaluate(adapter, dataset, plan,
-                       progress=lambda case, status: print(case + ': ' + status, flush=True))
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    with args.output.open('x' if plan else 'w') as file:
-        file.write(json.dumps(report, indent=2) + '\n')
+        parser.error('Could not reserve a new report file; check its parent and choose an unused path')
+    try:
+        with destination:
+            try:
+                adapter = OmniRouteExtractor(read_key(args.omniroute_env), model=model, timeout=timeout)
+            except (OSError, ValueError):
+                parser.error('Could not load the OmniRoute configuration; the reserved output is not a completed report')
+            report = _evaluate(adapter, dataset, plan,
+                               progress=lambda case, status: print(case + ': ' + status, flush=True))
+            destination.write(json.dumps(report, indent=2) + '\n')
+            destination.flush()
+    except OSError:
+        parser.error('Could not complete the report; the reserved output is incomplete and calls may have occurred')
     print(json.dumps({key: value for key, value in report.items() if key != 'results'}, indent=2))
     if (report['unavailable'] or report['false_eligible_against_authored_reference']
             or report['fields_matching_authored_typed_reference'] != report['fields_compared']):
