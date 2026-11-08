@@ -1,0 +1,92 @@
+{
+  "plan_version": "evidence-evaluation-plan-1",
+  "created_at_utc": "2026-11-08T08:52:19.411106+00:00",
+  "evaluation_kind": "provider-development-smoke",
+  "holdout": false,
+  "human_validated": false,
+  "snapshot": {
+    "dataset_version": "synthetic-labels-v1",
+    "manifest_sha256": "f3ab9d0833da96fa6522751ad2e5957b8629fc619ac357fc378d2dd269685d3a",
+    "cases": [
+      {
+        "case_id": "clear-png",
+        "image_sha256": "7b8c0cdedd9d97fb3d1984fbc12884e80558fe388db59e695cb6395d607063af"
+      },
+      {
+        "case_id": "clear-jpeg",
+        "image_sha256": "a2661cd7255c5116824a8ebcaae181ad0da72a7d94023d4a5de8a90bcdf2d22a"
+      },
+      {
+        "case_id": "excluded-batch",
+        "image_sha256": "58a857af178cd4c6c70e76fac655aaeec30cb3d595579746d716492f12f02505"
+      },
+      {
+        "case_id": "other-model",
+        "image_sha256": "bf4aad01612c2fa91889c82cd3eb62773ff9994ba9323d69e5a6062522b30ed1"
+      },
+      {
+        "case_id": "unknown-batch",
+        "image_sha256": "bdaaa858eb3b84d452f573c476b67b94a3635a1aaef4f4ebac3fe94934221876"
+      },
+      {
+        "case_id": "missing-model",
+        "image_sha256": "b27d88298b876ad201eb35250625192b38614e6d0320b337518b7cbc457dce5f"
+      },
+      {
+        "case_id": "missing-batch",
+        "image_sha256": "5b8ad9108db23e569d6691565f28f358ed7a4cbc8160ded04971d58b20d44086"
+      },
+      {
+        "case_id": "blurred",
+        "image_sha256": "bf9df382b0f8703dfc14318d1b14b6741339abd118ab13f631d2a8a37c42f70b"
+      },
+      {
+        "case_id": "cropped",
+        "image_sha256": "31def12704c97743d9fe7dbea6fdd8ab594fdcfb206bb6dce0ca632fc694e54b"
+      },
+      {
+        "case_id": "instruction-note",
+        "image_sha256": "7be915d18635778ccb5e9c05f10cd34413361ae380792846ddb54439fdc4f9d2"
+      },
+      {
+        "case_id": "conflicting-batches",
+        "image_sha256": "55ca7ce19d983e7b70b403efec7e512c9665fc2370583746c6ca923d6186c22b"
+      },
+      {
+        "case_id": "low-confidence",
+        "image_sha256": "8425e61f91950b533252554152d8c9c66db0e7202fa498ee29da2aa7ecd11dbe"
+      }
+    ],
+    "adapter": {
+      "provider": "omniroute",
+      "requested_model": "gemini/gemini-3.1-flash-lite",
+      "base_url": "http://127.0.0.1:20128/v1",
+      "timeout_seconds": 20
+    },
+    "source_sha256": {
+      "evidence/ai/omniroute.py": "78c05ade207d2c7ef43871a648e10da7f317125a143d7db80601c57d60836644",
+      "evidence/ai/extraction.py": "3c35aa1608d5db93aed5323efc002afc2b74345771cf43ede2bd0a4cdc04da24",
+      "evidence/ai/schemas/extraction-output.schema.json": "8a5537ed3a197304489261251d492de315eb652429593c7adae5ec230fa53a63",
+      "evidence/backend/assessment.py": "eded141f8c5fe825eac399003f99b9cbcf4d3416a125299ce5aa9adc697af6ff",
+      "evidence/backend/validation.py": "29bdef958eb4cf3cf986e620bd47c5bfd5aa19c9f08ec75168700e1cd7604a62",
+      "evidence/backend/images.py": "31e0c2f6bb87c0c6888fe409133ef185e1abf920f95ec7ab5e82cc6448b04bd7",
+      "evidence/backend/json_input.py": "8bb4644bd53dec70204f5d6b36ed4f94bace9a19ceadb1f4e001f67c92dc2c8f",
+      "evidence/backend/errors.py": "65cc35be4b0e9fbd251a170b4e874130e94ea7248eb7f6c05a0c2081909d311a",
+      "evidence/evals/live.py": "8c03ba50bc2f5d7e671b6a2d378576db7c6f58d827aa8432fde4a8f274349c37",
+      "evidence/evals/plan.py": "1e308e73a9dd21234df7fd0792eb3c1522e4c85d77a3973cdcc0836df2af2d48",
+      "evidence/requirements.lock.txt": "8bfa0f89df18b284ea406b414c88af844078f6e787a688b5bfee66ac1e1d6a55",
+      "contracts/fixtures/assessment-request.json": "dc35fcdd71f9c3603121ce07eec54bb45e1062adce9bfd300375f1b27eeaa44b",
+      "contracts/schemas/assessment-request.schema.json": "7d243b3de303ce8c00bd9338275508c8e3ba4cb9e3f148948d0b65f7433c7521",
+      "contracts/schemas/assessment-response.schema.json": "116163430e885f58383b2170b97271e307e5b78728fdd87a9916996ed3466d24",
+      "contracts/schemas/resolution-response.schema.json": "711096d9606339ff5646ed44a039689ae7140e4bc95582033bca82586bd28eca"
+    },
+    "runtime": {
+      "python": "3.11.16",
+      "packages": {
+        "Pillow": "13.0.0",
+        "jsonschema": "4.25.1"
+      }
+    }
+  },
+  "plan_sha256": "8f89be01dde25ab8e754911763fc725444ce515c77c108e0ae652b399b1b200f"
+}

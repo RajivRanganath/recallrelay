@@ -11,7 +11,7 @@ evidence/.venv/bin/python -B -m evidence.evals.plan --model gemini/gemini-3.1-fl
 evidence/.venv/bin/python -B -m evidence.evals.plan --check evidence/.local/new-development-plan.json
 ```
 
-The committed example is `evidence/evals/plans/development-v1.json`. Check it with the same interpreter and installed Pillow/jsonschema versions used to create it. A different runtime or code revision should fail verification; intentionally create a separately named plan for a new setup. Plan creation refuses to overwrite an existing file. Use repeated `--case CASE_ID` when freezing a subset; the plan stores the selected order from the manifest. `--manifest PATH` selects an alternative synthetic v1 manifest for both creation and checking.
+The current committed example is `evidence/evals/plans/development-v2.json`. The original `development-v1.json` remains an unchanged historical setup record; its old evaluator hash intentionally fails against the updated source. Check it with the same interpreter and installed Pillow/jsonschema versions used to create it. A different runtime or code revision should fail verification; intentionally create a separately named plan for a new setup. Plan creation refuses to overwrite an existing file. Use repeated `--case CASE_ID` when freezing a subset; the plan stores the selected order from the manifest. `--manifest PATH` selects an alternative synthetic v1 manifest for both creation and checking.
 
 Before freezing, preflight checks strict JSON, nonempty cases, unique IDs and image hashes, directory-contained nonsymlink image files, image integrity/MIME/size, reference field shape and each selected typed decision against the frozen campaign rules. Selected pixels are decoded and retained in memory for evaluation so the provider receives the checked bytes. Unknown/repeated selectors fail rather than silently changing the denominator. All selected cases are checked before any extraction call.
 
@@ -25,7 +25,9 @@ This command uses the existing provider account and can consume quota. It requir
 evidence/.venv/bin/python -B -m evidence.evals.live --plan evidence/.local/new-development-plan.json --omniroute-env /absolute/path/to/existing/.env --output evidence/.local/new-development-report.json
 ```
 
-The model, timeout and selected cases default to the frozen settings. For a custom dataset, supply the same `--manifest PATH`. Explicit overrides must match the plan. Drift and an already existing report path fail before reading credentials. Planned reports use exclusive creation and contain the plan fingerprint plus the checked snapshot. Legacy development runs without `--plan` remain supported and record an input snapshot with a null plan fingerprint.
+The model, timeout and selected cases default to the frozen settings. For a custom dataset, supply the same `--manifest PATH`. Explicit overrides must match the plan. Drift fails before output reservation or credential reads. Both planned and unplanned commands create any missing parent directories and exclusively reserve a new report file before reading credentials or making extraction calls. Existing files, directories, existing-target symlinks and dangling symlinks are rejected without touching their contents. A competing CLI run cannot claim that same existing output path. Reports contain the checked snapshot, with a plan fingerprint for planned runs and null for unplanned runs.
+
+If configuration loading fails after reservation, the closed file remains empty: it is not a completed report, and retrying requires a new output path. Interruption or later write/close failure can also leave an empty or incomplete file; the command makes no atomic-write, crash-recovery, incremental-journal or upstream-cancellation guarantee. Path reservation prevents predictable filesystem/path failures and accidental overwrite before calls, but does not guarantee later disk availability. Later I/O errors exit nonzero, warn that calls may have occurred, and never retry them automatically.
 
 Reports retain unavailable calls in the attempt denominator, per-field comparisons, reference-missing guesses, clarification and simulated decisions. The CLI saves the complete report and fails unavailable calls, field mismatches or false eligibility. A plan does not change these scoring rules. Earlier checked-in provider reports remain historical and are not retroactively linked to this plan.
 
@@ -39,7 +41,7 @@ Both plans and reports remain `holdout: false`, `human_validated: false`; confid
 
 ```sh
 evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_eval_plan.py' -v
-evidence/.venv/bin/python -B -m evidence.evals.plan --check evidence/evals/plans/development-v1.json
+evidence/.venv/bin/python -B -m evidence.evals.plan --check evidence/evals/plans/development-v2.json
 ```
 
 Tests use synthetic placeholders and patched adapter outputs, plus the existing authored loopback gateway tests. No provider account, payments, merchant integration, real customer data or human-study result is involved.
