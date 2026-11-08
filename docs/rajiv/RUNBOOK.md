@@ -1,8 +1,20 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 8 November 2026. Branch: `work/rajiv-resolution-smoke`, based on merged main `171b5ea`. PR [#16](https://github.com/RajivRanganath/recallrelay/pull/16) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
+Checkpoint: 8 November 2026. Branch: `work/rajiv-demo-rehearsal`, based on merged main `4114744`. PR [#17](https://github.com/RajivRanganath/recallrelay/pull/17) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
 
-## Current continuation: actual resolution review/status integration
+## Current continuation: one-command customer rehearsal
+
+Run `evidence/.venv/bin/python -B -m evidence.demo` after installing the evidence lock file. Open the printed loopback URL. The actual customer app starts with mock fixture extraction, the committed resolution mock and fresh temporary storage; Ctrl+C stops owned servers and deletes that state. Provider/resolution environment variables do not silently select live adapters. An explicit `--resolution-url http://127.0.0.1:8102` reads an already-running local service and leaves its lifetime to its owner. See [the customer demo outline](DEMO.md) for clean-start commands and the first 75 seconds.
+
+The browser walkthrough covered separate confirmation, matching manual assessment, unresolved blank batch, excluded batch and simulated merchant status. The launcher exited cleanly via Ctrl+C. Mock resolution now uses a mode label valid for both the canned mock and saved reviews from the actual mock-mode service, while preserving the separate-record warning.
+
+Local verification on Python 3.11.16: 114 evidence tests passed with ResourceWarnings treated as errors and actual-service checks enabled, including four new launcher checks. Four Node UI tests, three shared-contract tests, the unchanged one-test resolution starter suite, 12 fixture cases / 60 policy checks, frozen development-plan verification, dependency consistency, JavaScript syntax and whitespace checks also passed. Existing pinned dependencies were reused; this is not a fresh network install or a new provider evaluation. Hosted checks are reported separately.
+
+A jointly recorded demo, merchant UI, sandbox payments, independently reviewed holdout labels and human measurement remain pending. Historical sections below retain their original checkpoint scope.
+
+## Previous checkpoint: actual resolution review/status integration
+
+The following records `565958e`, merged through PR #17.
 
 The resolution branch now contains an actual review/status service at `e1e16be6928afcdd52015097a3bbab6b42ddbd8b`; it is no longer only the original scaffold. Six new evidence-owned opt-in checks run that exact source in an isolated subprocess, use its actual evidence HTTP client, explicitly hand off a synthetic assessment/order/remedy snapshot, and read its status through the customer backend. Separate temporary databases remain service-owned. A payment-denying test adapter records any refund attempt and causes a test failure if called; subprocesses inherit no provider keys.
 
