@@ -155,7 +155,7 @@ $('refresh-status').addEventListener('click', async () => {
   $('resolution').textContent = 'Reading resolution service…';
   try {
     const data = await request('/demo/resolution-status');
-    const mode = data.mode === 'mock' ? 'MOCK · canned status, no money moved' : 'PAYPAL SANDBOX · test environment';
+    const mode = data.mode === 'mock' ? 'MOCK · simulated resolution, no real payment' : 'PAYPAL SANDBOX · test environment';
     $('resolution').textContent = `${mode}\n${data.status.replaceAll('_', ' ')}\n${data.brief}\nSeparate merchant record; not proof of a handoff from this assessment.`;
   } catch (error) { $('resolution').textContent = `Status unavailable. ${error.message}`; }
   finally { $('refresh-status').disabled = false; }

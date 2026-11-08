@@ -1,3 +1,17 @@
+# 8 November 2026: customer demo rehearsal
+
+Started `work/rajiv-demo-rehearsal` from merged main `4114744` after verifying PR #17 merged with passing checks. Added `python -m evidence.demo`: a one-command, loopback-only customer rehearsal using explicit mock fixture extraction, the unchanged committed resolution mock and an initially empty temporary evidence database. A supplied loopback resolution URL selects only an externally owned status dependency; the launcher does not create a merchant case or stop that external service. Owned servers and temporary storage are cleaned up on normal context exit or Ctrl+C.
+
+Four new tests cover fresh/repeated starts, explicit mock configuration despite inherited provider/resolution environment, sample/assessment/status paths, storage and server cleanup, external-service lifetime, partial-startup failure cleanup and invalid origins/ports. The status UI now describes mock mode as simulated resolution rather than assuming every mock response is canned; actual resolution mock-mode reviews can be persisted records. The separate-record warning remains visible.
+
+An actual in-app browser walkthrough using the launcher verified a matching manual assessment after separate confirmation, blank-batch clarification, an excluded batch with no safety claim, and explicitly simulated merchant status. The rehearsal process then exited cleanly via Ctrl+C. No live provider or payment was used. The 75-second script in [DEMO.md](DEMO.md) is a timed recording outline, not a measured recording or human-completion result.
+
+Local verification on Python 3.11.16: 114 evidence tests passed with ResourceWarnings treated as errors and actual-service checks enabled, including four new launcher checks. Four Node UI tests, three shared-contract tests, the unchanged one-test resolution starter suite, 12 fixture cases / 60 policy checks, frozen development-plan verification, dependency consistency, JavaScript syntax and whitespace checks also passed. Existing pinned dependencies were reused; this is not a fresh network install or a new provider evaluation. Hosted checks are reported separately.
+
+Only evidence code/tests/UI/docs and Rajiv documentation change. Resolution code, frozen contracts/mocks, root dependencies and provider reports remain untouched. Merchant UI, approval/reconciliation correctness (including the previously reproduced state regression), PayPal sandbox integration, a joint recorded demo, independently reviewed labels and human effort measurement remain pending. Git records commit and publication status.
+
+---
+
 # 8 November 2026: actual resolution review/status integration
 
 Started `work/rajiv-resolution-smoke` from merged main `171b5ea` after verifying PR #16 merged and its evidence/shared-contract checks passed. Remote inspection found new resolution commit `e1e16be6928afcdd52015097a3bbab6b42ddbd8b`, with no resolution PR when checked. The earlier scaffold-only integration limitation no longer describes that branch.
