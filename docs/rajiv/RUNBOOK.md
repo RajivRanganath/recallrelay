@@ -1,8 +1,18 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 8 November 2026. Branch: `work/rajiv-demo-rehearsal`, based on merged main `4114744`. PR [#17](https://github.com/RajivRanganath/recallrelay/pull/17) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
+Checkpoint: 8 November 2026. Branch: `work/rajiv-label-review`, based on merged main `c80da2e`. PR [#18](https://github.com/RajivRanganath/recallrelay/pull/18) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
 
-## Current continuation: one-command customer rehearsal
+## Current continuation: offline development-reference review
+
+Use `evidence.evals.review prepare --output NEW_DIRECTORY` to export a blank standalone form with hash-checked images and a packet identity record. An actual person supplies field observations and a reviewer declaration, then downloads JSON locally. `review check --packet PATH --review PATH --output NEW_REPORT` validates complete self-reported coverage and preserves disagreements against authored references. It never rewrites labels or enables holdout/human-validation flags. See [the review instructions](LABEL-REVIEW.md).
+
+The twelve-image packet is available locally under ignored `evidence/.local/label-review-development-v2/`. Browser QA reset it to fully blank after checking input state changes; its declaration is unchecked. No completed human record exists from this continuation. These remain previously visible development images, not a new holdout. A person must now review them, and disagreements require adjudication before any revised reference set.
+
+Local verification on Python 3.11.16: all 123 evidence tests passed with ResourceWarnings treated as errors and actual-service checks enabled, including nine new offline review tests. Seven Node UI tests (three new), three shared-contract tests, the unchanged one-test resolution starter suite, 12 fixture cases / 60 policy checks, committed development-plan verification, dependency consistency, workflow YAML parsing and whitespace checks passed. Existing pinned dependencies were reused. Hosted checks are reported separately; no fresh install, live-provider run or human review is claimed.
+
+## Previous checkpoint: one-command customer rehearsal
+
+The following records `f9ae35b`, merged through PR #18.
 
 Run `evidence/.venv/bin/python -B -m evidence.demo` after installing the evidence lock file. Open the printed loopback URL. The actual customer app starts with mock fixture extraction, the committed resolution mock and fresh temporary storage; Ctrl+C stops owned servers and deletes that state. Provider/resolution environment variables do not silently select live adapters. An explicit `--resolution-url http://127.0.0.1:8102` reads an already-running local service and leaves its lifetime to its owner. See [the customer demo outline](DEMO.md) for clean-start commands and the first 75 seconds.
 
