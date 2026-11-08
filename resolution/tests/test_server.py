@@ -67,6 +67,38 @@ class ServerTests(unittest.TestCase):
     def test_unknown_route_is_404(self):
         self.assertEqual(self.call('POST', '/v1/other', self.eligible())[0], 404)
 
+    def test_merchant_flow_demo_confirm_remedy_approve_refund(self):
+        code, seeded = self.call('POST', '/v1/demo/case')
+        self.assertEqual((code, seeded['status']), (200, 'manual_required'))  # remedy not yet confirmed
+        self.assertEqual(self.call('POST', '/v1/demo/case'), (200, seeded))
+        detail = self.call('GET', '/v1/cases/case-demo-1')[1]
+        self.assertFalse(detail['remedy_conditions_met'])
+        self.assertEqual(self.call('GET', '/v1/cases')[1]['cases'], [seeded])
+        code, reviewed = self.call('POST', '/v1/cases/case-demo-1/remedy-conditions')
+        self.assertEqual((code, reviewed['status'], reviewed['proposed_amount_minor']), (200, 'awaiting_approval', 4000))
+        binding = self.call('GET', '/v1/cases/case-demo-1')[1]['binding']
+        approval = {key: binding[key] for key in ('assessment_id', 'campaign_version', 'capture_id', 'amount_minor')}
+        code, done = self.call('POST', '/v1/cases/case-demo-1/approve', dict(approval, approved_by='merchant-demo'))
+        self.assertEqual((code, done['status'], done['mode']), (200, 'refunded', 'mock'))
+        self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/remedy-conditions')[0], 409)
+        self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/reconcile')[0], 409)
+        self.assertEqual(self.call('POST', '/v1/cases/unknown/remedy-conditions')[0], 404)
+
+    def test_wrong_amount_is_rejected_over_http(self):
+        self.call('POST', '/v1/demo/case')
+        self.call('POST', '/v1/cases/case-demo-1/remedy-conditions')
+        binding = self.call('GET', '/v1/cases/case-demo-1')[1]['binding']
+        approval = {key: binding[key] for key in ('assessment_id', 'campaign_version', 'capture_id')}
+        self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/approve', dict(approval, amount_minor=1, approved_by='m'))[0], 409)
+        self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/approve', {'approved_by': 'm'})[0], 400)
+        self.assertEqual(self.call('GET', '/v1/resolutions/case-demo-1')[1]['status'], 'awaiting_approval')
+
+    def test_ui_assets_are_served_with_a_restrictive_policy(self):
+        for path, kind in (('/', 'text/html'), ('/app.js', 'text/javascript'), ('/style.css', 'text/css')):
+            with urlopen(self.url + path, timeout=5) as response:
+                self.assertTrue(response.headers['Content-Type'].startswith(kind))
+                self.assertIn("default-src 'self'", response.headers['Content-Security-Policy'])
+
     def test_review_cannot_overwrite_a_refund_in_progress(self):
         pending = {'schema_version': '1.0', 'case_id': 'case-demo-1', 'status': 'pending', 'brief': 'x',
                    'citations': [], 'proposed_amount_minor': 4000, 'currency': 'USD', 'refund_id': None,

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RecallRelay synthetic merchant review demo.">
+  <title>Review cases · RecallRelay</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header><a class="brand" href="/">RecallRelay</a><span class="tag">Merchant · synthetic demo</span></header>
+  <main>
+    <div class="intro"><p class="eyebrow">Merchant review</p><h1>Review, then decide.</h1><p>Each case shows the evidence assessment and what a refund would cost. Nothing is paid until you approve the exact amount.</p></div>
+    <p class="notice" id="mode-banner">Checking payment mode…</p>
+    <div class="workspace">
+      <section aria-labelledby="cases-title">
+        <p class="step">01 / Cases</p><h2 id="cases-title">Open cases</h2>
+        <button type="button" id="load-demo" class="secondary">Load demo case</button>
+        <p class="hint">Adds the synthetic case-demo-1 from the contract fixtures. Real cases arrive from the evidence service.</p>
+        <ul id="case-list" class="case-list"></ul>
+        <p id="list-message" role="status" aria-live="polite">No cases yet.</p>
+      </section>
+      <section aria-labelledby="detail-title">
+        <p class="step">02 / Case review</p><h2 id="detail-title">Select a case</h2>
+        <div id="detail" hidden>
+          <p id="status-line" class="eyebrow"></p>
+          <p id="brief" class="brief"></p>
+          <h3>Evidence assessment</h3>
+          <dl id="assessment" class="facts"></dl>
+          <h3>Order</h3>
+          <dl id="order" class="facts"></dl>
+          <h3>Remedy conditions</h3>
+          <p id="remedy-text"></p>
+          <button type="button" id="confirm-remedy" class="secondary" hidden>I confirm the remedy conditions are met</button>
+          <section id="approval" class="result" hidden aria-labelledby="approval-title">
+            <h3 id="approval-title">Approve refund</h3>
+            <form id="approval-form">
+              <p>Refund amount: <strong id="amount"></strong></p>
+              <label for="typed-amount">Type the exact amount to approve</label>
+              <input id="typed-amount" autocomplete="off" inputmode="decimal" placeholder="For example, 40.00">
+              <label for="approver">Your name</label>
+              <input id="approver" maxlength="128" autocomplete="off">
+              <p class="hint">Names are not verified: there is no merchant login yet.</p>
+              <button type="submit" id="approve">Approve refund</button>
+            </form>
+          </section>
+          <section id="outcome" class="result" tabindex="-1" hidden aria-labelledby="outcome-title">
+            <p id="outcome-mode" class="eyebrow"></p><h3 id="outcome-title"></h3><p id="outcome-text"></p><p id="outcome-ids" class="hint"></p>
+            <button type="button" id="reconcile" class="secondary" hidden>Check refund again</button>
+          </section>
+        </div>
+        <p id="message" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+    <footer>Campaign-demo-1 · USD · one unit<br>Brief: deterministic template (no AI) / Decisions: code + your approval / Payments: <span id="footer-mode">checking</span></footer>
+  </main>
+</body>
+</html>

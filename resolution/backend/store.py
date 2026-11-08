@@ -40,6 +40,16 @@ class CaseStore:
             row = db.execute('SELECT response FROM cases WHERE case_id=?', (case_id,)).fetchone()
         return json.loads(row[0]) if row else None
 
+    def request(self, case_id):
+        with self.connect() as db:
+            row = db.execute('SELECT request FROM cases WHERE case_id=?', (case_id,)).fetchone()
+        return json.loads(row[0]) if row and row[0] else None
+
+    def list_cases(self):
+        with self.connect() as db:
+            rows = db.execute('SELECT response FROM cases ORDER BY case_id').fetchall()
+        return [json.loads(row[0]) for row in rows]
+
     def operation(self, case_id):
         with self.connect() as db:
             db.row_factory = sqlite3.Row
