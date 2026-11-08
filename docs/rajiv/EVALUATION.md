@@ -49,3 +49,7 @@ Tests use synthetic placeholders and patched adapter outputs, plus the existing 
 ## Audit authored references offline
 
 `evidence.evals.review prepare --output NEW_DIRECTORY` exports a blank standalone form with checked images and a packet fingerprint; `review check --packet PATH --review PATH --output NEW_REPORT` validates a returned self-reported record and retains disagreements. Neither command calls a provider or changes labels/plans/reports. All outputs stay development-only with holdout/human-validation false. The declaration must be completed by an actual reviewer, not an agent. See [the label-review instructions](LABEL-REVIEW.md) for exact commands, exit codes, limits and adjudication. This audits existing development references; a separately reviewed holdout and human timing study remain pending.
+
+## Prospective human evaluation
+
+[HUMAN-EVALUATION.md](HUMAN-EVALUATION.md) defines the reference adjudication handoff, a small repeated-case completion pilot and prerequisites for a future holdout. Blank CSVs live in `evidence/evals/study/`; they contain no results. The current commands still produce development-only records and do not claim to implement a validated holdout protocol.

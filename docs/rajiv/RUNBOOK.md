@@ -1,5 +1,11 @@
 # Rajiv's evidence runbook
 
+Current checkpoint: 8 November 2026, `work/rajiv-completion-prep`, based on merged PR #20 / main `7c78d14`. [COMPLETION.md](COMPLETION.md) maps all five Rajiv tasks, records a fresh dependency install and clean-source verification, and gives the remaining human/demo actions. [HUMAN-EVALUATION.md](HUMAN-EVALUATION.md) supplies a prospective protocol and blank data sheets. No human observations or new provider results are present.
+
+The merged implementation passed 130 evidence tests with actual review/status integration against current unmerged resolution `3be76f2`, seven Node UI checks, 60 fixture policy checks, plan verification and dependency consistency. The exported customer app passed the mock browser rehearsal and stopped normally. See the completion checkpoint for exact scope and reproducibility; hosted checks from this preparation are separate.
+
+## Previous checkpoint: report output reservation
+
 Checkpoint: 8 November 2026. Branch: `work/rajiv-eval-output`, based on merged main `e55f431`. PR [#19](https://github.com/RajivRanganath/recallrelay/pull/19) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
 
 ## Current continuation: report output reservation

@@ -1,3 +1,13 @@
+# 8 November 2026: completion preparation and clean reproduction
+
+From merged PR #20 / main `7c78d14`, prepared a Rajiv-only completion checklist, a prospective human review/timing/holdout protocol, header-only session/trial/adjudication sheets and an explicit customer-to-merchant recording transition. No human declarations, participant observations, holdout labels or video results were fabricated. A fresh blank review packet and local collection sheets are under ignored `evidence/.local/completion-prep-2026-11-08/`.
+
+A clean source export and fresh Python 3.11.16 environment installed the evidence lock from PyPI. All 130 evidence tests passed with ResourceWarnings treated as errors and six actual-service checks enabled against current unmerged resolution commit `3be76f2`. Seven Node UI checks, 12 fixture cases / 60 policy checks, development-v2 plan verification and dependency consistency passed. A browser rehearsal of the exported mock-mode launcher verified separate confirmation, matching/missing/excluded paths and explicit independent canned merchant status; Ctrl+C exited normally. No new test or runtime source changes were needed.
+
+PR #21 remains open with changes requested; successful bounded review/status checks do not resolve merchant/refund review findings. CI keeps its prior resolution pin. No provider credentials, live AI/payment calls or other-lane/shared-file edits occurred. Human reference review/adjudication, measured completion effort, independently reviewed new holdout inputs with a supported reporting path, and a jointly recorded demo remain pending. See [COMPLETION.md](COMPLETION.md) and [HUMAN-EVALUATION.md](HUMAN-EVALUATION.md). Historical entries below retain their original date/scope.
+
+---
+
 # 8 November 2026: reserve evaluation reports before calls
 
 Started `work/rajiv-eval-output` from merged main `e55f431` after verifying PR #19 merged with passing checks. Offline regressions reproduced unplanned report overwrite (including a symlink target), calls completing before an invalid parent path failed, and two competing CLI runs reaching extraction for one output. The key/preflight reservation check also failed against the unchanged evaluator. All reproduction used temporary synthetic files and patched adapters, not a provider account or historical report.
