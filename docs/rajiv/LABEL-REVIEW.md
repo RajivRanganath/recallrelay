@@ -45,3 +45,7 @@ A future holdout needs a separately recorded dataset/reviewer process, independe
 ## Tool verification
 
 Nine Python regressions cover blank answer-free packets and exact embedded bytes, self-reported records, disagreement preservation, coverage/schema/uncertainty, edited claims, dataset/packet drift, strict/oversized JSON, offline CLI behavior and overwrite protection. Three Node DOM-double checks exercise blank form values, state invalidation, export binding and invalid-form rejection. The rendered browser check covers blank/disabled initial fields, readable-field enabling, clearing a temporary UI-test value on uncertainty, and resetting to a fully blank packet. The reviewer declaration is left unchecked and no human review result is generated.
+
+## Reviewer handoff and next measurements
+
+Use [HUMAN-EVALUATION.md](HUMAN-EVALUATION.md) for preserving/adjudicating returned disagreements, a prospective timing pilot, blank data sheets and the separate future-holdout process. The agent prepares these materials; only actual people can supply review declarations and observed task measurements.

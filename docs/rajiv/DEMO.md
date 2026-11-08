@@ -45,3 +45,9 @@ Reproducible HTTP compatibility with resolution commit `e1e16be6928afcdd52015097
 The launcher checks cover fresh state, explicit mock selection despite inherited configuration, usable sample/assessment/status paths, cleanup, repeated starts, externally owned service lifetime, partial-startup cleanup and invalid port/origin rejection. Browser rehearsal covers clear, missing and excluded batches, separate confirmation and visibly simulated merchant status. This is rehearsal evidence only; no video, spoken-duration measurement, real provider result, human study, joint merchant demo or sandbox refund is claimed.
 
 After a clean rehearsal: record this customer half with visible mode labels, agree the transition with the merchant half, and preserve failures and provider mode in the submission notes. Independent holdout review and human completion/effort measurement remain separate pending work.
+
+## Customer-to-merchant recording transition
+
+Before a joint recording, agree the code revisions, visible mock/provider labels, case ID and explicit handoff method with the resolution owner. The customer launcher only reads status: its successful assessment is not a merchant-case creation event. Show or narrate the explicit coordinator/merchant action, the assessment snapshot ID and whether the merchant view refers to it. If using the committed mock, say that its case is separate and canned. Do not present a cut between unrelated cases as an automatic end-to-end handoff.
+
+Rehearse the customer portion using the outline above, retain a visible unresolved/excluded example, and time the actual take. Record take duration and failures separately from human task timings. The merchant owner controls remedy approval, refund actions and any sandbox evidence. Stop the customer launcher with Ctrl+C after the take. A finished video and joint sign-off remain human/team deliverables.

@@ -1,0 +1,62 @@
+{
+  "kind": "evidence-lane-completion-readiness",
+  "captured_at_utc": "2026-11-08T09:24:13.489187+00:00",
+  "evidence_source_commit": "7c78d142903b7c91e563b19adb8a210240fff810",
+  "resolution_source_commit": "3be76f2e88193126c8349da181d1b7005502d9bd",
+  "resolution_pr": 21,
+  "resolution_merged_when_checked": false,
+  "clean_git_archive": true,
+  "fresh_evidence_lock_install": true,
+  "python_version": "3.11.16",
+  "checks": [
+    {
+      "name": "evidence",
+      "exit_code": 0,
+      "log_sha256": "a5c8b25ca0ee797c218b169a723016d8118adb8016528e5ce99f2d8417ca82bc"
+    },
+    {
+      "name": "fixture-policy",
+      "exit_code": 0,
+      "log_sha256": "a87686084855f5ad8916f4b110a87f664504dbf286f9fa5cb2f3a68053f72c00"
+    },
+    {
+      "name": "plan",
+      "exit_code": 0,
+      "log_sha256": "dee04a7086ba4eb242531befd0a152056991b8e75bcf2b5a5fd0ae353f09c078"
+    },
+    {
+      "name": "ui",
+      "exit_code": 0,
+      "log_sha256": "d4a97015389a5ed0d27a7029e88e828b48036056f821b50ac23e07ea9996b7a8"
+    },
+    {
+      "name": "dependencies",
+      "exit_code": 0,
+      "log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09"
+    }
+  ],
+  "evidence_tests": 130,
+  "ui_tests": 7,
+  "fixture_cases": 12,
+  "fixture_policy_checks": 60,
+  "actual_service_tests_enabled": 6,
+  "browser_rehearsal": [
+    "blank initial confirmation",
+    "matching identifiers after separate confirmation",
+    "unreadable batch clarification",
+    "excluded batch without safety claim",
+    "separate canned merchant status with mock warning"
+  ],
+  "demo_stopped_cleanly": true,
+  "live_provider_calls": 0,
+  "payment_calls": 0,
+  "human_review_records": 0,
+  "human_timing_records": 0,
+  "recorded_video": false,
+  "limitations": [
+    "Existing automated tests and synthetic browser rehearsal only; no accuracy or user savings measurement.",
+    "Actual-service smoke covers review/status with explicit coordinator handoff and a payment-denying adapter, not merchant UI or approval/refund execution.",
+    "Evidence CI retains its earlier resolution pin; the newer unmerged snapshot was checked locally only.",
+    "Blank packets and CSV headers contain no human observations."
+  ]
+}
