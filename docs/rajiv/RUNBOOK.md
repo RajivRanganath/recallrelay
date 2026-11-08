@@ -1,5 +1,9 @@
 # Rajiv's evidence runbook
 
+Current continuation: `work/rajiv-study-report`, based on merged PR #23 / main `829501c`. Use `evidence/.venv/bin/python -B -m evidence.evals.study_report --sessions PATH --trials PATH --output NEW_JSON` to check and summarize returned timing records offline. See [HUMAN-EVALUATION.md](HUMAN-EVALUATION.md) for exact fields, denominators and limits. Ten focused synthetic-record checks and unchanged development-v2 plan verification passed locally; header-only input produced zero observations. This does not supply human measurements or independent labels.
+
+## Previous checkpoint: completion preparation
+
 Current checkpoint: 8 November 2026, `work/rajiv-completion-prep`, based on merged PR #20 / main `7c78d14`. [COMPLETION.md](COMPLETION.md) maps all five Rajiv tasks, records a fresh dependency install and clean-source verification, and gives the remaining human/demo actions. [HUMAN-EVALUATION.md](HUMAN-EVALUATION.md) supplies a prospective protocol and blank data sheets. No human observations or new provider results are present.
 
 The merged implementation passed 130 evidence tests with actual review/status integration against current unmerged resolution `3be76f2`, seven Node UI checks, 60 fixture policy checks, plan verification and dependency consistency. The exported customer app passed the mock browser rehearsal and stopped normally. See the completion checkpoint for exact scope and reproducibility; hosted checks from this preparation are separate.

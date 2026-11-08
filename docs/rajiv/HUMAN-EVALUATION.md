@@ -44,3 +44,23 @@ The current `plan`/`live` and `review` commands intentionally produce developmen
 ## Inputs still required from people
 
 An actual image review and adjudication; actual participant sessions/times; separately reviewed new images for any holdout; and the jointly recorded demonstration. Send returned local records back for validation and analysis. Once those real records exist, validate their structure, preserve disagreements, calculate descriptive results and update the handoff.
+
+## Offline timing report
+
+After collecting actual records, run from the repository root:
+
+```sh
+evidence/.venv/bin/python -B -m evidence.evals.study_report --sessions evidence/.local/completion-prep-2026-11-08/sessions.csv --trials evidence/.local/completion-prep-2026-11-08/trials.csv --output evidence/.local/completion-prep-2026-11-08/new-timing-report.json
+```
+
+Choose a new report path with an existing parent directory. Exit 0 means inputs were accepted and a report was written; exit 2 means invalid inputs or an unusable/existing output. A header-only run returns `no_observations`, zero recorded attempts and no result summaries. It is a tooling check, never a completed study. Write failures can leave incomplete output; inspect it and choose a new path rather than overwriting a previous record. No credential/provider/payment access occurs.
+
+Use exact CSV headers. Session records require `rajiv-human-evaluation-1`, full protocol/evidence commit hashes, a UTC start timestamp, `consent_recorded: true`, prior exposure/environment details, `typed_first` or `assisted_first`, and `reference_scoring_status: provisional`. The reference version must match the manifest's dataset version. Mock sessions use `provider: fixture` and `requested_model: na`; AI sessions use `omniroute` and record a model plus configuration/served-model provenance paths. Those pointers are self-reported and never opened or verified by this tool. Warm-up omission needs an explanatory note. Input CSVs are limited to 1 MiB each.
+
+Trials bind to a known session/participant alias, case and exact image hash. Record unique global positions within the session and contiguous attempts per case/condition starting at 1. Keep failed first attempts before retries. Completed trials require an observed duration, final identifiers (`null` for an observed absent value) and the displayed `eligible`, `excluded` or `needs_information` decision. Timings must be finite and between zero and one day; any completed task beyond 120 seconds or early/unknown timeout needs a documented deviation. Unknown timing, failures and withdrawals need notes. The tool rejects duplicate/missing attempts, inconsistent mode/identity, malformed CSV and edited scoring columns that contradict its recomputed authored-reference comparisons.
+
+Typed rows set extraction unavailable to `false` and suggested-field edits to `na`. Assisted edits are 0–2 when observed, `na` when not applicable, or blank when unknown. Use lowercase `true`/`false` for observed flags, and follow the blank/`na`/`null` distinctions above. Do not fill in unknown values to pass validation. Clarification judgments/rounds and edit counts remain self-reported; the tool does not establish their accuracy.
+
+The JSON keeps each session separate, exposes first-attempt outcome/time/error denominators, gives retries separate summaries and pairs only the same session/case with both first attempts completed. All other pairs show their missing/failure/timeout state. Reported differences are `typed_seconds - assisted_seconds`, with no savings claim. Unknown availability and omitted pairs remain visible. Declared order is checked against the protocol's manifest-then-reverse prefix; a mismatch is retained as a flag, not discarded. Scoring always uses provisional authored development references from the selected manifest; adjudicated/holdout/validated session claims are not accepted. `--manifest PATH` can select another compatible synthetic development manifest, without establishing independent review.
+
+Reports bind raw session/trial/manifest hashes and the reporter source hash, omit aliases/free-text/path pointers/raw final identifiers, and retain unauthenticated-human-work and development-only flags. They still need review before sharing. The original local CSVs retain every supplied measurement and note. Independent label adjudication and supported holdout reporting remain separate work.
