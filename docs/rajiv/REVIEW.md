@@ -1,3 +1,17 @@
+# 8 November 2026: actual resolution review/status integration
+
+Started `work/rajiv-resolution-smoke` from merged main `171b5ea` after verifying PR #16 merged and its evidence/shared-contract checks passed. Remote inspection found new resolution commit `e1e16be6928afcdd52015097a3bbab6b42ddbd8b`, with no resolution PR when checked. The earlier scaffold-only integration limitation no longer describes that branch.
+
+Added six evidence-owned opt-in HTTP integration tests. The actual resolution server and actual merchant evidence client run in isolated subprocesses from an export of that exact source, with no inherited provider keys. Evidence and resolution own separate temporary SQLite databases; the test coordinator accesses only HTTP, explicitly handing off a synthetic assessment/order/remedy snapshot. A payment-denying adapter records any refund attempt and fails the check if invoked. Evidence CI checks out the same pinned commit separately and enables the optional checks; ordinary local runs explicitly skip them without a selected snapshot.
+
+Observed behavior: an unknown case stays 404 until explicitly reviewed; eligible identifiers still need merchant remedy confirmation; missing and excluded identifiers stay unresolved/excluded; remaining minor units and old orders reach the expected review states; mismatched cases are rejected; repeated review/status reads preserve evidence; resolution retains the supplied assessment snapshot after a new evidence assessment; stopping resolution yields a visible customer 503 while typed entry remains usable. Review responses stay mock mode with null operation/refund IDs and no adapter attempts. No application implementation change was needed for these paths.
+
+Local verification on Python 3.11.16: all 110 evidence tests passed with ResourceWarnings treated as errors, including all six actual-service checks enabled against the pinned export. The four Node UI tests, three shared-contract tests, unchanged one-test resolution starter suite, 12-case / 60-check fixture replay, committed development-plan verification, dependency consistency, JavaScript syntax and whitespace checks also passed. Existing pinned dependencies were reused; no fresh install, hosted CI run, browser recheck, live-provider evaluation or human study is claimed.
+
+This establishes bounded synthetic compatibility of the review/status HTTP paths, not full integration or payment behavior. The handoff is supplied by the test coordinator, not a new product workflow. A retained assessment is not proof of freshness or authorization. Approval/refund execution, merchant UI, jointly reviewed integration, recorded demo, independently reviewed holdout labels and human measurement remain pending. No resolution source, shared contract, mock, root dependency or historical provider report was edited. No provider credentials or live AI/payment calls were used. Reproduction and exact scope: [integration runbook](INTEGRATION.md). Git records publication status.
+
+---
+
 # 7 November 2026: frozen evaluation-plan continuation
 
 Started `work/rajiv-eval-freeze` from merged main `a445754` after verifying PR #15 merged with evidence/shared-contract CI passing. The resolution branch remains the original scaffold; actual merchant integration remains pending.
