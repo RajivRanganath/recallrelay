@@ -1,8 +1,20 @@
 # Rajiv's evidence runbook
 
-Checkpoint: 7 November 2026. Branch: `work/rajiv-eval-freeze`, based on merged main `a445754`. PR [#15](https://github.com/RajivRanganath/recallrelay/pull/15) is merged and its evidence/shared-contract CI passed. Git records this continuation's commit/publication status.
+Checkpoint: 8 November 2026. Branch: `work/rajiv-resolution-smoke`, based on merged main `171b5ea`. PR [#16](https://github.com/RajivRanganath/recallrelay/pull/16) is merged and its evidence/shared-contract checks passed. Git records this continuation's commit/publication status.
 
-## Current continuation: frozen development evaluations
+## Current continuation: actual resolution review/status integration
+
+The resolution branch now contains an actual review/status service at `e1e16be6928afcdd52015097a3bbab6b42ddbd8b`; it is no longer only the original scaffold. Six new evidence-owned opt-in checks run that exact source in an isolated subprocess, use its actual evidence HTTP client, explicitly hand off a synthetic assessment/order/remedy snapshot, and read its status through the customer backend. Separate temporary databases remain service-owned. A payment-denying test adapter records any refund attempt and causes a test failure if called; subprocesses inherit no provider keys.
+
+Focused local verification passed all six tests on Python 3.11.16 with ResourceWarnings treated as errors. Scenarios include eligible/manual/missing/excluded review, remaining amounts and old orders, immutable handoff snapshots after evidence edits, mismatched cases, and visible dependency failure with typed entry still usable. See [the integration runbook](INTEGRATION.md) for the exact commit, reproduction and limits. Evidence CI pins that resolution commit in a separate checkout; its hosted result is separate from local checks.
+
+This verifies actual synthetic review/status compatibility, including an explicit test-coordinator handoff. Merchant UI, approval/refund execution, PayPal sandbox integration, jointly reviewed integration and recorded demo remain pending. No live AI/payment call, credential read, other-lane edit or contract change occurred. Historical checkpoint sections below retain their original scope and pending-work statements.
+
+Local verification on Python 3.11.16: all 110 evidence tests passed with ResourceWarnings treated as errors, including all six actual-service checks enabled against the pinned export. The four Node UI tests, three shared-contract tests, unchanged one-test resolution starter suite, 12-case / 60-check fixture replay, committed development-plan verification, dependency consistency, JavaScript syntax and whitespace checks also passed. Existing pinned dependencies were reused; no fresh install, hosted CI run, browser recheck, live-provider evaluation or human study is claimed.
+
+## Previous checkpoint: frozen development evaluations
+
+The following records `8b19eb5`, merged through PR #16.
 
 The evaluator now validates synthetic references and their typed decisions before provider calls. Offline plan creation/checking reads no credentials. Planned live runs verify the manifest/images, source/schema/lock hashes, selected case order, provider/model/URL/timeout and Python/Pillow/jsonschema versions before reading a key; reports retain the checked snapshot and plan fingerprint. Model/timeout/case overrides must match and planned output cannot overwrite an existing report. Existing unplanned commands remain supported.
 
