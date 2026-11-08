@@ -67,12 +67,18 @@ def _call_worker(pipe, url, key, payload, timeout):
                                    'Content-Type': 'application/json', 'Accept': 'application/json',
                                    'Cache-Control': 'no-store'})
         with build_opener(ProxyHandler({}), NoRedirect()).open(request, timeout=timeout) as response:
-            if response.status != 200 or response.headers.get_content_type() != 'application/json':
+            if response.status != 200:
+                raise ValueError()
+            if (len(response.headers.get_all('Content-Type', [])) != 1
+                    or response.headers.get_content_type() != 'application/json'):
                 raise ValueError()
             lengths = response.headers.get_all('Content-Length', [])
-            if len(lengths) > 1 or (lengths and response.headers.get('Transfer-Encoding')):
+            transfers = response.headers.get_all('Transfer-Encoding', [])
+            if (len(lengths) > 1 or len(transfers) > 1 or (lengths and transfers)
+                    or (transfers and transfers[0].strip().lower() != 'chunked')):
                 raise ValueError()
-            if lengths and (not lengths[0].isdigit() or not 0 < int(lengths[0]) <= MAX_RESPONSE_BYTES):
+            if lengths and (not lengths[0].isascii() or not lengths[0].isdigit()
+                            or not 0 < int(lengths[0]) <= MAX_RESPONSE_BYTES):
                 raise ValueError()
             raw = response.read(MAX_RESPONSE_BYTES + 1)
             if len(raw) > MAX_RESPONSE_BYTES or (lengths and len(raw) != int(lengths[0])):

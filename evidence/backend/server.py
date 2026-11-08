@@ -4,7 +4,7 @@ import copy
 import json
 import os
 import sqlite3
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -12,6 +12,7 @@ from evidence.ai.mock_extractor import propose
 from evidence.ai.extraction import ExtractionService, ExtractionUnavailable
 from evidence.ai.fixture_extractor import FixtureExtractor
 from evidence.ai.omniroute import OmniRouteExtractor, read_key
+from evidence.backend.http_server import BoundedHTTPServer, IntakeDeadline
 from evidence.backend.images import decode_image
 from evidence.backend.assessment import assess
 from evidence.backend.json_input import strict_json
@@ -22,7 +23,8 @@ from evidence.backend.validation import InvalidInput, MAX_BODY_BYTES, ROOT
 WEB = ROOT / 'evidence' / 'web'
 
 
-def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter=None):
+def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter=None,
+                *, max_handlers=8, request_timeout=10):
     store = AssessmentStore(db_path or ROOT / 'evidence' / '.local' / 'assessments.sqlite3')
     client = ResolutionClient(resolution_url or os.environ.get('RESOLUTION_BASE_URL', 'http://127.0.0.1:8102'))
     extraction = ExtractionService(extraction_adapter if extraction_adapter is not None else FixtureExtractor())
@@ -30,6 +32,31 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
 
     class Handler(BaseHTTPRequestHandler):
         timeout = 5
+
+        def setup(self):
+            super().setup()
+            self.intake = IntakeDeadline(self.connection, self.server.request_timeout)
+
+        def finish(self):
+            try:
+                self.intake.close()
+            finally:
+                super().finish()
+
+        def handle(self):
+            try:
+                super().handle()
+            except (ConnectionError, TimeoutError):
+                pass  # A disconnected peer must still release its handler slot.
+
+        def parse_request(self):
+            if not super().parse_request():
+                return False
+            accepted = not self.intake.expired() if self.command == 'POST' else self.intake.complete()
+            if not accepted:
+                self.reply(408, {'error': 'Request receive deadline exceeded'})
+                return False
+            return True
 
         def log_message(self, *args):
             pass  # No bodies, images, identifiers, or secrets in access logs.
@@ -81,26 +108,31 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                 self.reply(403, {'error': 'Loopback Host required'})
                 return
             # Browser writes must be same-origin. Internal callers may omit Origin.
-            origin = self.headers.get('Origin')
-            if origin and origin != f'http://{self.headers.get("Host")}':
+            origins = self.headers.get_all('Origin', [])
+            if (len(origins) > 1
+                    or (origins and origins[0] != f'http://{self.headers.get("Host")}')):
                 self.reply(403, {'error': 'Cross-origin writes are disabled'})
                 return
             if self.path not in ('/v1/assessments', '/demo/assessments', '/demo/extraction', '/demo/image-extraction'):
                 self.reply(404, {'error': 'Not found'})
                 return
             try:
-                if self.headers.get('Transfer-Encoding'):
+                if self.headers.get_all('Transfer-Encoding', []):
                     raise InvalidInput('Transfer encoding is not supported')
-                if self.headers.get_content_type() != 'application/json':
+                if (len(self.headers.get_all('Content-Type', [])) != 1
+                        or self.headers.get_content_type() != 'application/json'):
                     raise InvalidInput('Content-Type must be application/json')
                 lengths = self.headers.get_all('Content-Length', [])
-                if len(lengths) != 1 or not lengths[0].isdigit():
+                if len(lengths) != 1 or not lengths[0].isascii() or not lengths[0].isdigit():
                     raise InvalidInput('Expected one valid Content-Length')
                 size = int(lengths[0])
                 if not 0 < size <= MAX_BODY_BYTES:
                     self.reply(413, {'error': 'Request exceeds the 3 MiB limit or is empty'})
                     return
                 raw = self.rfile.read(size)
+                if not self.intake.complete():
+                    self.reply(408, {'error': 'Request receive deadline exceeded'})
+                    return
                 if len(raw) != size:
                     raise InvalidInput('Incomplete request body')
                 body = strict_json(raw)
@@ -129,10 +161,13 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                 self.reply(409, {'error': str(error)})
             except (InvalidInput, ValueError, TypeError, KeyError, UnicodeError):
                 self.reply(400, {'error': 'Invalid input; use the v1 schema, bounded PNG/JPEG and confirmed identifiers'})
+            except TimeoutError:
+                self.reply(408, {'error': 'Request receive deadline exceeded'})
             except (OSError, sqlite3.Error):
                 self.reply(503, {'error': 'Evidence storage is unavailable'})
 
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    return BoundedHTTPServer(('127.0.0.1', port), Handler,
+                             max_handlers=max_handlers, request_timeout=request_timeout)
 
 
 def main():

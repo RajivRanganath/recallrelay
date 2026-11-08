@@ -1,9 +1,7 @@
 """Opt-in OmniRoute development smoke on frozen synthetic fixtures, not a holdout."""
 import argparse
-import base64
 import copy
 from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
 import platform
@@ -13,32 +11,23 @@ from evidence.ai.extraction import ExtractionService, ExtractionUnavailable, POL
 from evidence.ai.fixture_extractor import DEFAULT_MANIFEST
 from evidence.ai.omniroute import OmniRouteExtractor, read_key
 from evidence.backend.assessment import assess
-from evidence.backend.images import decode_image
-from evidence.backend.validation import ROOT
+from evidence.evals.plan import load_dataset, read_plan, snapshot, verify
 
 
-def evaluate(adapter, manifest_path=DEFAULT_MANIFEST, case_ids=None, progress=None):
+def evaluate(adapter, manifest_path=DEFAULT_MANIFEST, case_ids=None, progress=None, plan_path=None):
     if adapter.mode != 'ai':
         raise ValueError('Provider smoke requires an AI adapter, never fixture lookup')
-    manifest_path = Path(manifest_path)
-    manifest = json.loads(manifest_path.read_text())
-    if manifest.get('dataset_version') != 'synthetic-labels-v1' or not manifest.get('synthetic_only'):
-        raise ValueError('Expected the frozen synthetic dataset')
-    known_ids = {case['case_id'] for case in manifest['cases']}
-    if case_ids and not set(case_ids) <= known_ids:
-        raise ValueError('Unknown synthetic case ID')
-    selected = [case for case in manifest['cases'] if not case_ids or case['case_id'] in case_ids]
-    # Validate all selected bytes before any provider call.
-    images = []
-    for case in selected:
-        path = manifest_path.parent / case['image']
-        if path.resolve().parent != manifest_path.parent.resolve():
-            raise ValueError('Fixture path escaped its directory')
-        raw = path.read_bytes()
-        if hashlib.sha256(raw).hexdigest() != case['sha256']:
-            raise ValueError('Fixture bytes changed; no provider call made')
-        images.append(decode_image(base64.b64encode(raw).decode(), case['mime_type']))
-    template = json.loads((ROOT / 'contracts/fixtures/assessment-request.json').read_text())
+    plan = read_plan(plan_path) if plan_path is not None else None
+    if case_ids is None and plan is not None:
+        case_ids = [case['case_id'] for case in plan['snapshot']['cases']]
+    return _evaluate(adapter, load_dataset(manifest_path, case_ids), plan, progress)
+
+
+def _evaluate(adapter, dataset, plan=None, progress=None):
+    if plan is not None:
+        verify(plan, dataset, adapter)
+    identity = snapshot(dataset, adapter)
+    manifest, selected, images, template = (dataset[key] for key in ('manifest', 'cases', 'images', 'template'))
     service = ExtractionService(adapter)
     results = []
     for case, image in zip(selected, images):
@@ -68,6 +57,7 @@ def evaluate(adapter, manifest_path=DEFAULT_MANIFEST, case_ids=None, progress=No
         'evaluation_kind': 'provider-development-smoke', 'mode': 'ai',
         'provider': adapter.provider_name, 'requested_model': adapter.model,
         'dataset_version': manifest['dataset_version'], 'policy_version': POLICY_VERSION,
+        'evaluation_snapshot': identity, 'plan_sha256': plan['plan_sha256'] if plan else None,
         'captured_at_utc': datetime.now(timezone.utc).isoformat(), 'python_version': platform.python_version(),
         'holdout': False, 'human_validated': False, 'confidence_calibrated': False,
         'request_config': {'temperature': 0, 'max_tokens': 2048, 'reasoning_effort': 'none', 'stream': False,
@@ -85,20 +75,41 @@ def evaluate(adapter, manifest_path=DEFAULT_MANIFEST, case_ids=None, progress=No
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--omniroute-env', type=Path)
-    parser.add_argument('--model', default='auto/smart')
+    parser.add_argument('--model')
+    parser.add_argument('--timeout', type=float)
+    parser.add_argument('--manifest', type=Path, default=DEFAULT_MANIFEST)
+    parser.add_argument('--plan', type=Path, help='Verify an offline frozen evaluation plan before reading credentials')
     parser.add_argument('--case', action='append', dest='case_ids')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     try:
-        adapter = OmniRouteExtractor(read_key(args.omniroute_env), model=args.model)
+        plan = read_plan(args.plan) if args.plan else None
+        settings = plan['snapshot']['adapter'] if plan else {}
+        model = args.model if args.model is not None else settings.get('requested_model', 'auto/smart')
+        timeout = args.timeout if args.timeout is not None else settings.get('timeout_seconds', 20)
+        case_ids = args.case_ids
+        if case_ids is None and plan is not None:
+            case_ids = [case['case_id'] for case in plan['snapshot']['cases']]
+        dataset = load_dataset(args.manifest, case_ids)
+        public_adapter = OmniRouteExtractor('synthetic-offline-preflight', model=model, timeout=timeout)
+        if plan is not None:
+            verify(plan, dataset, public_adapter)
+            if args.output.exists():
+                raise ValueError('Frozen-run output already exists; choose a new report path')
+    except (OSError, ValueError, TypeError, KeyError):
+        parser.error('Evaluation preflight failed; check the dataset, plan, model, timeout and output path')
+    try:
+        adapter = OmniRouteExtractor(read_key(args.omniroute_env), model=model, timeout=timeout)
     except (OSError, ValueError):
         parser.error('Could not load the OmniRoute key/model configuration')
-    report = evaluate(adapter, case_ids=args.case_ids,
-                      progress=lambda case, status: print(case + ': ' + status, flush=True))
+    report = _evaluate(adapter, dataset, plan,
+                       progress=lambda case, status: print(case + ': ' + status, flush=True))
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2) + '\n')
+    with args.output.open('x' if plan else 'w') as file:
+        file.write(json.dumps(report, indent=2) + '\n')
     print(json.dumps({key: value for key, value in report.items() if key != 'results'}, indent=2))
-    if report['unavailable'] or report['false_eligible_against_authored_reference']:
+    if (report['unavailable'] or report['false_eligible_against_authored_reference']
+            or report['fields_matching_authored_typed_reference'] != report['fields_compared']):
         raise SystemExit(1)
 
 

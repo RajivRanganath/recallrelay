@@ -4,6 +4,10 @@ Runnable synthetic customer flow with **mock fixture proposals or opt-in OmniRou
 
 All code, runtime dependencies, storage and UI belong to `evidence/`. The frozen `contracts/` and committed resolution mock are read without changes. No imports from `resolution/` and no shared database.
 
+## Rehearse the customer demo
+
+After installing the evidence lock file, run `evidence/.venv/bin/python -B -m evidence.demo`. This starts the real customer app with mock extraction, the committed resolution mock and a fresh temporary evidence database. Open the printed loopback URL; Ctrl+C stops the owned servers and removes the temporary state. Existing provider/resolution environment variables do not select a live adapter. Use `--resolution-url http://127.0.0.1:8102` only to read an already-running local service; it remains externally owned and no case is created by the launcher. See [the 75-second demo outline](../docs/rajiv/DEMO.md).
+
 ## Run locally
 
 From the repository root, Python 3.11+:
@@ -53,12 +57,14 @@ Editing identifiers invalidates the displayed result and clears confirmation. Mi
 - `/demo/assessments`: browser accepts only a label. Campaign/order come from the synthetic fixture held by the server.
 - `/demo/extraction`: allowlisted canned sample ID, `mode: mock`, no persistence.
 - `/demo/image-extraction`: bounded, decoded image → provider-neutral interface → configured fixture lookup or OmniRoute adapter. Unknown fixture images, provider failures or malformed outputs produce visible 503 errors, without an assessment or silent fallback. Suggestions must be confirmed separately.
-- `/demo/resolution-status`: read-only GET for the server-held synthetic case. Strict schema and case-ID validation, bounded response, timeout, no redirects, visible 404/503 failures.
+- `/demo/resolution-status`: read-only GET for the server-held synthetic case. Strict schema and case-ID validation, a 64 KiB response cap, unambiguous HTTP framing, no redirects/retries, and visible 404/503 failures. A supervised two-second local wait covers the HTTP operation, including trickling headers/bodies; worker cleanup follows. At most two status workers run per client; excess requests fail visibly without an upstream call.
 - `/health`: reports manual assessment and the configured extraction mode/provider separately, without probing the gateway.
 
 Each assessment has a new ID when confirmed data changes. History is retained, exact repeats of the latest request reuse its saved response, and GET survives restart. A case cannot change campaign identity or order snapshot. Older campaign versions and changed rules at the same version return 409; a higher campaign version may be reassessed. These local behaviors are not an exactly-once guarantee.
 
 Default storage: `evidence/.local/assessments.sqlite3` (ignored), override with `--db PATH`. Stored records contain campaign/order snapshots, confirmed evidence, assessment responses and a request digest. Image bodies are transient and are not stored or logged. Requests are capped at 3 MiB; images at 2 MiB, 4096 pixels per edge and 8 million pixels total. MIME must match a decodable, single-frame PNG/JPEG. Integrity verification is followed by pixel decoding; truncated, corrupt, animated or oversized images are rejected. These checks do not establish authenticity, safety or malware-free content. Duplicate JSON keys, non-finite constants and ambiguous request lengths are rejected.
+
+The loopback server admits at most eight active handlers, including requests still sending headers or bodies. Excess connections get a best-effort JSON 503 and close without parsing or application work; a client still writing may instead observe a connection error. Each admitted request has one ten-second total receive budget covering its request line, headers and body, alongside the existing five-second socket inactivity timeout. Expiry interrupts reading and rejects/closes the incomplete request without assessment persistence; a parseable timed-out request attempts a 408 response, though an actively uploading peer may instead observe a reset. Complete input cancels the watchdog before validation, AI or storage work. These are receive/admission controls, not an end-to-end response deadline or production availability guarantee. Closing the server waits for admitted handlers and their watchdog cleanup.
 
 The demo has no cross-origin write support and restricts Host to loopback names. These guards do not replace authentication or upload authorization. No public serving or real customer data.
 
@@ -68,10 +74,19 @@ The demo has no cross-origin write support and restricts Host to loopback names.
 evidence/.venv/bin/python -B -m unittest discover -s evidence/tests -v
 evidence/.venv/bin/python -B -m evidence.evals.run --check
 node --check evidence/web/app.js
+node --test evidence/tests/test_web.js
 git diff --check
 ```
 
-Direct runtime requirements live in `evidence/requirements.txt`; the tested transitive pins live in `evidence/requirements.lock.txt`. Evidence CI installs the lock and runs lane tests plus the fixture-policy replay. See [Rajiv's runbook](../docs/rajiv/RUNBOOK.md) for observed checks and remaining work. Passing these synthetic checks does not measure extraction accuracy, customer savings, live integration or payment behavior.
+Direct runtime requirements live in `evidence/requirements.txt`; the tested transitive pins live in `evidence/requirements.lock.txt`. Evidence CI installs the lock and runs lane tests, the fixture-policy replay, and dependency-free Node UI state regressions. See [Rajiv's runbook](../docs/rajiv/RUNBOOK.md) for observed checks and remaining work. Passing fixture checks does not measure extraction accuracy, customer savings or payment behavior. The separately enabled actual-service smoke has the bounded scope documented below.
+
+Customer-side HTTP integration smoke (temporary databases and loopback fixtures only):
+
+```sh
+evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_resolution*.py' -v
+```
+
+This checks the unchanged resolution mock, all seven authored v1 status values, visible dependency failures, and manual assessment during those failures. Status reads do not create or change an evidence assessment. The mock merchant record remains separate from customer assessment; a synthetic `refunded` response is not payment evidence. Six additional actual-service checks require `RECALLRELAY_RESOLUTION_SOURCE`; otherwise they are explicitly skipped. Evidence CI enables them against a separate pinned resolution checkout. See [the actual-service integration runbook](../docs/rajiv/INTEGRATION.md) for reproduction, explicit coordinator handoff and review/status-only limits.
 
 The fixture dataset has 12 fictional label variants. Its 60 replay checks validate adapter/uncertainty/confirmation plumbing and the authored typed-entry baseline, not image recognition or human completion. See [evaluation scope](evals/README.md) and [critical review](../docs/rajiv/REVIEW.md).
 
