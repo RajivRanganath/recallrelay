@@ -1,3 +1,13 @@
+# 8 November 2026: offline completion-effort reporting
+
+Started `work/rajiv-study-report` from merged PR #23 / main `829501c`. Added `python -m evidence.evals.study_report` for the existing session/trial templates. It binds exact input/manifest and source hashes, validates session/case/mode identity and attempt chronology, rejects nonfinite/invalid timings and conflicting entered scores, and preserves first attempts, retries, noncompletion and missing pairs separately. Summaries remain per session; paired differences require both first attempts completed. Field errors, guessed absent fields, blank readable fields and false eligibility are recomputed against authored development references rather than trusted CSV scoring cells.
+
+Reports omit aliases, free-text notes, provenance paths and raw final identifiers. Consent, configuration, timing and human effort remain self-reported; supplied provenance pointers are never opened. Human-validation/holdout flags stay false and adjudicated/validated session claims are rejected. Blank templates produce `no_observations`, not a study result. The command never calls a provider/payment service or reads a credential. Existing report paths cannot be overwritten; later I/O failure can still leave incomplete output.
+
+Local verification: ten new synthetic-record tests passed on Python 3.11.16 with ResourceWarnings treated as errors, covering blank data, pairing, failed attempts/retries, private-field omission, separated modes, error recomputation, malformed records/times/CSV, false claims and output preservation. Development-v2 plan verification passed unchanged. An actual header-only CLI run saved an ignored `no_observations` tooling check with zero sessions/attempts. Documentation links, exact unchanged template headers and whitespace were checked separately. No full local suite rerun or new human/provider result is claimed; hosted CI is reported separately. Only evidence evaluation/tests/docs and Rajiv documentation change. Actual human observations, reference adjudication, separately reviewed new holdout data/reporting and the final joint recording remain pending.
+
+---
+
 # 8 November 2026: completion preparation and clean reproduction
 
 From merged PR #20 / main `7c78d14`, prepared a Rajiv-only completion checklist, a prospective human review/timing/holdout protocol, header-only session/trial/adjudication sheets and an explicit customer-to-merchant recording transition. No human declarations, participant observations, holdout labels or video results were fabricated. A fresh blank review packet and local collection sheets are under ignored `evidence/.local/completion-prep-2026-11-08/`.

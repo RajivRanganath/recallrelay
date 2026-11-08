@@ -61,3 +61,7 @@ evidence/.venv/bin/python -B -m evidence.demo
 ```
 
 These are explicit historical source pins, not an instruction to assume a newer branch is compatible. Use the printed loopback URL and stop the launcher with Ctrl+C. Review/status checks deliberately reject all refund attempts; do not substitute approval endpoints. The full integration scope is in [INTEGRATION.md](INTEGRATION.md).
+
+## Subsequent reporting-tool continuation
+
+The `work/rajiv-study-report` continuation adds `python -m evidence.evals.study_report` for returned session/trial CSVs. It validates identities, hashes, modes, attempts and observed measurements; keeps failures, unfinished pairs and retries visible; and computes descriptive timing/effort and authored-reference comparisons per session. Header-only inputs remain `no_observations`. See [the protocol](HUMAN-EVALUATION.md) for its command and strict field requirements. This completes the offline reporting preparation; actual human observations and independent labels are still required for results. The historical verification above applies to its recorded implementation commit, not this later tool.
