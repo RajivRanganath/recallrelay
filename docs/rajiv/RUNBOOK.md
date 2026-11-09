@@ -1,6 +1,6 @@
 # Rajiv's evidence runbook
 
-Current checkpoint: 9 November 2026, work/rajiv-evaluation-results, based on merged main 9defad5. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records the returned review and completed typed-versus-mock pilot, including the accidental stop/retry and omitted suggestion request. Issues #1–#3 are closed; #4 results are ready for contributor review/merge. The joint recording in #5 remains pending. Human timing here does not measure a live AI workflow.
+Current checkpoint: 9 November 2026, work/rajiv-evaluation-results, based on merged main 9defad5. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records the returned review and completed typed-versus-mock pilot, including the accidental stop/retry and omitted suggestion request. Issues #1–#3 are closed; #4 mock results are ready for contributor review/merge; its live-AI human timing comparison is still pending. [LIVE-AI-TIMING.md](LIVE-AI-TIMING.md) describes the separate ready collector. The joint recording in #5 remains pending. Human timing here does not measure a live AI workflow.
 
 ## Previous checkpoint: study-report tool
 

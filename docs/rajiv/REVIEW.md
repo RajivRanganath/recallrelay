@@ -6,7 +6,7 @@ All 24 distinct assigned tasks have a completed attempt across 25 retained recor
 
 Validated downloads, schedule, source bindings, attempt chronology and report inputs; independently recalculated counts and medians. Published summaries omit aliases, private notes, raw identifiers and assessment IDs. Originals and instrumentation remain local. No runtime, contract, other-lane edit or new provider call occurred. Hosted CI is separate. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) states all deviations and limits; no holdout, general accuracy, causal savings or live-AI human timing claim follows.
 
-Issues #1–#3 are closed with prototype acceptance notes. Task #4's development results are ready for contributor review; #5 recording remains pending. Resolution PR #21 is now merged. Historical entries retain their original dates and scope.
+Issues #1–#3 are closed with prototype acceptance notes. Task #4's mock development results are ready for contributor review, with live-AI human timing still required for its original comparison criterion. The separate collector is prepared; no AI task timings exist yet. #5 integration/recording remains deferred. Resolution PR #21 is now merged. Historical entries retain their original dates and scope.
 
 ---
 

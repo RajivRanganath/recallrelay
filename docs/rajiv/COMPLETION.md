@@ -2,9 +2,9 @@
 
 ## Current checkpoint — 9 November 2026
 
-Issues #1–#3 have been accepted for the local synthetic prototype and closed. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records #4's development-evaluation closeout: a returned twelve-label review, 24 distinct assigned tasks completed across 25 attempts, an accidental stop with separate retry, and an assigned mock task without a suggestion request. Historical real-provider extraction remains separate from mock-only human timing. No live-AI human time-saving or holdout claim is supported.
+Issues #1–#3 have been accepted for the local synthetic prototype and closed. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records #4's completed development mock pilot: a returned twelve-label review, 24 distinct assigned tasks completed across 25 attempts, an accidental stop with separate retry, and an assigned mock task without a suggestion request. Historical real-provider extraction remains separate from mock-only human timing. No live-AI human time-saving or holdout claim is supported.
 
-Results are on work/rajiv-evaluation-results for contributor review. Task #4 closure is linked to acceptance/merge of the results PR. Task #5 still covers the final customer/joint recorded demo. Resolution PR #21 is now merged; earlier integration evidence retains its historical pin and bounded scope.
+Results are on work/rajiv-evaluation-results for contributor review. Task #4 remains open until the separate live-AI human timing comparison is collected and accepted; merging the mock-results PR alone does not meet that criterion. See [LIVE-AI-TIMING.md](LIVE-AI-TIMING.md). Task #5 still covers the final customer/joint recorded demo. Resolution PR #21 is now merged; earlier integration evidence retains its historical pin and bounded scope.
 
 ## Historical checkpoint — 8 November 2026
 

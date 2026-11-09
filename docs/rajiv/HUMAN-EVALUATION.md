@@ -68,3 +68,7 @@ Reports bind raw session/trial/manifest hashes and the reporter source hash, omi
 ## Collected development pilot — 9 November 2026
 
 The returned review and actual task records are analysed in [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). Preserve all deviations: guided first label, preloaded images, browser monotonic timing, fixed typed-first order, one assigned-assisted task without a suggestion request, and an accidental stop followed by a separate retry. Originals remain local and unchanged. Human timing used mock suggestions; historical real-provider extraction is separate. This collection does not establish a holdout or independent human validation.
+
+## Separate live-AI collection handoff — 9 November 2026
+
+[LIVE-AI-TIMING.md](LIVE-AI-TIMING.md) records the prepared actual-provider collector and its deviations. Mock observations remain unchanged and must not be relabeled as AI. No timed observations or consent are created by preparation. Task #4 remains open until actual AI-versus-typed human observations are returned and accepted.

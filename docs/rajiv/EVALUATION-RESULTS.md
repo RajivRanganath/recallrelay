@@ -1,6 +1,6 @@
 # Development evaluation results — 9 November 2026
 
-Task #4's synthetic development evidence now includes the labeled set, historical real-provider field comparison, a returned human reference review, and a small human typed-versus-mock workflow pilot. The provider comparison and human timing pilot are separate measurements. No live-AI human completion-time result is supplied.
+This is a development-pilot checkpoint for task #4. Its synthetic evidence now includes the labeled set, historical real-provider field comparison, a returned human reference review, and a small human typed-versus-mock workflow pilot. The provider comparison and human timing pilot are separate measurements. No live-AI human completion-time result is supplied, so the AI-versus-typed effort criterion remains incomplete. See [the separate live-AI collection handoff](LIVE-AI-TIMING.md).
 
 ## Reference review
 
