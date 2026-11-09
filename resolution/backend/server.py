@@ -61,6 +61,13 @@ def make_server(port=8102, db_path=None, adapter=None):
             return len(self.headers.get_all('Host', [])) == 1 and self.headers.get('Host') in {
                 f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
 
+        def same_origin(self):
+            # Browsers always send Origin on cross-origin POSTs, so a hostile page cannot omit it.
+            # Non-browser callers (evidence service, tests) send none and stay allowed.
+            origin = self.headers.get('Origin')
+            port = self.server.server_port
+            return origin is None or origin in {f'http://127.0.0.1:{port}', f'http://localhost:{port}'}
+
         def do_GET(self):
             if not self.allowed_host():
                 return self.reply(403, {'error': 'Loopback Host required'})
@@ -80,12 +87,16 @@ def make_server(port=8102, db_path=None, adapter=None):
         def do_POST(self):
             if not self.allowed_host():
                 return self.reply(403, {'error': 'Loopback Host required'})
+            if not self.same_origin():
+                return self.reply(403, {'error': 'Cross-origin requests are not allowed'})
             parts = self.path.strip('/').split('/')
             action = parts[3] if len(parts) == 4 and parts[:2] == ['v1', 'cases'] and parts[3] in ('approve', 'reconcile', 'remedy-conditions') else None
             if self.path not in ('/v1/resolutions', '/v1/demo/case') and not action:
                 return self.reply(404, {'error': 'Not found'})
             try:
                 takes_body = self.path == '/v1/resolutions' or action == 'approve'
+                if takes_body and self.headers.get_content_type() != 'application/json':
+                    return self.reply(415, {'error': 'Content-Type must be application/json'})
                 size = int(self.headers.get('Content-Length', '0')) if takes_body else 0
                 if takes_body and not 0 < size <= MAX_BODY_BYTES:
                     raise InvalidInput('Body size is outside the allowed range')

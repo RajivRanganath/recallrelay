@@ -30,9 +30,9 @@ class ServerTests(unittest.TestCase):
         self.thread.join(timeout=2)
         self.tmp.cleanup()
 
-    def call(self, method, path, body=None, raw=None):
+    def call(self, method, path, body=None, raw=None, headers=None):
         data = raw if raw is not None else (json.dumps(body).encode() if body is not None else None)
-        request = Request(self.url + path, data=data, method=method, headers={'Content-Type': 'application/json'})
+        request = Request(self.url + path, data=data, method=method, headers={'Content-Type': 'application/json', **(headers or {})})
         try:
             with urlopen(request, timeout=5) as response:
                 return response.status, json.loads(response.read())
@@ -92,6 +92,42 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/approve', dict(approval, amount_minor=1, approved_by='m'))[0], 409)
         self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/approve', {'approved_by': 'm'})[0], 400)
         self.assertEqual(self.call('GET', '/v1/resolutions/case-demo-1')[1]['status'], 'awaiting_approval')
+
+    def prepare_awaiting_approval(self):
+        self.call('POST', '/v1/demo/case')
+        self.call('POST', '/v1/cases/case-demo-1/remedy-conditions')
+        binding = self.call('GET', '/v1/cases/case-demo-1')[1]['binding']
+        return {key: binding[key] for key in ('assessment_id', 'campaign_version', 'capture_id', 'amount_minor')} | {'approved_by': 'merchant-demo'}
+
+    def test_hostile_origins_cannot_change_state_on_any_post_route(self):
+        approval = self.prepare_awaiting_approval()
+        for origin in ('http://evil.example', 'null', 'http://127.0.0.1:1', 'https://127.0.0.1:%d' % self.server.server_port):
+            for path, body in (('/v1/cases/case-demo-1/approve', approval), ('/v1/cases/case-demo-1/remedy-conditions', None),
+                               ('/v1/cases/case-demo-1/reconcile', None), ('/v1/demo/case', None),
+                               ('/v1/resolutions', self.eligible())):
+                with self.subTest(origin=origin, path=path):
+                    self.assertEqual(self.call('POST', path, body, headers={'Origin': origin})[0], 403)
+        self.assertEqual(self.call('GET', '/v1/resolutions/case-demo-1')[1]['status'], 'awaiting_approval')
+        self.assertIsNone(self.call('GET', '/v1/cases/case-demo-1')[1]['operation'])
+
+    def test_same_origin_browser_requests_still_work(self):
+        approval = self.prepare_awaiting_approval()
+        origin = {'Origin': f'http://127.0.0.1:{self.server.server_port}'}
+        localhost = {'Origin': f'http://localhost:{self.server.server_port}'}
+        self.assertEqual(self.call('POST', '/v1/demo/case', headers=localhost)[0], 200)
+        code, done = self.call('POST', '/v1/cases/case-demo-1/approve', approval, headers=origin)
+        self.assertEqual((code, done['status']), (200, 'refunded'))
+
+    def test_body_routes_require_a_json_content_type(self):
+        approval = self.prepare_awaiting_approval()
+        for content_type in ('text/plain', 'application/x-www-form-urlencoded', 'multipart/form-data', 'text/plain;charset=UTF-8'):
+            for path, body in (('/v1/cases/case-demo-1/approve', approval), ('/v1/resolutions', self.eligible())):
+                with self.subTest(content_type=content_type, path=path):
+                    code, _ = self.call('POST', path, raw=json.dumps(body).encode(), headers={'Content-Type': content_type})
+                    self.assertEqual(code, 415)
+        self.assertEqual(self.call('GET', '/v1/resolutions/case-demo-1')[1]['status'], 'awaiting_approval')
+        self.assertIsNone(self.call('GET', '/v1/cases/case-demo-1')[1]['operation'])
+        self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/approve', approval, headers={'Content-Type': 'application/json; charset=utf-8'})[0], 200)
 
     def test_ui_assets_are_served_with_a_restrictive_policy(self):
         for path, kind in (('/', 'text/html'), ('/app.js', 'text/javascript'), ('/style.css', 'text/css')):
