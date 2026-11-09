@@ -98,8 +98,35 @@ class CaseStore:
                        ('pending', json.dumps(pending_response, sort_keys=True), case_id))
         return pending_response, True
 
-    def finish(self, case_id, response):
+    def hold(self, case_id, response):
+        """Move a case that is still awaiting approval to manual handling. Never touches money states."""
         with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT status FROM cases WHERE case_id=?', (case_id,)).fetchone()
+            if not row or row[0] != 'awaiting_approval':
+                return False
+            db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?',
+                       (response['status'], json.dumps(response, sort_keys=True), case_id))
+        return True
+
+    def pending_case_for_capture(self, capture_id):
+        """The case id of a pending refund on this payment, if exactly one exists."""
+        with self.connect() as db:
+            rows = db.execute('SELECT o.case_id FROM operations o JOIN cases c ON c.case_id=o.case_id '
+                              'WHERE o.capture_id=? AND c.status=?', (capture_id, 'pending')).fetchall()
+        return rows[0][0] if len(rows) == 1 else None
+
+    def finish(self, case_id, response):
+        """Settle a pending case. A case that already left 'pending' is never overwritten.
+
+        Two overlapping reconciles can both start from 'pending'; the first to finish wins and the
+        later one gets the stored state back, so a completed refund can never revert to pending.
+        """
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT status, response FROM cases WHERE case_id=?', (case_id,)).fetchone()
+            if row and row[0] != 'pending':
+                return json.loads(row[1])
             db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?',
                        (response['status'], json.dumps(response, sort_keys=True), case_id))
         return response

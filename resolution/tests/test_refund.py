@@ -6,7 +6,7 @@ import threading
 import unittest
 
 from resolution.backend.errors import InvalidInput
-from resolution.backend.paypal import FakePayPal
+from resolution.backend.paypal import CaptureNotRefundable, FakePayPal, OpenDispute, RefundUnknown
 from resolution.backend.refund import approve, reconcile
 from resolution.backend.review import review
 from resolution.backend.store import ApprovalConflict, AlreadyInProgress, CaseStore
@@ -106,6 +106,78 @@ class RefundTests(unittest.TestCase):
     def test_reconcile_requires_a_pending_refund(self):
         with self.assertRaises(ApprovalConflict):
             reconcile(self.store, FakePayPal(), 'case-demo-1')
+
+    def test_overlapping_reconciles_never_turn_a_refunded_case_back_to_pending(self):
+        first_started, release_first = threading.Event(), threading.Event()
+
+        class Slow(FakePayPal):
+            def refund(self, *args):
+                self.calls += 1
+                if self.calls == 1:  # Initial approval: outcome unknown, case stays pending.
+                    raise RefundUnknown('No response')
+                if self.calls == 2:  # Slow check: started first, times out only after the other check has finished.
+                    first_started.set()
+                    release_first.wait(5)
+                    raise RefundUnknown('Timed out')
+                return super().refund(*args)  # Fast check: completes the refund.
+
+        adapter = Slow()
+        approve(self.store, adapter, 'case-demo-1', APPROVAL)
+        results = {}
+        slow = threading.Thread(target=lambda: results.update(slow=reconcile(self.store, adapter, 'case-demo-1')))
+        slow.start()
+        first_started.wait(5)
+        results['fast'] = reconcile(self.store, adapter, 'case-demo-1')
+        release_first.set()
+        slow.join()
+        self.assertEqual(results['fast']['status'], 'refunded')
+        self.assertEqual(results['slow']['status'], 'refunded')  # The late "unknown" gets the stored result back.
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'refunded')
+
+    def test_late_unknown_result_cannot_overwrite_a_completed_refund(self):
+        done = approve(self.store, FakePayPal(), 'case-demo-1', APPROVAL)
+        late = dict(done, status='pending', refund_id=None)
+        self.assertEqual(self.store.finish('case-demo-1', late)['status'], 'refunded')
+        self.assertEqual(self.store.latest('case-demo-1'), done)
+
+    def test_refund_is_not_called_done_unless_the_provider_read_back_agrees(self):
+        for name, read in (('unreadable', lambda self, rid: (_ for _ in ()).throw(RefundUnknown('x'))),
+                           ('not_completed', lambda self, rid: dict(FakePayPal.get_refund(self, rid), status='PENDING')),
+                           ('wrong_amount', lambda self, rid: dict(FakePayPal.get_refund(self, rid), amount={'value': '1.00', 'currency_code': 'USD'}))):
+            with self.subTest(name):
+                self.tearDown()
+                self.setUp()
+                adapter = type('Adapter', (FakePayPal,), {'get_refund': read})()
+                result = approve(self.store, adapter, 'case-demo-1', APPROVAL)
+                self.assertEqual((result['status'], result['refund_id']), ('pending', None))
+
+    def test_approval_checks_the_payment_before_claiming_and_blocks_unrefundable_payments(self):
+        class Checked(FakePayPal):
+            def __init__(self, outcome):
+                super().__init__()
+                self.outcome, self.checks = outcome, 0
+
+            def check_capture(self, capture_id, amount_minor, currency):
+                self.checks += 1
+                if self.outcome:
+                    raise self.outcome('blocked')
+        # PayPal says no -> manual handling. PayPal unreachable -> blocked, but the case stays approvable.
+        for outcome, expected in ((CaptureNotRefundable, 'manual_required'), (OpenDispute, 'manual_required'), (RefundUnknown, 'awaiting_approval')):
+            with self.subTest(outcome=outcome.__name__):
+                self.tearDown()
+                self.setUp()
+                adapter = Checked(outcome)
+                with self.assertRaises(ApprovalConflict):
+                    approve(self.store, adapter, 'case-demo-1', APPROVAL)
+                self.assertEqual((adapter.calls, self.store.operation('case-demo-1')), (0, None))
+                self.assertEqual(self.store.latest('case-demo-1')['status'], expected)
+        self.tearDown()
+        self.setUp()
+        ok = Checked(None)
+        first = approve(self.store, ok, 'case-demo-1', APPROVAL)
+        self.assertEqual((first['status'], ok.checks), ('refunded', 1))
+        approve(self.store, ok, 'case-demo-1', APPROVAL)  # A repeat reports state without re-checking or refunding.
+        self.assertEqual((ok.checks, ok.calls), (1, 1))
 
     def test_fixture_capture_ids_never_reach_a_real_sandbox_adapter(self):
         class Sandbox(FakePayPal):

@@ -11,9 +11,9 @@ from resolution.ai.gemini import GeminiBrief, read_key as read_gemini_key
 from resolution.ai.omniroute import OmniRouteBrief, read_key
 from resolution.backend.errors import InvalidInput
 from resolution.backend.json_input import strict_json
-from resolution.backend.paypal import FakePayPal
+from resolution.backend.paypal import FakePayPal, RefundUnknown
 from resolution.backend.paypal_sandbox import SandboxPayPal, load_credentials
-from resolution.backend.refund import approve, reconcile
+from resolution.backend.refund import apply_webhook, approve, reconcile
 from resolution.backend.review import review
 from resolution.backend.store import AlreadyInProgress, ApprovalConflict, CaseStore
 from resolution.backend.validation import MAX_BODY_BYTES, ROOT, validate_contract
@@ -39,7 +39,7 @@ def case_detail(store, case_id):
             'order': {key: order[key] for key in ('order_id', 'paid_minor', 'previously_refunded_minor', 'age_days', 'quantity')}}
 
 
-def make_server(port=8102, db_path=None, adapter=None, brief=None):
+def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=None):
     store = CaseStore(db_path or ROOT / 'resolution' / '.local' / 'cases.sqlite3')
     adapter = adapter if adapter is not None else FakePayPal()
     brief = brief if brief is not None else BriefService()
@@ -101,6 +101,25 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None):
                 return None
             return self.rfile.read(size)
 
+        def webhook(self, raw):
+            """PayPal event receiver. Off unless a webhook ID is configured. Unverified events change nothing,
+            and a verified one only settles a pending refund after PayPal confirms it by a direct read."""
+            if not webhook_id or not hasattr(adapter, 'verify_webhook'):
+                return self.reply(404, {'error': 'Not found'})
+            if self.headers.get_content_type() != 'application/json' or not raw:
+                return self.reply(400, {'error': 'A JSON event body is required'})
+            try:
+                verified = adapter.verify_webhook({k.lower(): v for k, v in self.headers.items()}, raw, webhook_id)
+            except RefundUnknown:
+                return self.reply(503, {'error': 'Could not verify the event with PayPal; try again'})
+            if not verified:
+                return self.reply(401, {'error': 'Event could not be verified'})
+            try:
+                event = strict_json(raw)
+            except InvalidInput:
+                return self.reply(400, {'error': 'Invalid event'})
+            return self.reply(200, {'accepted': True, 'settled': apply_webhook(store, adapter, event) is not None})
+
         def do_POST(self):
             raw = self.read_body()
             if raw is None:
@@ -111,6 +130,8 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None):
                 return self.reply(403, {'error': 'Cross-origin requests are not allowed'})
             parts = self.path.strip('/').split('/')
             action = parts[3] if len(parts) == 4 and parts[:2] == ['v1', 'cases'] and parts[3] in ('approve', 'reconcile', 'remedy-conditions', 'brief') else None
+            if self.path == '/v1/paypal/webhook':
+                return self.webhook(raw)
             if self.path not in ('/v1/resolutions', '/v1/demo/case') and not action:
                 return self.reply(404, {'error': 'Not found'})
             try:
@@ -161,6 +182,7 @@ if __name__ == '__main__':
     parser.add_argument('--paypal', choices=('fake', 'sandbox'), default='fake',
                         help='sandbox sends real refunds to the PayPal SANDBOX only; fake never leaves this process')
     parser.add_argument('--paypal-env', help='Existing env file holding PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET (read, never executed)')
+    parser.add_argument('--paypal-webhook-id', help='Turns on POST /v1/paypal/webhook for events of this PayPal sandbox webhook (needs --paypal sandbox)')
     parser.add_argument('--brief', choices=('template', 'omniroute', 'gemini'), default='template',
                         help='omniroute (local gateway) or gemini (Google API) drafts the merchant brief; output is validated or replaced by the template')
     parser.add_argument('--omniroute-env', help='Existing env file holding OMNIROUTE_API_KEY (read, never executed)')
@@ -174,8 +196,8 @@ if __name__ == '__main__':
             adapter = SandboxPayPal(*load_credentials(args.paypal_env))
         except (OSError, ValueError):
             parser.error('Could not load PayPal sandbox credentials; check PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET or --paypal-env')
-    elif args.paypal_env:
-        parser.error('--paypal-env needs --paypal sandbox')
+    elif args.paypal_env or args.paypal_webhook_id:
+        parser.error('--paypal-env and --paypal-webhook-id need --paypal sandbox')
     provider = None
     if args.brief == 'omniroute':
         try:
@@ -195,4 +217,4 @@ if __name__ == '__main__':
         parser.error('--gemini-env and --gemini-model need --brief gemini')
     note = 'PayPal SANDBOX refunds (no live money)' if adapter else 'fake PayPal only, no money movement'
     print(f'resolution on http://127.0.0.1:{args.port}; {note}; brief: {"AI via " + provider.name + " (validated)" if provider else "template"}', flush=True)
-    make_server(args.port, args.db, adapter, BriefService(provider)).serve_forever()
+    make_server(args.port, args.db, adapter, BriefService(provider), args.paypal_webhook_id).serve_forever()
