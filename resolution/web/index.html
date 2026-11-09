@@ -26,6 +26,17 @@
         <div id="detail" hidden>
           <p id="status-line" class="eyebrow"></p>
           <p id="brief" class="brief"></p>
+          <section aria-labelledby="ai-brief-title">
+            <h3 id="ai-brief-title">Merchant brief</h3>
+            <button type="button" id="write-brief" class="secondary">Write brief</button>
+            <div id="brief-result" hidden>
+              <p id="brief-label" class="eyebrow"></p>
+              <p id="brief-text" class="brief"></p>
+              <ul id="brief-steps"></ul>
+              <p id="brief-cites" class="hint"></p>
+              <p id="brief-note" class="hint"></p>
+            </div>
+          </section>
           <h3>Evidence assessment</h3>
           <dl id="assessment" class="facts"></dl>
           <h3>Order</h3>
@@ -53,7 +64,7 @@
         <p id="message" role="status" aria-live="polite"></p>
       </section>
     </div>
-    <footer>Campaign-demo-1 · USD · one unit<br>Brief: deterministic template (no AI) / Decisions: code + your approval / Payments: <span id="footer-mode">checking</span></footer>
+    <footer>Campaign-demo-1 · USD · one unit<br>Brief: <span id="footer-brief">checking</span> / Decisions: code + your approval / Payments: <span id="footer-mode">checking</span></footer>
   </main>
 </body>
 </html>

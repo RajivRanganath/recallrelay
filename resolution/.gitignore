@@ -1,0 +1,6 @@
+# Local databases and generated sandbox cases (the sandbox case file holds a real sandbox capture ID)
+.local/
+# Never commit credentials. Keep real env files outside the repository where possible.
+*.env
+.env*
+!.env.example

@@ -7,6 +7,10 @@ const statusLabels = {
 let selected = null;
 let detail = null;
 let busy = false;
+const fallbackText = {
+  no_provider: 'No AI provider is connected, so this is the template.',
+  invalid_output: 'The AI draft failed the checks against the case records, so the template is shown instead.'
+};
 
 async function request(path, method = 'GET', body) {
   const response = await fetch(path, {
@@ -32,7 +36,7 @@ function facts(list, rows) {
 }
 function lock(value) {
   busy = value;
-  for (const id of ['load-demo', 'confirm-remedy', 'typed-amount', 'approver', 'approve', 'reconcile']) $(id).disabled = value;
+  for (const id of ['load-demo', 'confirm-remedy', 'typed-amount', 'approver', 'approve', 'reconcile', 'write-brief']) $(id).disabled = value;
 }
 async function run(work) {
   if (busy) return;
@@ -72,6 +76,7 @@ function render() {
   $('detail-title').textContent = resolution.case_id;
   $('status-line').textContent = `${statusLabels[resolution.status] || resolution.status} · mode: ${resolution.mode}`;
   $('brief').textContent = resolution.brief;
+  $('brief-result').hidden = true;
   facts($('assessment'), [
     ['Decision', assessment.decision], ['Model', assessment.model || 'not confirmed'], ['Batch', assessment.batch || 'not confirmed'],
     ['Reason', assessment.reason], ['Assessment mode', assessment.mode],
@@ -123,6 +128,20 @@ $('approval-form').addEventListener('submit', (event) => {
     $('outcome').focus();
   });
 });
+$('write-brief').addEventListener('click', () => run(async () => {
+  const brief = await request(`/v1/cases/${encodeURIComponent(selected)}/brief`, 'POST');
+  $('brief-label').textContent = brief.source === 'ai' ? `${brief.label} · ${brief.provider} · ${brief.served_model}` : brief.label;
+  $('brief-text').textContent = brief.text;
+  $('brief-steps').replaceChildren(...brief.missing_steps.map((step) => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    return li;
+  }));
+  $('brief-cites').textContent = `Sources: ${brief.citations.join(', ')}`;
+  $('brief-note').textContent = brief.source === 'ai' ? 'Advisory only. Approval and payment stay with you and the review rules.'
+    : (fallbackText[brief.fallback_reason] || 'The AI provider was unavailable, so the template is shown instead.');
+  $('brief-result').hidden = false;
+}));
 $('reconcile').addEventListener('click', () => run(async () => {
   await request(`/v1/cases/${encodeURIComponent(selected)}/reconcile`, 'POST');
   await open(selected);
@@ -136,6 +155,7 @@ $('reconcile').addEventListener('click', () => run(async () => {
       ? 'Mock payments: refunds use a fake PayPal and no money moves. Fictional brand, products and orders only.'
       : 'PayPal sandbox mode. Fictional brand and orders only; no live money.';
     $('footer-mode').textContent = mock ? 'fake PayPal (mock)' : 'PayPal sandbox';
+    $('footer-brief').textContent = health.brief === 'ai' ? 'AI-drafted on request, checked against the case records, template if the checks fail' : 'template (no AI provider connected)';
     await loadList();
   } catch (error) { $('message').textContent = error.message; }
 })();

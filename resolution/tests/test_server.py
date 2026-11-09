@@ -7,6 +7,7 @@ import unittest
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
+from resolution.ai.brief import BriefService
 from resolution.backend.server import make_server
 from resolution.backend.store import CaseStore
 from resolution.backend.validation import validate_contract
@@ -128,6 +129,49 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.call('GET', '/v1/resolutions/case-demo-1')[1]['status'], 'awaiting_approval')
         self.assertIsNone(self.call('GET', '/v1/cases/case-demo-1')[1]['operation'])
         self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/approve', approval, headers={'Content-Type': 'application/json; charset=utf-8'})[0], 200)
+
+    def test_brief_route_is_advisory_origin_protected_and_defaults_to_the_template(self):
+        self.prepare_awaiting_approval()
+        before = self.call('GET', '/v1/cases/case-demo-1')
+        code, brief = self.call('POST', '/v1/cases/case-demo-1/brief')
+        self.assertEqual((code, brief['source'], brief['fallback_reason']), (200, 'template', 'no_provider'))
+        self.assertEqual(self.call('POST', '/v1/cases/case-demo-1/brief', headers={'Origin': 'http://evil.example'})[0], 403)
+        self.assertEqual(self.call('POST', '/v1/cases/unknown/brief')[0], 404)
+        self.assertEqual(self.call('GET', '/v1/cases/case-demo-1'), before)  # Advisory: no state change, no operation, no refund.
+        self.assertEqual(self.call('GET', '/health')[1]['brief'], 'template')
+
+    def test_brief_route_uses_a_provider_only_when_configured_and_validates_its_output(self):
+        class Provider:
+            name = 'scripted'
+
+            def __init__(self, content):
+                self.content = content
+
+            def complete(self, system, user):
+                return json.dumps(self.content), 'served-model-1'
+
+        good = {'summary': 'Batch B101 matches and the refund of 40.00 USD awaits your approval.', 'missing_steps': [], 'citations': ['review']}
+        bad = {'summary': 'The refund has been approved and paid.', 'missing_steps': [], 'citations': ['review']}
+        for content, source in ((good, 'ai'), (bad, 'template')):
+            with self.subTest(source=source):
+                with tempfile.TemporaryDirectory() as tmp:
+                    server = make_server(0, Path(tmp) / 'cases.sqlite3', brief=BriefService(Provider(content)))
+                    thread = threading.Thread(target=server.serve_forever, daemon=True)
+                    thread.start()
+                    try:
+                        url = f'http://127.0.0.1:{server.server_port}'
+                        for path in ('/v1/demo/case', '/v1/cases/case-demo-1/remedy-conditions'):
+                            urlopen(Request(url + path, data=b'', method='POST'), timeout=5).close()
+                        with urlopen(Request(url + '/v1/cases/case-demo-1/brief', data=b'', method='POST'), timeout=5) as response:
+                            result = json.loads(response.read())
+                        with urlopen(url + '/health', timeout=5) as response:
+                            self.assertEqual(json.loads(response.read())['brief'], 'ai')
+                    finally:
+                        server.shutdown()
+                        server.server_close()
+                        thread.join(timeout=2)
+                self.assertEqual(result['source'], source)
+                self.assertEqual(result['fallback_reason'], None if source == 'ai' else 'invalid_output')
 
     def test_ui_assets_are_served_with_a_restrictive_policy(self):
         for path, kind in (('/', 'text/html'), ('/app.js', 'text/javascript'), ('/style.css', 'text/css')):

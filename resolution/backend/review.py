@@ -1,4 +1,8 @@
-"""Deterministic review. Code, not AI, decides the status; this step never moves money."""
+"""Deterministic review. Code, not AI, decides the status; this step never moves money.
+
+The brief text uses fixed phrases only: free text from the assessment is never copied into it."""
+import re
+
 from resolution.backend.errors import InvalidInput
 
 REFUND_WINDOW_DAYS = 180  # Older original captures stay manual.
@@ -14,10 +18,11 @@ def review(request):
 
     if assessment['decision'] == 'needs_information':
         status, amount = 'needs_information', 0
-        brief = f"More information is needed before review: {assessment['reason']}"
+        fields = [f for f in assessment['missing_fields'] if re.fullmatch(r'[a-z_]{1,32}', f)]
+        brief = 'More information is needed before review' + (f": {', '.join(fields)}." if fields else '.')
     elif assessment['decision'] == 'excluded':
         status, amount = 'excluded', 0
-        brief = f"Excluded from this campaign, which is not a safety finding: {assessment['reason']}"
+        brief = 'Excluded from this campaign, which is not a safety finding.'
     else:
         problems = []
         if order['currency'] != CAMPAIGN_CURRENCY:
@@ -36,7 +41,7 @@ def review(request):
         else:
             status, amount = 'awaiting_approval', remaining
             brief = (f"Assessment {assessment['assessment_id']} matches this campaign. "
-                     f'Merchant approval needed for a refund of {remaining} minor units {order["currency"]}.')
+                     f'Merchant approval needed for a refund of {remaining // 100}.{remaining % 100:02d} {order["currency"]}.')
     return {
         'schema_version': '1.0', 'case_id': order['case_id'], 'status': status, 'brief': brief,
         'citations': citations, 'proposed_amount_minor': amount, 'currency': order['currency'],

@@ -1,7 +1,11 @@
 # Resolution lane
 
-Implementation space for this lane's backend, AI adapter, UI, tests and evaluation.
+Merchant decision and settlement: deterministic review, human approval, an idempotent refund state machine, an advisory merchant brief, and a merchant review UI. By default payments use a **fake PayPal adapter** and the brief is a **template**. A PayPal **sandbox** adapter (one refund verified against the real sandbox on 9 November 2026) and an **AI brief** via OmniRoute or direct Gemini (evaluated four times on a real Gemini model, latest run 12 of 14 drafts accepted, with the checker changed between runs and then frozen; the running app path has not been exercised live) are opt-in. See [the runbook](../docs/vismaya/RUNBOOK.md) for what is tested and what is still missing, and [LIVE-CHECKS.md](../docs/vismaya/LIVE-CHECKS.md) for the real-service checks.
 
-This folder currently contains no live implementation. Run `python3 -m unittest discover -s resolution/tests -v` from the repo root for the starter contract check. See docs/START-VISMAYA.md for ownership and first tasks.
+```sh
+python -m resolution.backend.server --port 8102
+python -m unittest discover -s resolution/tests -v
+python -m resolution.evals.run --provider template --output resolution/evals/reports/NEW_NAME.json
+```
 
-Recommended layout: `backend/`, `ai/`, `web/`, `tests/`, `evals/`. Own dependency and lock files here. Both lanes can use Python backends and plain HTML/JS initially; no shared framework choice is required. Before selecting a live model provider, confirm credentials and costs with the account owner. All initial development works against mocks.
+Layout: `backend/` (review, store, refund, fake and sandbox PayPal, evidence client, server), `ai/` (brief validator, OmniRoute and Gemini clients), `web/` (merchant UI), `evals/` (labeled cases and runner), `sandbox/` (scripts for a real sandbox payment and refund read-back), `tests/`. Never import the other lane directly; talk to evidence over HTTP (`EVIDENCE_BASE_URL`). Secrets live in env files outside the repo, are read for named variables only, and are never committed.
