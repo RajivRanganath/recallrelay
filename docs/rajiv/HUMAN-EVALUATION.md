@@ -64,3 +64,15 @@ Typed rows set extraction unavailable to `false` and suggested-field edits to `n
 The JSON keeps each session separate, exposes first-attempt outcome/time/error denominators, gives retries separate summaries and pairs only the same session/case with both first attempts completed. All other pairs show their missing/failure/timeout state. Reported differences are `typed_seconds - assisted_seconds`, with no savings claim. Unknown availability and omitted pairs remain visible. Declared order is checked against the protocol's manifest-then-reverse prefix; a mismatch is retained as a flag, not discarded. Scoring always uses provisional authored development references from the selected manifest; adjudicated/holdout/validated session claims are not accepted. `--manifest PATH` can select another compatible synthetic development manifest, without establishing independent review.
 
 Reports bind raw session/trial/manifest hashes and the reporter source hash, omit aliases/free-text/path pointers/raw final identifiers, and retain unauthenticated-human-work and development-only flags. They still need review before sharing. The original local CSVs retain every supplied measurement and note. Independent label adjudication and supported holdout reporting remain separate work.
+
+## Collected development pilot — 9 November 2026
+
+The returned review and actual task records are analysed in [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). Preserve all deviations: guided first label, preloaded images, browser monotonic timing, fixed typed-first order, one assigned-assisted task without a suggestion request, and an accidental stop followed by a separate retry. Originals remain local and unchanged. Human timing used mock suggestions; historical real-provider extraction is separate. This collection does not establish a holdout or independent human validation.
+
+## Separate live-AI collection handoff — 9 November 2026
+
+[LIVE-AI-TIMING.md](LIVE-AI-TIMING.md) records the prepared actual-provider collector and its deviations. Mock observations remain unchanged and must not be relabeled as AI. No timed observations or consent are created by preparation. Task #4 remains open until actual AI-versus-typed human observations are returned and accepted.
+
+## Completed actual-provider pilot — 9 November 2026
+
+The separate participant run now contains twelve typed and twelve actual AI-assisted first attempts, all completed. Every assisted task made one actual request, with twelve usable proposals and no unavailable calls. Median times were 8.0325 seconds typed and 4.8825 seconds assisted; all twelve pairs completed. Final identifier mismatches were zero on 48 field comparisons, with five unresolved needs_information results per arm. Raw autosaved records, source bindings and actual-call journal were checked and preserved locally. See [the results](EVALUATION-RESULTS.md). This supersedes the earlier pending-collection status above; the historical mock run remains separate. No new holdout, causal savings, authentication, integration or recording evidence is implied.

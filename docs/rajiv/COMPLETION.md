@@ -1,5 +1,13 @@
 # Rajiv lane completion checkpoint
 
+## Current checkpoint — 9 November 2026
+
+Issues #1–#3 are closed for the local synthetic prototype. Task #4's work is now collected and analysed: twelve-label review, preserved earlier mock pilot, and a separate real-provider human comparison with all 24 tasks completed and twelve actual AI proposals. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records timings, errors, unresolved decisions, provider/model details, deviations and limitations. No holdout, general accuracy or causal time-saving claim follows.
+
+Results are on work/rajiv-evaluation-results for contributor acceptance/merge; #4 stays open until that review completes. The narrow existing-test cleanup fix is separately reviewable in PR #26 and included in this branch. Integration with the resolution lane and customer/joint recording in #5 are deferred at the owner's request. Resolution PR #21 is merged. No remaining standalone runtime implementation gap was identified against #1–#4's synthetic-prototype criteria; external review is still required by the collaboration rules.
+
+## Historical checkpoint — 8 November 2026
+
 Checked 8 November 2026. Implementation baseline: merged main `7c78d142903b7c91e563b19adb8a210240fff810` (PR #20). Completion preparation branch: `work/rajiv-completion-prep`. This checkpoint contains documentation, blank collection templates and verification evidence; it adds no runtime feature or new AI result.
 
 ## Task acceptance status

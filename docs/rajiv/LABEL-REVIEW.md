@@ -49,3 +49,7 @@ Nine Python regressions cover blank answer-free packets and exact embedded bytes
 ## Reviewer handoff and next measurements
 
 Use [HUMAN-EVALUATION.md](HUMAN-EVALUATION.md) for preserving/adjudicating returned disagreements, a prospective timing pilot, blank data sheets and the separate future-holdout process. These materials are preparation; actual people supply review declarations and observed task measurements.
+
+## Returned review — 9 November 2026
+
+A person completed and downloaded the twelve-image packet. The checker accepted 24 field values with zero identifier disagreements. Label-001 is marked Guided example. There were no identifier disagreements to adjudicate. Raw review/audit are local under evidence/.local/human-review-2026-11-09/. This is a self-reported development-reference review with prior visibility. See [the results](EVALUATION-RESULTS.md).

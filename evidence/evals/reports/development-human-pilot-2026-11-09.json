@@ -1,0 +1,628 @@
+{
+  "evaluation_kind": "development-reference-review-and-mock-workflow-pilot",
+  "collection_date": "2026-11-09",
+  "participants": 1,
+  "holdout": false,
+  "human_validated": false,
+  "human_identity_independently_verified": false,
+  "reference_review": {
+    "cases_reviewed": 12,
+    "fields_compared": 24,
+    "identifier_disagreements": 0,
+    "guided_sample_ids": [
+      "label-001"
+    ],
+    "scope": "Self-reported review of previously visible development images. Readability categories have no authored scoring target."
+  },
+  "historical_provider_comparison": {
+    "captured_at_utc": "2026-11-06T06:50:56.317959+00:00",
+    "provider": "omniroute",
+    "requested_model": "gemini/gemini-3.1-flash-lite",
+    "cases_attempted": 12,
+    "proposals": 12,
+    "unavailable": 0,
+    "fields_compared": 24,
+    "fields_matching_authored_typed_reference": 24,
+    "false_eligible_against_authored_reference": 0
+  },
+  "human_workflow": {
+    "mode": "mock",
+    "assistance": "exact-byte fixture proposals",
+    "recorded_attempts": 25,
+    "first_attempts": 24,
+    "completed_first_attempts": 23,
+    "retry_attempts": 1,
+    "completed_retry_attempts": 1,
+    "distinct_assigned_tasks_completed": 24,
+    "first_attempt_accidental_stops": 1,
+    "intentional_withdrawals_reported": 0,
+    "failures": 0,
+    "timeouts": 0,
+    "suggestion_requests_recorded": 12,
+    "completed_assigned_assisted_tasks_without_suggestion_request": 1,
+    "conditions": {
+      "typed": {
+        "first_attempts": {
+          "reported_suggested_field_edits": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_clarification_rounds": {
+            "count": 12,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "recorded_attempts": 12,
+          "outcomes": {
+            "completed": 12,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 0
+          },
+          "completed_elapsed_seconds": {
+            "count": 12,
+            "median": 8.744,
+            "minimum": 4.478,
+            "maximum": 10.99
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 24,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 12,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {
+            "na": 7,
+            "unknown": 5
+          }
+        },
+        "retries": {
+          "reported_suggested_field_edits": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_clarification_rounds": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "recorded_attempts": 0,
+          "outcomes": {
+            "completed": 0,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 0
+          },
+          "completed_elapsed_seconds": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 0,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 0,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {}
+        }
+      },
+      "assisted": {
+        "first_attempts": {
+          "reported_suggested_field_edits": {
+            "count": 11,
+            "median": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "reported_clarification_rounds": {
+            "count": 12,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "recorded_attempts": 12,
+          "outcomes": {
+            "completed": 11,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 1
+          },
+          "completed_elapsed_seconds": {
+            "count": 11,
+            "median": 3.828,
+            "minimum": 3.088,
+            "maximum": 11.373
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 22,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 11,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {
+            "na": 7,
+            "unknown": 5
+          }
+        },
+        "retries": {
+          "reported_suggested_field_edits": {
+            "count": 1,
+            "median": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "reported_clarification_rounds": {
+            "count": 1,
+            "median": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "recorded_attempts": 1,
+          "outcomes": {
+            "completed": 1,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 0
+          },
+          "completed_elapsed_seconds": {
+            "count": 1,
+            "median": 4.82,
+            "minimum": 4.82,
+            "maximum": 4.82
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 2,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 1,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {
+            "na": 1
+          }
+        }
+      }
+    },
+    "completed_first_attempt_pairs": [
+      {
+        "case_id": "clear-jpeg",
+        "typed_seconds": 9.706,
+        "assisted_seconds": 3.408,
+        "typed_minus_assisted_seconds": 6.298
+      },
+      {
+        "case_id": "excluded-batch",
+        "typed_seconds": 10.99,
+        "assisted_seconds": 3.088,
+        "typed_minus_assisted_seconds": 7.902
+      },
+      {
+        "case_id": "other-model",
+        "typed_seconds": 8.942,
+        "assisted_seconds": 3.307,
+        "typed_minus_assisted_seconds": 5.635
+      },
+      {
+        "case_id": "unknown-batch",
+        "typed_seconds": 8.442,
+        "assisted_seconds": 3.543,
+        "typed_minus_assisted_seconds": 4.899
+      },
+      {
+        "case_id": "missing-model",
+        "typed_seconds": 10.025,
+        "assisted_seconds": 3.609,
+        "typed_minus_assisted_seconds": 6.416
+      },
+      {
+        "case_id": "missing-batch",
+        "typed_seconds": 8.611,
+        "assisted_seconds": 3.828,
+        "typed_minus_assisted_seconds": 4.783
+      },
+      {
+        "case_id": "blurred",
+        "typed_seconds": 4.478,
+        "assisted_seconds": 4.027,
+        "typed_minus_assisted_seconds": 0.451
+      },
+      {
+        "case_id": "cropped",
+        "typed_seconds": 5.879,
+        "assisted_seconds": 5.191,
+        "typed_minus_assisted_seconds": 0.688
+      },
+      {
+        "case_id": "instruction-note",
+        "typed_seconds": 8.441,
+        "assisted_seconds": 3.993,
+        "typed_minus_assisted_seconds": 4.448
+      },
+      {
+        "case_id": "conflicting-batches",
+        "typed_seconds": 8.877,
+        "assisted_seconds": 7.275,
+        "typed_minus_assisted_seconds": 1.602
+      },
+      {
+        "case_id": "low-confidence",
+        "typed_seconds": 7.775,
+        "assisted_seconds": 11.373,
+        "typed_minus_assisted_seconds": -3.598
+      }
+    ],
+    "unpaired_first_attempt_cases": [
+      {
+        "case_id": "clear-png",
+        "typed": "completed",
+        "assisted": "withdrawn"
+      }
+    ],
+    "first_attempt_paired_typed_minus_assisted_seconds": {
+      "count": 11,
+      "median": 4.783,
+      "minimum": -3.598,
+      "maximum": 7.902
+    },
+    "posthoc_requested_suggestion_subset": {
+      "complete_first_attempt_pairs": 10,
+      "excluded_cases": [
+        "clear-png",
+        "low-confidence"
+      ],
+      "assisted_median_seconds": 3.7184999999999997,
+      "paired_typed_minus_assisted_median_seconds": 4.841,
+      "scope": "Exploratory subset only; original assignment summaries and all deviations remain reported."
+    }
+  },
+  "completed_decisions_by_assigned_condition": {
+    "typed": {
+      "eligible": 3,
+      "excluded": 4,
+      "needs_information": 5
+    },
+    "assisted": {
+      "eligible": 3,
+      "needs_information": 5,
+      "excluded": 4
+    }
+  },
+  "attempts": [
+    {
+      "position": 1,
+      "case_id": "clear-png",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 10.457,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "eligible"
+    },
+    {
+      "position": 2,
+      "case_id": "clear-jpeg",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 9.706,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "eligible"
+    },
+    {
+      "position": 3,
+      "case_id": "excluded-batch",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 10.99,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 4,
+      "case_id": "other-model",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 8.942,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 5,
+      "case_id": "unknown-batch",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 8.442,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 6,
+      "case_id": "missing-model",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 10.025,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 7,
+      "case_id": "missing-batch",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 8.611,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 8,
+      "case_id": "blurred",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 4.478,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 9,
+      "case_id": "cropped",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 5.879,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 10,
+      "case_id": "instruction-note",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 8.441,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 11,
+      "case_id": "conflicting-batches",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 8.877,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 12,
+      "case_id": "low-confidence",
+      "assigned_condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 7.775,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "eligible"
+    },
+    {
+      "position": 13,
+      "case_id": "low-confidence",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 11.373,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "final_decision": "eligible"
+    },
+    {
+      "position": 14,
+      "case_id": "conflicting-batches",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 7.275,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 15,
+      "case_id": "instruction-note",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.993,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 16,
+      "case_id": "cropped",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 5.191,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 17,
+      "case_id": "blurred",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 4.027,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 18,
+      "case_id": "missing-batch",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.828,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 19,
+      "case_id": "missing-model",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.609,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 20,
+      "case_id": "unknown-batch",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.543,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 21,
+      "case_id": "other-model",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.307,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 22,
+      "case_id": "excluded-batch",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.088,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "excluded"
+    },
+    {
+      "position": 23,
+      "case_id": "clear-jpeg",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.408,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "eligible"
+    },
+    {
+      "position": 24,
+      "case_id": "clear-png",
+      "assigned_condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 5.051,
+      "outcome": "withdrawn",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": null
+    },
+    {
+      "position": 25,
+      "case_id": "clear-png",
+      "assigned_condition": "assisted",
+      "attempt": 2,
+      "elapsed_seconds": 4.82,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "final_decision": "eligible"
+    }
+  ],
+  "provenance_sha256": {
+    "original_timing_download": "4fc0e3f037e19896d16df4cbff4ae33e766726146aced397fdb1b0b6a28adeab",
+    "retry_download": "65dd118081a0f078fc750cd7ea45bd894b9e12067d86795c448651121062a316",
+    "review_download": "5b8bdf2891aeff1c4d91b3b790b4d1a19e2f6b905489a19111aba4a6236bc761",
+    "review_audit": "09d15f6dbaeac8bd853e0908931f24e4373ee5f156937f25d4561a0afaa9a2df",
+    "packet": "b15ebdd9d54be51218a37270a5d99f780e5f256f27af5a8e72136fca98a52ceb",
+    "csv_sessions": "6889556e40daf8540a2934de333ab8a66e4a3e65c0b8185bc6747b5d4a8c3e95",
+    "csv_trials": "6d9f1ec474c8bd666787eb1f88d418870ecb54494e15e6cf9109ce46da87bee0",
+    "manifest": "f3ab9d0833da96fa6522751ad2e5957b8629fc619ac357fc378d2dd269685d3a",
+    "reporter_source": "fe5ccb34d41f4078aaf144fd51b73f6d89099bc82c680a02170748fd344f33c2",
+    "historical_provider_report": "8c8dadac3d4478dcbeaa52ac71128e56e3f9029e3e9084bf0722c2f15fba4648"
+  },
+  "evidence_source_commit": "d9ba2e6fb646f73ce8d20d67416f0bebed9d7f90",
+  "protocol_source_commit": "d9ba2e6fb646f73ce8d20d67416f0bebed9d7f90",
+  "original_instrumentation_sha256": {
+    "runner.py": "b76a541e59a977042ddef8e9fa5e284fa1a19cf8270ecdf6f7908d4af210a556",
+    "study.js": "254fc4f948d4bccdc2ba91bb10616d94ee7d90e5134e88248645c32d94e0429d",
+    "study.css": "805f790e47292f75b96b19791574d3d36190665e507c0bf748e611febbefa89c",
+    "metadata.json": "391fc1f851dbd5b8aa15591140cc8f8cba8f62e55a457864385316022c62498e"
+  },
+  "retry_instrumentation_sha256": {
+    "runner.py": "b76a541e59a977042ddef8e9fa5e284fa1a19cf8270ecdf6f7908d4af210a556",
+    "study.js": "247b1701e333bb9e9eee01927846411d39b7e64643eb493e31f80129d93e9085",
+    "study.css": "805f790e47292f75b96b19791574d3d36190665e507c0bf748e611febbefa89c",
+    "metadata.json": "e94e64fac252aa33f7cf2a7bf961b9013e4e3c9fa882660ea2b3d6bd0e3eca7a"
+  },
+  "protocol_deviations": [
+    "Images preloaded in both conditions outside timer; file-selection time excluded. Browser monotonic timer starts at image reveal and ends at first visible assessment, replacing moderator stopwatch. Mock fixture assistance only. All development images previously reviewed; first label guided.",
+    "The low-confidence assigned-assisted trial was completed without requesting a suggestion.",
+    "The final first attempt ended through an accidental Stop click, as stated by the participant. The completed retry is reported separately."
+  ],
+  "limitations": [
+    "One internal participant, already familiar with the images. Typed tasks always first, assisted tasks reversed: learning, memory and order are confounded.",
+    "Images preloaded; file-selection time excluded. Browser monotonic timing replaces the moderator stopwatch.",
+    "Human assistance used mock fixture lookup. These timings do not establish live AI completion time or causal AI savings.",
+    "Historical provider field comparison was tuned on these development images; it is neither holdout accuracy nor a human AI workflow study.",
+    "Zero observed identifier errors is authored-reference agreement on completed development tasks, not general accuracy or calibrated confidence.",
+    "Five completed results per assigned arm remained needs_information; follow-up clarification resolution/effort was not measured.",
+    "The accidental stop remains a first-attempt noncompletion. The retry never replaces it in first-attempt medians.",
+    "Records, identity, consent and browser timings are self-reported and unauthenticated. Hashes detect local drift, not authenticity.",
+    "Raw downloads, aliases, notes, CSVs, assessment IDs and instrumentation source remain local. This report contains only aggregate and synthetic-case results."
+  ]
+}

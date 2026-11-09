@@ -1,6 +1,7 @@
 """Loopback regressions for receive deadlines, admission and capacity recovery."""
 from concurrent.futures import ThreadPoolExecutor
 from http.client import HTTPConnection, HTTPResponse, IncompleteRead, RemoteDisconnected
+import errno
 import json
 from pathlib import Path
 import socket
@@ -173,7 +174,13 @@ class RequestLimitTests(unittest.TestCase):
             self.assert_recovers_without_assessment(server)
             with socket.create_connection(server.server_address, timeout=2) as peer:
                 peer.sendall(b'POST /v1/assessments HTTP/1.0\r\n')
-                peer.shutdown(socket.SHUT_RDWR)
+                try:
+                    peer.shutdown(socket.SHUT_RDWR)
+                except OSError as error:
+                    # The receive watchdog or rejected-request cleanup can
+                    # disconnect this peer before the local shutdown call.
+                    if error.errno != errno.ENOTCONN:
+                        raise
             self.assert_recovers_without_assessment(server)
             status, saved = self.call(server, '/v1/assessments', fixture())
             self.assertEqual((status, saved['decision']), (200, 'eligible'))

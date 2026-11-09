@@ -1,0 +1,952 @@
+{
+  "evaluation_kind": "human-typed-versus-live-ai-development-pilot",
+  "collection_date": "2026-11-09",
+  "participants": 1,
+  "holdout": false,
+  "human_validated": false,
+  "human_work_verified": false,
+  "confidence_calibrated": false,
+  "reference_kind": "previously-visible-authored-development-references",
+  "session": {
+    "session_number": 1,
+    "evidence_commit": "7b020bd1ab478b8058326108c784c0cbd466477f",
+    "protocol_commit": "7b020bd1ab478b8058326108c784c0cbd466477f",
+    "declared_condition_order": "typed_first",
+    "first_attempt_order_matches_protocol_prefix": true,
+    "extraction_mode": "ai",
+    "provider": "omniroute",
+    "requested_model": "gemini/gemini-3.1-flash-lite",
+    "configuration_verified": false,
+    "planned_first_attempts": 24,
+    "unrecorded_first_attempts": 0,
+    "conditions": {
+      "typed": {
+        "first_attempts": {
+          "reported_suggested_field_edits": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_clarification_rounds": {
+            "count": 12,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "recorded_attempts": 12,
+          "outcomes": {
+            "completed": 12,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 0
+          },
+          "completed_elapsed_seconds": {
+            "count": 12,
+            "median": 8.032499999999999,
+            "minimum": 3.079,
+            "maximum": 11.911
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 24,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 12,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {
+            "na": 7,
+            "unknown": 5
+          }
+        },
+        "retries": {
+          "reported_suggested_field_edits": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_clarification_rounds": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "recorded_attempts": 0,
+          "outcomes": {
+            "completed": 0,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 0
+          },
+          "completed_elapsed_seconds": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 0,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 0,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {}
+        }
+      },
+      "assisted": {
+        "first_attempts": {
+          "reported_suggested_field_edits": {
+            "count": 12,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "reported_clarification_rounds": {
+            "count": 12,
+            "median": 0.0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "recorded_attempts": 12,
+          "outcomes": {
+            "completed": 12,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 0
+          },
+          "completed_elapsed_seconds": {
+            "count": 12,
+            "median": 4.8825,
+            "minimum": 3.958,
+            "maximum": 7.586
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 24,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 12,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {
+            "na": 7,
+            "unknown": 5
+          }
+        },
+        "retries": {
+          "reported_suggested_field_edits": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_clarification_rounds": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "recorded_attempts": 0,
+          "outcomes": {
+            "completed": 0,
+            "failed": 0,
+            "timed_out": 0,
+            "withdrawn": 0
+          },
+          "completed_elapsed_seconds": {
+            "count": 0,
+            "median": null,
+            "minimum": null,
+            "maximum": null
+          },
+          "reported_extraction_unavailable": 0,
+          "extraction_availability_unknown": 0,
+          "completed_fields_compared": 0,
+          "completed_field_errors": 0,
+          "guessed_absent_fields": 0,
+          "blank_readable_fields": 0,
+          "completed_decisions_compared": 0,
+          "false_eligible_against_authored_reference": 0,
+          "observed_decision_rule_disagreements": 0,
+          "self_reported_clarification_judgments": {}
+        }
+      }
+    },
+    "completed_first_attempt_pairs": [
+      {
+        "case_id": "clear-png",
+        "typed_seconds": 10.076,
+        "assisted_seconds": 4.15,
+        "typed_minus_assisted_seconds": 5.926
+      },
+      {
+        "case_id": "clear-jpeg",
+        "typed_seconds": 7.673,
+        "assisted_seconds": 5.28,
+        "typed_minus_assisted_seconds": 2.393
+      },
+      {
+        "case_id": "excluded-batch",
+        "typed_seconds": 9.814,
+        "assisted_seconds": 4.791,
+        "typed_minus_assisted_seconds": 5.023
+      },
+      {
+        "case_id": "other-model",
+        "typed_seconds": 9.49,
+        "assisted_seconds": 4.38,
+        "typed_minus_assisted_seconds": 5.11
+      },
+      {
+        "case_id": "unknown-batch",
+        "typed_seconds": 11.911,
+        "assisted_seconds": 4.974,
+        "typed_minus_assisted_seconds": 6.937
+      },
+      {
+        "case_id": "missing-model",
+        "typed_seconds": 5.758,
+        "assisted_seconds": 4.283,
+        "typed_minus_assisted_seconds": 1.475
+      },
+      {
+        "case_id": "missing-batch",
+        "typed_seconds": 6.856,
+        "assisted_seconds": 4.697,
+        "typed_minus_assisted_seconds": 2.159
+      },
+      {
+        "case_id": "blurred",
+        "typed_seconds": 3.079,
+        "assisted_seconds": 6.119,
+        "typed_minus_assisted_seconds": -3.04
+      },
+      {
+        "case_id": "cropped",
+        "typed_seconds": 5.726,
+        "assisted_seconds": 3.958,
+        "typed_minus_assisted_seconds": 1.768
+      },
+      {
+        "case_id": "instruction-note",
+        "typed_seconds": 8.392,
+        "assisted_seconds": 5.378,
+        "typed_minus_assisted_seconds": 3.014
+      },
+      {
+        "case_id": "conflicting-batches",
+        "typed_seconds": 5.78,
+        "assisted_seconds": 6.026,
+        "typed_minus_assisted_seconds": -0.246
+      },
+      {
+        "case_id": "low-confidence",
+        "typed_seconds": 8.496,
+        "assisted_seconds": 7.586,
+        "typed_minus_assisted_seconds": 0.91
+      }
+    ],
+    "unpaired_cases": [],
+    "paired_typed_minus_assisted_seconds": {
+      "count": 12,
+      "median": 2.276,
+      "minimum": -3.04,
+      "maximum": 6.937
+    },
+    "documented_deviation_rows": 24
+  },
+  "completed_decisions_by_condition": {
+    "typed": {
+      "eligible": 3,
+      "excluded": 4,
+      "needs_information": 5
+    },
+    "assisted": {
+      "eligible": 3,
+      "needs_information": 5,
+      "excluded": 4
+    }
+  },
+  "provider": {
+    "name": "omniroute",
+    "requested_model": "gemini/gemini-3.1-flash-lite",
+    "gateway_url": "http://127.0.0.1:20128/v1",
+    "generation": {
+      "temperature": 0,
+      "max_tokens": 2048,
+      "reasoning_effort": "none",
+      "response_format": {
+        "type": "json_object"
+      }
+    },
+    "timeout_seconds": 20,
+    "client_retries": 0,
+    "calls_attempted": 12,
+    "proposals": 12,
+    "unavailable": 0,
+    "served_models": {
+      "gemini-3.1-flash-lite": 12
+    },
+    "failure_codes": {},
+    "proposal_fields_compared": 24,
+    "proposal_fields_matching_authored_reference": 24,
+    "proposal_false_eligible_against_authored_reference": 0,
+    "results": [
+      {
+        "case_id": "low-confidence",
+        "image_sha256": "8425e61f91950b533252554152d8c9c66db0e7202fa498ee29da2aa7ecd11dbe",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 3.585979,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "eligible",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "conflicting-batches",
+        "image_sha256": "55ca7ce19d983e7b70b403efec7e512c9665fc2370583746c6ca923d6186c22b",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 3.576361,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "needs_information",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "instruction-note",
+        "image_sha256": "7be915d18635778ccb5e9c05f10cd34413361ae380792846ddb54439fdc4f9d2",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 2.651295,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "excluded",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "cropped",
+        "image_sha256": "31def12704c97743d9fe7dbea6fdd8ab594fdcfb206bb6dce0ca632fc694e54b",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 1.998936,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "needs_information",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "blurred",
+        "image_sha256": "bf9df382b0f8703dfc14318d1b14b6741339abd118ab13f631d2a8a37c42f70b",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 3.115375,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "needs_information",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "missing-batch",
+        "image_sha256": "5b8ad9108db23e569d6691565f28f358ed7a4cbc8160ded04971d58b20d44086",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 2.459133,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "needs_information",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "missing-model",
+        "image_sha256": "b27d88298b876ad201eb35250625192b38614e6d0320b337518b7cbc457dce5f",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 1.94222,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "needs_information",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "unknown-batch",
+        "image_sha256": "bdaaa858eb3b84d452f573c476b67b94a3635a1aaef4f4ebac3fe94934221876",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 2.449297,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "excluded",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "other-model",
+        "image_sha256": "bf4aad01612c2fa91889c82cd3eb62773ff9994ba9323d69e5a6062522b30ed1",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 2.025866,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "excluded",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "excluded-batch",
+        "image_sha256": "58a857af178cd4c6c70e76fac655aaeec30cb3d595579746d716492f12f02505",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 2.592228,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "excluded",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "clear-jpeg",
+        "image_sha256": "a2661cd7255c5116824a8ebcaae181ad0da72a7d94023d4a5de8a90bcdf2d22a",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 1.906229,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "eligible",
+        "false_eligible_against_authored_reference": false
+      },
+      {
+        "case_id": "clear-png",
+        "image_sha256": "7b8c0cdedd9d97fb3d1984fbc12884e80558fe388db59e695cb6395d607063af",
+        "outcome": "proposal",
+        "adapter_elapsed_seconds": 1.925708,
+        "source": {
+          "provider": "omniroute",
+          "requested_model": "gemini/gemini-3.1-flash-lite",
+          "served_model": "gemini-3.1-flash-lite",
+          "prompt_version": "label-image-2",
+          "modality_bridge_observed": false,
+          "model_id_matches_request": false,
+          "auto_route_requested": false
+        },
+        "field_matches": {
+          "model": true,
+          "batch": true
+        },
+        "guessed_reference_missing": [],
+        "simulated_proposal_decision": "eligible",
+        "false_eligible_against_authored_reference": false
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "position": 1,
+      "case_id": "clear-png",
+      "image_sha256": "7b8c0cdedd9d97fb3d1984fbc12884e80558fe388db59e695cb6395d607063af",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 10.076,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "eligible"
+    },
+    {
+      "position": 2,
+      "case_id": "clear-jpeg",
+      "image_sha256": "a2661cd7255c5116824a8ebcaae181ad0da72a7d94023d4a5de8a90bcdf2d22a",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 7.673,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "eligible"
+    },
+    {
+      "position": 3,
+      "case_id": "excluded-batch",
+      "image_sha256": "58a857af178cd4c6c70e76fac655aaeec30cb3d595579746d716492f12f02505",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 9.814,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 4,
+      "case_id": "other-model",
+      "image_sha256": "bf4aad01612c2fa91889c82cd3eb62773ff9994ba9323d69e5a6062522b30ed1",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 9.49,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 5,
+      "case_id": "unknown-batch",
+      "image_sha256": "bdaaa858eb3b84d452f573c476b67b94a3635a1aaef4f4ebac3fe94934221876",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 11.911,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 6,
+      "case_id": "missing-model",
+      "image_sha256": "b27d88298b876ad201eb35250625192b38614e6d0320b337518b7cbc457dce5f",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 5.758,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 7,
+      "case_id": "missing-batch",
+      "image_sha256": "5b8ad9108db23e569d6691565f28f358ed7a4cbc8160ded04971d58b20d44086",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 6.856,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 8,
+      "case_id": "blurred",
+      "image_sha256": "bf9df382b0f8703dfc14318d1b14b6741339abd118ab13f631d2a8a37c42f70b",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 3.079,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 9,
+      "case_id": "cropped",
+      "image_sha256": "31def12704c97743d9fe7dbea6fdd8ab594fdcfb206bb6dce0ca632fc694e54b",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 5.726,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 10,
+      "case_id": "instruction-note",
+      "image_sha256": "7be915d18635778ccb5e9c05f10cd34413361ae380792846ddb54439fdc4f9d2",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 8.392,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 11,
+      "case_id": "conflicting-batches",
+      "image_sha256": "55ca7ce19d983e7b70b403efec7e512c9665fc2370583746c6ca923d6186c22b",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 5.78,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 12,
+      "case_id": "low-confidence",
+      "image_sha256": "8425e61f91950b533252554152d8c9c66db0e7202fa498ee29da2aa7ecd11dbe",
+      "condition": "typed",
+      "attempt": 1,
+      "elapsed_seconds": 8.496,
+      "outcome": "completed",
+      "suggestion_requested": false,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": "na",
+      "failure_code": "",
+      "final_decision": "eligible"
+    },
+    {
+      "position": 13,
+      "case_id": "low-confidence",
+      "image_sha256": "8425e61f91950b533252554152d8c9c66db0e7202fa498ee29da2aa7ecd11dbe",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 7.586,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "eligible"
+    },
+    {
+      "position": 14,
+      "case_id": "conflicting-batches",
+      "image_sha256": "55ca7ce19d983e7b70b403efec7e512c9665fc2370583746c6ca923d6186c22b",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 6.026,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 15,
+      "case_id": "instruction-note",
+      "image_sha256": "7be915d18635778ccb5e9c05f10cd34413361ae380792846ddb54439fdc4f9d2",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 5.378,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 16,
+      "case_id": "cropped",
+      "image_sha256": "31def12704c97743d9fe7dbea6fdd8ab594fdcfb206bb6dce0ca632fc694e54b",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 3.958,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 17,
+      "case_id": "blurred",
+      "image_sha256": "bf9df382b0f8703dfc14318d1b14b6741339abd118ab13f631d2a8a37c42f70b",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 6.119,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 18,
+      "case_id": "missing-batch",
+      "image_sha256": "5b8ad9108db23e569d6691565f28f358ed7a4cbc8160ded04971d58b20d44086",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 4.697,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 19,
+      "case_id": "missing-model",
+      "image_sha256": "b27d88298b876ad201eb35250625192b38614e6d0320b337518b7cbc457dce5f",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 4.283,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "needs_information"
+    },
+    {
+      "position": 20,
+      "case_id": "unknown-batch",
+      "image_sha256": "bdaaa858eb3b84d452f573c476b67b94a3635a1aaef4f4ebac3fe94934221876",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 4.974,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 21,
+      "case_id": "other-model",
+      "image_sha256": "bf4aad01612c2fa91889c82cd3eb62773ff9994ba9323d69e5a6062522b30ed1",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 4.38,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 22,
+      "case_id": "excluded-batch",
+      "image_sha256": "58a857af178cd4c6c70e76fac655aaeec30cb3d595579746d716492f12f02505",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 4.791,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "excluded"
+    },
+    {
+      "position": 23,
+      "case_id": "clear-jpeg",
+      "image_sha256": "a2661cd7255c5116824a8ebcaae181ad0da72a7d94023d4a5de8a90bcdf2d22a",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 5.28,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "eligible"
+    },
+    {
+      "position": 24,
+      "case_id": "clear-png",
+      "image_sha256": "7b8c0cdedd9d97fb3d1984fbc12884e80558fe388db59e695cb6395d607063af",
+      "condition": "assisted",
+      "attempt": 1,
+      "elapsed_seconds": 4.15,
+      "outcome": "completed",
+      "suggestion_requested": true,
+      "extraction_unavailable": false,
+      "suggested_identifier_fields_edited": 0,
+      "failure_code": "",
+      "final_decision": "eligible"
+    }
+  ],
+  "record_source": {
+    "kind": "loopback-browser-autosave",
+    "received_at_utc": "2026-11-09T11:10:19.962550+00:00",
+    "snapshots_sha256": "4b94bc7926390a2828d3206b1673cea184ca9ec5fb0cd2c061362322b662fbc1",
+    "snapshot_count": 48,
+    "record_sha256": "8d9e48a0f644f95a6e5c297891454895626bbffe7c8f314ff8072f3607363af7",
+    "note": "Browser autosaved actual participant observations. No participant values or timings altered. This preserved record is recovered from the local journal rather than a located download."
+  },
+  "protocol_deviations": [
+    "Images preloaded in both conditions outside timer; file-selection time excluded. Browser monotonic timer starts at image reveal and ends at first visible assessment, replacing moderator stopwatch. Actual OmniRoute requests occur only after the participant selects Read label with AI. All development images previously reviewed and used in a mock timing session; first review label guided. Fixed typed-first then reversed assisted order; no holdout or causal savings claim. Unscored typed practice excluded. One request per assisted task; failures retain typed fallback in the assigned AI arm."
+  ],
+  "provenance_sha256": {
+    "browser_record": "8d9e48a0f644f95a6e5c297891454895626bbffe7c8f314ff8072f3607363af7",
+    "provider_call_journal": "9b7b7e06e5a15b0b3d0aa0e84d7d6ddb41a7db52ad96ea5a9d3189ad27ac39fc",
+    "sessions_csv": "39ade8cc409e7e9d33ffd60f987943808f08c47348bdc9e7316f9a971a56c5d3",
+    "trials_csv": "3875a2c154e0e316b83e4124dd200db2201ee60e069e06e5c425059b2825d6e0",
+    "reporter_source": "fe5ccb34d41f4078aaf144fd51b73f6d89099bc82c680a02170748fd344f33c2",
+    "review_audit": "09d15f6dbaeac8bd853e0908931f24e4373ee5f156937f25d4561a0afaa9a2df",
+    "manifest": "f3ab9d0833da96fa6522751ad2e5957b8629fc619ac357fc378d2dd269685d3a"
+  },
+  "instrumentation_sha256": {
+    "runner.py": "e4c54a83d3998c2d4d00da6b714a57a9a29d79ca7748fd39865801a41c3e951f",
+    "study.js": "cebd9061fe4809929926aa6039599731a6b90e2e56591b819c97bab710a96119",
+    "study.css": "805f790e47292f75b96b19791574d3d36190665e507c0bf748e611febbefa89c",
+    "metadata.json": "6bb8ca88dd35ac53a145d5ff3b2f04508fc52883f2324038998b0c035ef6d462"
+  },
+  "limitations": [
+    "Records, consent, timings and configuration are self-reported and unauthenticated.",
+    "The generic offline CSV reporter does not open provenance pointers or call a provider; this collection importer separately checked the local actual-provider journal.",
+    "Comparisons use authored development references, not independent labels or a holdout.",
+    "Sessions and extraction modes are summarized separately; retries never replace first attempts.",
+    "Only completed tasks enter time summaries; all outcomes and unrecorded pairs remain visible.",
+    "Repeated cases introduce learning; differences do not establish causal savings or generalization.",
+    "Aliases, free-text notes, paths and raw final identifiers are omitted; review before sharing.",
+    "One internal participant already reviewed and timed all development images in an earlier mock session; fixed order, repetition and learning are confounded.",
+    "Actual provider/model response metadata and browser observations are locally cross-checked; participant identity, consent and timings are still unauthenticated.",
+    "Preloaded image selection excluded from time; browser monotonic timing replaces the moderator stopwatch.",
+    "Unresolved results end the primary task; follow-up resolution effort is not measured.",
+    "No causal savings, holdout accuracy, population, payment or production claim follows. Original downloads, aliases, CSVs and instrumentation stay local."
+  ],
+  "local_record_and_provider_bindings_checked": true,
+  "configuration_authenticity_independently_verified": false,
+  "analysis_source_sha256": {
+    "export_records.py": "e17583de51fb4edd14207021f848e307258d3fe741ca11987c7be37bc8223c54",
+    "publish_summary.py": "09537f66147a723c448d0ce623ec31c07f4a4231e725e88d341b30caf30a8b69"
+  }
+}

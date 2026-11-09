@@ -1,5 +1,9 @@
 # Rajiv's evidence runbook
 
+Current checkpoint: 9 November 2026, work/rajiv-evaluation-results. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records the reference review, preserved mock pilot and separate completed live-AI human comparison: 24/24 first attempts, twelve actual proposals, zero observed completed field mismatches and five unresolved results per arm. Issues #1–#3 are closed; #4 results await contributor acceptance/merge. Integration and recording in #5 are deferred at the owner's request. [LIVE-AI-TIMING.md](LIVE-AI-TIMING.md) preserves collection/provenance and limits. No holdout or causal savings claim follows.
+
+## Previous checkpoint: study-report tool
+
 Current continuation: `work/rajiv-study-report`, based on merged PR #23 / main `829501c`. Use `evidence/.venv/bin/python -B -m evidence.evals.study_report --sessions PATH --trials PATH --output NEW_JSON` to check and summarize returned timing records offline. See [HUMAN-EVALUATION.md](HUMAN-EVALUATION.md) for exact fields, denominators and limits. Ten focused synthetic-record checks and unchanged development-v2 plan verification passed locally; header-only input produced zero observations. This does not supply human measurements or independent labels.
 
 ## Previous checkpoint: completion preparation

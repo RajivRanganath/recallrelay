@@ -1,3 +1,27 @@
+# 9 November 2026: completed live-AI human pilot
+
+The participant completed all twelve typed and twelve actual AI-assisted tasks, with one real provider request per assisted task. Twelve proposals, zero unavailable extractions/failures/timeouts/withdrawals/retries. Median times were 8.0325 seconds typed and 4.8825 seconds assisted; all twelve pairs completed, with a 2.276-second median paired difference. Final field mismatches were zero on 48 comparisons; five needs_information results remained in each arm. No follow-up resolution-effort or independent clarification-appropriateness judgment was supplied.
+
+Recovered actual browser autosaves, preserved the original journal and checked all task/image/source bindings and successful proposals against the actual-provider journal. OmniRoute requested gemini/gemini-3.1-flash-lite; all twelve replies reported gemini-3.1-flash-lite. Raw inputs remain local; the redacted report preserves all synthetic attempts and provider outcomes. This collection uses previously seen/timed development cases and fixed order; no holdout, general accuracy or causal savings claim follows. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) supplies full scope and provenance.
+
+A hosted failure on the documentation update exposed an existing-test ENOTCONN cleanup race. PR #26 accepts only that already-disconnected shutdown state, preserving all recovery assertions and runtime. It is included in the evaluation branch; subsequent hosted evidence/shared checks passed. Results-artifact checks and later hosted runs remain separate from that earlier observation. No local automated test suite or extra provider smoke call was run in this continuation.
+
+All standalone #1–#4 implementation/evaluation work is delivered for contributor acceptance. Issue #4 awaits the results PR's review/merge. Integration with the resolution lane and recording in #5 are deferred at the owner's request. Historical checkpoints below preserve the earlier pending states.
+
+---
+
+# 9 November 2026: human reference review and workflow results
+
+Preserved the actual returned twelve-image review and Guided example note. The checker accepted all 24 identifiers with zero disagreements. Collected real interactions with the customer app using excluded practice, preloaded development images and browser monotonic timing. Human assistance was mock fixture lookup, separate from historical real-provider extraction.
+
+All 24 distinct assigned tasks have a completed attempt across 25 retained records. First attempts comprise twelve typed completions, eleven assigned-mock completions and one accidental Stop click. Its completed 4.820-second retry remains separate. One assigned-assisted case did not request a suggestion and is disclosed. No completed identifier mismatch or false-eligible decision against authored references was observed. Five completed results per arm remained needs_information; follow-up resolution effort was not measured.
+
+Validated downloads, schedule, source bindings, attempt chronology and report inputs; independently recalculated counts and medians. Published summaries omit aliases, private notes, raw identifiers and assessment IDs. Originals and instrumentation remain local. No runtime, contract, other-lane edit or new provider call occurred. Hosted CI is separate. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) states all deviations and limits; no holdout, general accuracy, causal savings or live-AI human timing claim follows.
+
+Issues #1–#3 are closed with prototype acceptance notes. Task #4's mock development results are ready for contributor review, with live-AI human timing still required for its original comparison criterion. The separate collector is prepared; no AI task timings exist yet. #5 integration/recording remains deferred. Resolution PR #21 is now merged. Historical entries retain their original dates and scope.
+
+---
+
 # 8 November 2026: offline completion-effort reporting
 
 Started `work/rajiv-study-report` from merged PR #23 / main `829501c`. Added `python -m evidence.evals.study_report` for the existing session/trial templates. It binds exact input/manifest and source hashes, validates session/case/mode identity and attempt chronology, rejects nonfinite/invalid timings and conflicting entered scores, and preserves first attempts, retries, noncompletion and missing pairs separately. Summaries remain per session; paired differences require both first attempts completed. Field errors, guessed absent fields, blank readable fields and false eligibility are recomputed against authored development references rather than trusted CSV scoring cells.
