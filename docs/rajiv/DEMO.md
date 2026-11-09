@@ -1,5 +1,7 @@
 # Customer demo rehearsal
 
+Current checkpoint, 9 November 2026: standalone evaluation work now includes a completed actual-provider human timing pilot; see [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). Integration with the resolution lane and recording remain deferred at the owner's request. The rehearsal instructions below do not constitute a completed joint demo.
+
 This is the first 75 seconds of the synthetic RecallRelay demo. The timing below is a recording outline, not a measured user-completion result or a finished recording. No real product, customer, payment or AI recognition is shown in the default rehearsal.
 
 ## Start from a clean checkout

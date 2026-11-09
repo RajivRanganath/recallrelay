@@ -1,6 +1,23 @@
 # Development evaluation results — 9 November 2026
 
-This is a development-pilot checkpoint for task #4. Its synthetic evidence now includes the labeled set, historical real-provider field comparison, a returned human reference review, and a small human typed-versus-mock workflow pilot. The provider comparison and human timing pilot are separate measurements. No live-AI human completion-time result is supplied, so the AI-versus-typed effort criterion remains incomplete. See [the separate live-AI collection handoff](LIVE-AI-TIMING.md).
+Task #4 now has a returned human reference review, historical provider comparison, an earlier human mock pilot, and a separate actual live-AI-versus-typed human pilot. Modes and runs remain separate. These are previously visible synthetic development cases with authored references, not a holdout or causal savings study. The results are ready for contributor acceptance in the evaluation PR.
+
+## Actual live-AI human pilot
+
+One internal participant completed all 24 first attempts: twelve typed tasks followed by twelve reverse-order AI-assisted tasks on identical image bytes. Every assisted task requested the actual provider once. All twelve requests returned usable proposals; no failures, timeouts, early stops, unavailable extractions, skipped suggestions or retries were recorded in this run. The earlier mock pilot's accidental stop/retry and skipped suggestion remain unchanged in their own results.
+
+| Actual human condition | Completed / attempts | Median time | Range | Final identifier mismatches / compared fields |
+|---|---:|---:|---:|---:|
+| Typed entry | 12 / 12 | 8.0325 s | 3.079–11.911 s | 0 / 24 |
+| Live AI assistance | 12 / 12 | 4.8825 s | 3.958–7.586 s | 0 / 24 |
+
+All twelve first-attempt case pairs completed. Their median typed-minus-AI difference was 2.276 seconds, ranging from -3.040 to 6.937 seconds; two cases took longer with AI. No identifier edits after suggestions were recorded. Both arms ended with three eligible, four excluded and five needs_information decisions. There were zero observed false-eligible or rule-inconsistent final decisions against authored references. Five unresolved cases per arm remained unresolved; follow-up clarification resolution effort was not measured. Appropriateness judgments for those clarifications remain unknown, separate from deterministic rule agreement.
+
+The live requests used OmniRoute, requested model gemini/gemini-3.1-flash-lite, served model gemini-3.1-flash-lite on all twelve responses, prompt label-image-2, temperature 0, max_tokens 2048, reasoning_effort none and a 20-second adapter deadline without client retries. All 24 normalized proposal fields agreed with authored references; simulated proposal checks found zero false eligibility. These proposal checks are separate from the participant's actual confirmed decisions. Returned model IDs do not attest an immutable remote backend.
+
+The [actual AI machine-readable report](../../evidence/evals/reports/development-live-ai-human-pilot-2026-11-09.json) retains all 24 attempts, twelve provider outcomes/source records, paired times, errors, unresolved counts and hashes. Actual browser autosaved records were recovered from the loopback journal and preserved unchanged in content; this is explicitly distinguished from a located download. The importer checked each successful browser proposal against the normalized actual-provider record and checked frozen collector/source/image bindings. No identities, aliases, private notes, raw final identifiers, full images or secrets are published.
+
+The participant had already reviewed and timed these images in the mock pilot. Fixed order, memory, repeated cases, preloaded images outside the timer and browser timing constrain interpretation. The observed times include the Read label with AI click, provider wait, review/confirmation and first assessment. They exclude file selection and follow-up resolution. An unscored typed practice is excluded. Identity, consent and timings remain unauthenticated; local binding checks do not establish independent human validation. No measured claim applies to a future automatic-on-upload flow. See [the collection handoff and provenance](LIVE-AI-TIMING.md).
 
 ## Reference review
 
@@ -14,7 +31,7 @@ The retained [6 November provider report](../../evidence/evals/reports/omniroute
 
 Those inputs were inspected during tuning. This is development-reference agreement, not unseen accuracy, calibrated confidence, arbitrary injection resistance or a human AI-assisted completion study. No new provider calls were made for this closeout.
 
-## Human workflow pilot
+## Earlier human mock workflow pilot
 
 One internal participant used the actual customer app. An unscored fictional practice was excluded. All twelve development images were attempted with typed entry, then assigned to mock assistance in reverse order. Images were preloaded outside the timer in both conditions. The browser monotonic timer ran from image reveal until the first visible assessment result. File selection was excluded. These changes from the moderator-stopwatch protocol are recorded.
 

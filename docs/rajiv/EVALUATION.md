@@ -1,5 +1,7 @@
 # Freeze and replay an evidence evaluation
 
+Current results, 9 November 2026: the reference review, earlier mock pilot and separate completed actual-provider human pilot are recorded in [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). That development pilot supplies observed completion effort; the frozen replay tool below still measures provider proposals separately. No holdout or general savings claim is supported. Older pending-work descriptions below retain the tools' original scope.
+
 The current twelve fictional labels are a previously inspected development set. Their typed-entry references are authored, not independently human validated. The plan added here freezes that development setup; it does not turn it into a holdout or measure completion effort.
 
 ## Create and check a plan offline

@@ -72,3 +72,7 @@ The returned review and actual task records are analysed in [EVALUATION-RESULTS.
 ## Separate live-AI collection handoff — 9 November 2026
 
 [LIVE-AI-TIMING.md](LIVE-AI-TIMING.md) records the prepared actual-provider collector and its deviations. Mock observations remain unchanged and must not be relabeled as AI. No timed observations or consent are created by preparation. Task #4 remains open until actual AI-versus-typed human observations are returned and accepted.
+
+## Completed actual-provider pilot — 9 November 2026
+
+The separate participant run now contains twelve typed and twelve actual AI-assisted first attempts, all completed. Every assisted task made one actual request, with twelve usable proposals and no unavailable calls. Median times were 8.0325 seconds typed and 4.8825 seconds assisted; all twelve pairs completed. Final identifier mismatches were zero on 48 field comparisons, with five unresolved needs_information results per arm. Raw autosaved records, source bindings and actual-call journal were checked and preserved locally. See [the results](EVALUATION-RESULTS.md). This supersedes the earlier pending-collection status above; the historical mock run remains separate. No new holdout, causal savings, authentication, integration or recording evidence is implied.

@@ -2,9 +2,9 @@
 
 ## Current checkpoint — 9 November 2026
 
-Issues #1–#3 have been accepted for the local synthetic prototype and closed. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records #4's completed development mock pilot: a returned twelve-label review, 24 distinct assigned tasks completed across 25 attempts, an accidental stop with separate retry, and an assigned mock task without a suggestion request. Historical real-provider extraction remains separate from mock-only human timing. No live-AI human time-saving or holdout claim is supported.
+Issues #1–#3 are closed for the local synthetic prototype. Task #4's work is now collected and analysed: twelve-label review, preserved earlier mock pilot, and a separate real-provider human comparison with all 24 tasks completed and twelve actual AI proposals. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records timings, errors, unresolved decisions, provider/model details, deviations and limitations. No holdout, general accuracy or causal time-saving claim follows.
 
-Results are on work/rajiv-evaluation-results for contributor review. Task #4 remains open until the separate live-AI human timing comparison is collected and accepted; merging the mock-results PR alone does not meet that criterion. See [LIVE-AI-TIMING.md](LIVE-AI-TIMING.md). Task #5 still covers the final customer/joint recorded demo. Resolution PR #21 is now merged; earlier integration evidence retains its historical pin and bounded scope.
+Results are on work/rajiv-evaluation-results for contributor acceptance/merge; #4 stays open until that review completes. The narrow existing-test cleanup fix is separately reviewable in PR #26 and included in this branch. Integration with the resolution lane and customer/joint recording in #5 are deferred at the owner's request. Resolution PR #21 is merged. No remaining standalone runtime implementation gap was identified against #1–#4's synthetic-prototype criteria; external review is still required by the collaboration rules.
 
 ## Historical checkpoint — 8 November 2026
 

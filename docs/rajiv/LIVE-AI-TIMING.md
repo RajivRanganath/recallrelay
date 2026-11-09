@@ -1,10 +1,16 @@
 # Live-AI timing handoff — 9 November 2026
 
-## Status and scope
+## Completed collection and analysis
 
-Issues #1–#3 are closed for the synthetic local prototype. The remaining non-integration requirement in #4 is an actual human typed-versus-AI comparison. The completed mock pilot in [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) remains unchanged; merging its PR alone does not satisfy this requirement. Integration with the resolution service and the customer/joint recording are deferred at the owner's request. No new holdout or broad accuracy claim is required or supplied by this development pilot.
+The participant completed all twelve typed and twelve actual-AI tasks. All twelve AI requests returned usable proposals; there were no recorded failures, timeouts, withdrawals, skipped requests or retries. Median completion times were 8.0325 seconds typed and 4.8825 seconds AI-assisted. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) and its linked machine-readable report retain errors, unresolved cases, per-case times, provenance and limitations. The completed mock pilot is separate and unchanged.
 
-The separate local collector is evidence/.local/human-ai-pilot-2026-11-09/. It uses the existing OmniRoute image adapter, requested model gemini/gemini-3.1-flash-lite, loopback gateway port 20128, a 20-second adapter deadline, temperature 0, max_tokens 2048, reasoning_effort none and JSON-object output. The existing authorized key is read in place; it is never copied into the repo. Its gateway no_log flag was checked before launch. No images were sent and no timings generated during collector preparation.
+Actual browser autosaves were recovered from the local journal, preserving its original bytes and the final record's content. The original raw inputs, CSVs, provider call journal and frozen collector are retained under evidence/.local/human-ai-pilot-2026-11-09/. The importer checked all 24 scheduled tasks and successful browser proposals against twelve actual provider records, then the report recomputed final field/decision comparisons. Separate calculations matched medians and outcome counts. No new human interaction is needed for this pilot. Task #4 awaits contributor acceptance/merge; integration and recording in #5 remain deferred.
+
+## Historical setup and scope
+
+The collector used the existing OmniRoute image adapter, requested model gemini/gemini-3.1-flash-lite, loopback gateway port 20128, a 20-second adapter deadline, temperature 0, max_tokens 2048, reasoning_effort none and JSON-object output. The existing authorized key was read in place without copying it into the repo. Its gateway no_log flag was checked before launch. Preparation sent no images; the subsequent participant run made twelve recorded requests, all reporting served model gemini-3.1-flash-lite. No holdout or broad accuracy claim is supplied.
+
+The sections below preserve the procedure used for collection. They are not an instruction to overwrite the completed run or repeat tasks.
 
 ## What the participant does
 
@@ -20,7 +26,7 @@ Only the participant performs scored interactions. An early stop, timeout or fai
 
 The frozen local runner.py, study.js, study.css and metadata.json are hash-bound in configuration.json and each export. The original mock sources are preserved in their separate directory. provider-calls.jsonl retains the image hash, sanitized outcome, elapsed provider wait, proposal and returned source metadata, without full images or credentials. browser-snapshots.jsonl contains private local participant observations; do not commit raw files or aliases.
 
-The prepared local export_records.py validates the returned download, frozen sources, exact image schedule and actual provider-call journal before generating sessions.csv, trials.csv and report.json in a new output directory. It checks successful browser proposals against the normalized provider record, retains unavailable calls and binds the journal hash. Run from the repository root using the evidence virtual environment, the actual downloaded JSON as the positional argument, and --output pointing to a new local directory. Do not run it with Python optimizations that disable assertions. Review raw records before publishing a redacted summary. Until real observations exist, no human AI timings can be analysed or claimed.
+The prepared local export_records.py validates the returned download, frozen sources, exact image schedule and actual provider-call journal before generating sessions.csv, trials.csv and report.json in a new output directory. It checks successful browser proposals against the normalized provider record, retains unavailable calls and binds the journal hash. Run from the repository root using the evidence virtual environment, the actual downloaded JSON as the positional argument, and --output pointing to a new local directory. Do not run it with Python optimizations that disable assertions. Review raw records before publishing a redacted summary. This importer was subsequently applied to the completed autosaved observations. It generated the preserved local report and CSVs; the public summary omits private values.
 
 ## Recorded deviations and limits
 
@@ -30,4 +36,4 @@ Report actual model/source metadata, proposal/unavailable counts, errors, unreso
 
 ## Preparation checks
 
-JavaScript and Python syntax checks passed. The launched page visibly reports AI via OmniRoute and presents an untouched practice/enrolment flow. That is a setup observation, not evidence of a completed provider call or human task. No new automated test suite, provider smoke run, participant result or integration check is claimed in this preparation.
+JavaScript and Python syntax checks passed. The launched page visibly reports AI via OmniRoute and presents an untouched practice/enrolment flow. That is a setup observation, not evidence of a completed provider call or human task. That preparation check made no provider call. The subsequent actual participant outcomes are reported above. No new local automated test suite, provider smoke run or integration check was performed for collector preparation.
