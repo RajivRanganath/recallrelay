@@ -1,3 +1,15 @@
+# 9 November 2026: human reference review and workflow results
+
+Preserved the actual returned twelve-image review and Guided example note. The checker accepted all 24 identifiers with zero disagreements. Collected real interactions with the customer app using excluded practice, preloaded development images and browser monotonic timing. Human assistance was mock fixture lookup, separate from historical real-provider extraction.
+
+All 24 distinct assigned tasks have a completed attempt across 25 retained records. First attempts comprise twelve typed completions, eleven assigned-mock completions and one accidental Stop click. Its completed 4.820-second retry remains separate. One assigned-assisted case did not request a suggestion and is disclosed. No completed identifier mismatch or false-eligible decision against authored references was observed. Five completed results per arm remained needs_information; follow-up resolution effort was not measured.
+
+Validated downloads, schedule, source bindings, attempt chronology and report inputs; independently recalculated counts and medians. Published summaries omit aliases, private notes, raw identifiers and assessment IDs. Originals and instrumentation remain local. No runtime, contract, other-lane edit or new provider call occurred. Hosted CI is separate. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) states all deviations and limits; no holdout, general accuracy, causal savings or live-AI human timing claim follows.
+
+Issues #1–#3 are closed with prototype acceptance notes. Task #4's development results are ready for contributor review; #5 recording remains pending. Resolution PR #21 is now merged. Historical entries retain their original dates and scope.
+
+---
+
 # 8 November 2026: offline completion-effort reporting
 
 Started `work/rajiv-study-report` from merged PR #23 / main `829501c`. Added `python -m evidence.evals.study_report` for the existing session/trial templates. It binds exact input/manifest and source hashes, validates session/case/mode identity and attempt chronology, rejects nonfinite/invalid timings and conflicting entered scores, and preserves first attempts, retries, noncompletion and missing pairs separately. Summaries remain per session; paired differences require both first attempts completed. Field errors, guessed absent fields, blank readable fields and false eligibility are recomputed against authored development references rather than trusted CSV scoring cells.
