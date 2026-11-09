@@ -60,4 +60,6 @@ class FakePayPal:
         if refund_id not in self.amounts:
             raise RefundUnknown('Refund could not be read back')
         minor, currency = self.amounts[refund_id]
-        return {'id': refund_id, 'status': 'COMPLETED', 'amount': {'value': f'{minor // 100}.{minor % 100:02d}', 'currency_code': currency}}
+        owner = next((operation for operation, found in self.refunds.items() if found == refund_id), None)  # Like custom_id.
+        return {'id': refund_id, 'status': 'COMPLETED', 'custom_id': owner,
+                'amount': {'value': f'{minor // 100}.{minor % 100:02d}', 'currency_code': currency}}

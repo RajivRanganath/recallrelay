@@ -109,7 +109,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(refund[3], f'/v2/payments/captures/{CAPTURE}/refund')
         self.assertEqual(refund[1]['authorization'], 'Bearer stub-token-1')
         self.assertEqual(refund[1]['paypal-request-id'], 'op-abc')
-        self.assertEqual(refund[2], {'amount': {'value': '40.05', 'currency_code': 'USD'}})
+        self.assertEqual(refund[2], {'amount': {'value': '40.05', 'currency_code': 'USD'}, 'custom_id': 'op-abc'})  # Binds the refund to its operation.
 
     def test_token_is_cached_and_replaced_after_a_401(self):
         stub = StubPayPal([(201, {'id': 'R1', 'status': 'COMPLETED'}), (401, {'name': 'AUTHENTICATION_FAILURE'}),
@@ -172,6 +172,7 @@ class AdapterTests(unittest.TestCase):
             result = SandboxPayPal('i', 's', base_url=url).get_refund('REFUND-1')
         self.assertEqual((result['status'], result['amount']['value']), ('COMPLETED', '40.00'))
         self.assertNotIn('secret', result)
+        self.assertIn('custom_id', result)  # Present so a webhook can be tied to one operation.
 
 
     def test_capture_check_allows_only_refundable_payments_that_fit_the_amount(self):

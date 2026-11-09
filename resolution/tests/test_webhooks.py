@@ -73,6 +73,19 @@ class WebhookTests(unittest.TestCase):
                 self.assertIsNone(apply_webhook(self.store, adapter, event(self.refund_id, status='COMPLETED')))
                 self.assertEqual(self.store.latest('case-demo-1')['status'], 'pending')
 
+    def test_an_older_refund_on_the_same_payment_cannot_settle_a_new_operation(self):
+        # A historical refund: same payment, same amount, same currency, COMPLETED, but made by another operation.
+        self.adapter.amounts['R-HISTORIC'] = (4000, 'USD')
+        self.adapter.refunds['op-from-an-older-case'] = 'R-HISTORIC'
+        self.assertIsNone(apply_webhook(self.store, self.adapter, event('R-HISTORIC')))
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'pending')
+        # One that carries no operation tag at all (for example a refund made by hand in PayPal's dashboard).
+        self.adapter.amounts['R-MANUAL'] = (4000, 'USD')
+        self.assertIsNone(apply_webhook(self.store, self.adapter, event('R-MANUAL')))
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'pending')
+        # The refund that really belongs to this operation still settles it.
+        self.assertEqual(apply_webhook(self.store, self.adapter, event(self.refund_id))['status'], 'refunded')
+
     def test_a_finished_case_is_never_changed_by_a_late_event(self):
         done = apply_webhook(self.store, self.adapter, event(self.refund_id))
         self.assertIsNone(apply_webhook(self.store, self.adapter, event(self.refund_id)))

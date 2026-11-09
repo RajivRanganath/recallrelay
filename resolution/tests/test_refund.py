@@ -134,6 +134,77 @@ class RefundTests(unittest.TestCase):
         self.assertEqual(results['slow']['status'], 'refunded')  # The late "unknown" gets the stored result back.
         self.assertEqual(self.store.latest('case-demo-1')['status'], 'refunded')
 
+    def test_a_confirmed_refund_is_not_hidden_behind_an_earlier_failure(self):
+        # Same-ID requests can get different answers from PayPal: one check is told "refused", another succeeds.
+        adapter = FakePayPal(['reject'])
+        failed = approve(self.store, adapter, 'case-demo-1', APPROVAL)
+        self.assertEqual(failed['status'], 'failed')
+        done = dict(failed, status='refunded', brief='Refund completed.', refund_id='fake-refund-confirmed')
+        self.assertEqual(self.store.finish('case-demo-1', done)['status'], 'refunded')
+        self.assertEqual(self.store.latest('case-demo-1')['refund_id'], 'fake-refund-confirmed')
+
+    def test_only_failed_can_be_upgraded_and_only_to_refunded(self):
+        failed = approve(self.store, FakePayPal(['reject']), 'case-demo-1', APPROVAL)
+        for status in ('pending', 'failed'):  # A failure stays a failure unless a refund is confirmed.
+            self.assertEqual(self.store.finish('case-demo-1', dict(failed, status=status))['status'], 'failed')
+        self.tearDown()
+        self.setUp()
+        refunded = approve(self.store, FakePayPal(), 'case-demo-1', APPROVAL)
+        for status in ('pending', 'failed', 'refunded'):  # A completed refund is never replaced.
+            self.assertEqual(self.store.finish('case-demo-1', dict(refunded, status=status, refund_id=None))['refund_id'], refunded['refund_id'])
+        self.assertEqual(self.store.latest('case-demo-1'), refunded)
+
+    def test_a_failed_check_after_a_successful_one_does_not_lose_the_refund(self):
+        started, release = threading.Event(), threading.Event()
+
+        class Split(FakePayPal):
+            def refund(self, *args):
+                self.calls += 1
+                if self.calls == 1:
+                    raise RefundUnknown('No response')  # Approval leaves the case pending.
+                if self.calls == 2:  # Slow check: PayPal refuses it, but only after the other check already finished.
+                    started.set()
+                    release.wait(5)
+                    from resolution.backend.paypal import RefundRejected
+                    raise RefundRejected('Refused')
+                return super().refund(*args)  # Fast check succeeds.
+
+        adapter = Split()
+        approve(self.store, adapter, 'case-demo-1', APPROVAL)
+        slow = threading.Thread(target=lambda: reconcile(self.store, adapter, 'case-demo-1'))
+        slow.start()
+        started.wait(5)
+        self.assertEqual(reconcile(self.store, adapter, 'case-demo-1')['status'], 'refunded')
+        release.set()
+        slow.join()
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'refunded')
+
+    def test_a_failure_that_lands_first_cannot_hide_a_later_confirmed_refund(self):
+        started, release = threading.Event(), threading.Event()
+
+        class Split(FakePayPal):
+            def refund(self, *args):
+                self.calls += 1
+                if self.calls == 1:
+                    raise RefundUnknown('No response')
+                if self.calls == 2:  # Slow check: succeeds, but only after the other check stored "failed".
+                    started.set()
+                    release.wait(5)
+                    return super().refund(*args)
+                from resolution.backend.paypal import RefundRejected
+                raise RefundRejected('Refused')  # Fast check: refused.
+
+        adapter = Split()
+        approve(self.store, adapter, 'case-demo-1', APPROVAL)
+        results = {}
+        slow = threading.Thread(target=lambda: results.update(slow=reconcile(self.store, adapter, 'case-demo-1')))
+        slow.start()
+        started.wait(5)
+        self.assertEqual(reconcile(self.store, adapter, 'case-demo-1')['status'], 'failed')
+        release.set()
+        slow.join()
+        self.assertEqual((results['slow']['status'], self.store.latest('case-demo-1')['status']), ('refunded', 'refunded'))
+
     def test_late_unknown_result_cannot_overwrite_a_completed_refund(self):
         done = approve(self.store, FakePayPal(), 'case-demo-1', APPROVAL)
         late = dict(done, status='pending', refund_id=None)

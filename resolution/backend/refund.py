@@ -112,13 +112,16 @@ def apply_webhook(store, adapter, event):
     operation = store.operation(case_id) if case_id else None
     current = store.latest(case_id) if case_id else None
     if (not operation or not current or current['status'] != 'pending' or not hasattr(adapter, 'get_refund')
-            or not _confirmed(adapter, operation, refund_id)):
+            or not _confirmed(adapter, operation, refund_id, bound=True)):
         return None
     done = store.finish(case_id, _response(current, adapter, 'refunded', 'Refund completed.', operation['operation_id'], refund_id))
     return done if done['status'] == 'refunded' else None
 
 
-def _confirmed(adapter, operation, refund_id):
+def _confirmed(adapter, operation, refund_id, bound=False):
+    """PayPal's own record must agree. With bound=True (refund IDs that arrived from outside, such as a
+    webhook) the refund must also carry this operation's ID as its custom_id, so an older refund of the
+    same amount on the same payment can never settle a newer operation."""
     read = getattr(adapter, 'get_refund', None)
     if read is None:
         return True
@@ -129,4 +132,5 @@ def _confirmed(adapter, operation, refund_id):
     amount = found.get('amount') if isinstance(found, dict) and isinstance(found.get('amount'), dict) else {}
     minor = operation['amount_minor']
     return (found.get('id') == refund_id and found.get('status') == 'COMPLETED' and amount.get('currency_code') == operation['currency']
-            and amount.get('value') == f'{minor // 100}.{minor % 100:02d}')
+            and amount.get('value') == f'{minor // 100}.{minor % 100:02d}'
+            and (not bound or found.get('custom_id') == operation['operation_id']))

@@ -117,15 +117,19 @@ class CaseStore:
         return rows[0][0] if len(rows) == 1 else None
 
     def finish(self, case_id, response):
-        """Settle a pending case. A case that already left 'pending' is never overwritten.
+        """Settle a pending case. A case that already left 'pending' is never overwritten, with one exception.
 
         Two overlapping reconciles can both start from 'pending'; the first to finish wins and the
         later one gets the stored state back, so a completed refund can never revert to pending.
+        The exception: a case stored as 'failed' may still become 'refunded'. Concurrent requests with
+        the same ID can get different answers from PayPal, and callers only report 'refunded' after the
+        refund has been read back from PayPal as COMPLETED, so money that really moved must not stay
+        hidden behind an earlier failure. Nothing else ever overwrites 'failed' or 'refunded'.
         """
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
             row = db.execute('SELECT status, response FROM cases WHERE case_id=?', (case_id,)).fetchone()
-            if row and row[0] != 'pending':
+            if row and row[0] != 'pending' and not (row[0] == 'failed' and response['status'] == 'refunded'):
                 return json.loads(row[1])
             db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?',
                        (response['status'], json.dumps(response, sort_keys=True), case_id))

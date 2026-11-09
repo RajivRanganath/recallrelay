@@ -71,7 +71,7 @@ If the refund comes back `pending`, PayPal answered with something unexpected or
 
 ## 3. Sandbox retry experiment (run once on 9 November 2026: PASSED)
 
-Result, report saved as `resolution/evals/reports/retry-experiment-1.json`: one 10.00 USD partial refund on a fresh sandbox payment, sent twice with the same request ID (the first answer discarded). Both calls returned refund `6AJ1390216671813F`, and PayPal's read-back showed COMPLETED for 10.00 USD. One partial refund and one retry only.
+Result, report saved as `resolution/evals/reports/retry-experiment-1.json`: one 10.00 USD partial refund on a fresh sandbox payment, sent twice with the same request ID (the first answer discarded). Both calls returned refund `6AJ1390216671813F`, and PayPal's read-back showed COMPLETED for 10.00 USD. One partial refund and one retry only. The script now also requires PayPal's read-back to return the request ID as the refund's `custom_id`. **Run again the same day (report `retry-experiment-2.json`): PASSED**, refund `44S260928C838640A` returned by both calls, read-back COMPLETED for 10.00 USD with the matching `custom_id`, so the real sandbox accepts and returns that tag. It stops before contacting PayPal if the report file already exists, so a repeated command cannot create another refund. The payment has 20.00 of 40.00 refunded now; use a fresh payment for any further run.
 
 Tests the claim "a retry with the same request ID does not create a second refund" against the real sandbox, using a partial refund (10.00 of the 40.00 payment).
 

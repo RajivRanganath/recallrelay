@@ -34,8 +34,9 @@ def run(adapter, capture_id, amount_minor, request_id, currency='USD'):
     seen.update(first_refund_id=first, retry_refund_id=second, read_back=found,
                 same_refund_id=first == second,
                 read_back_matches=(found.get('status') == 'COMPLETED' and amount.get('value') == amount_text(amount_minor)
-                                   and amount.get('currency_code') == currency))
-    seen['passed'] = seen['same_refund_id'] and seen['read_back_matches']
+                                   and amount.get('currency_code') == currency),
+                custom_id_matches=found.get('custom_id') == request_id)  # Proves the refund is bound to this operation.
+    seen['passed'] = seen['same_refund_id'] and seen['read_back_matches'] and seen['custom_id_matches']
     return seen
 
 
@@ -56,12 +57,23 @@ def main():
         parser.error('Could not read the case file or the PayPal sandbox credentials')
     if not isinstance(capture_id, str) or capture_id.startswith('capture-demo'):
         parser.error('The case file does not hold a real sandbox capture ID')
-    seen = run(adapter, capture_id, args.amount_minor, args.request_id or 'retry-' + uuid.uuid4().hex[:24])
-    text = json.dumps(seen, indent=2)
-    print(text)
+    # Reserve the report file BEFORE contacting PayPal: an existing file must stop the run while it is still
+    # free, because a second run would use a new request ID and create another real partial refund.
+    handle = None
     if args.output:
-        with open(args.output, 'x') as handle:
+        try:
+            handle = open(args.output, 'x')
+        except OSError:
+            parser.error('Cannot create the report file (it may already exist); nothing was sent to PayPal')
+    try:
+        seen = run(adapter, capture_id, args.amount_minor, args.request_id or 'retry-' + uuid.uuid4().hex[:24])
+        text = json.dumps(seen, indent=2)
+        print(text)
+        if handle:
             handle.write(text + '\n')
+    finally:
+        if handle:
+            handle.close()
     print('RESULT:', 'PASSED' if seen['passed'] else 'DID NOT PASS (record exactly what printed)')
     raise SystemExit(0 if seen['passed'] else 1)
 

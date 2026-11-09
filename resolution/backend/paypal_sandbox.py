@@ -96,7 +96,8 @@ class SandboxPayPal:
     def refund(self, operation_id, capture_id, amount_minor, currency):
         if currency != 'USD':
             raise RefundRejected('Only USD refunds are supported')
-        payload = json.dumps({'amount': {'value': amount_text(amount_minor), 'currency_code': currency}}).encode()
+        # custom_id ties the refund to this one operation, so a webhook can tell it apart from any older refund.
+        payload = json.dumps({'amount': {'value': amount_text(amount_minor), 'currency_code': currency}, 'custom_id': operation_id}).encode()
         request = Request(f'{self.base_url}/v2/payments/captures/{quote(capture_id, safe="")}/refund', data=payload, method='POST', headers={
             'Authorization': 'Bearer ' + self._bearer(), 'Content-Type': 'application/json', 'Accept': 'application/json',
             'PayPal-Request-Id': operation_id, 'Prefer': 'return=representation'})
@@ -206,4 +207,4 @@ class SandboxPayPal:
         status, body = self._send(request)
         if status != 200 or not isinstance(body, dict):
             raise RefundUnknown('Refund could not be read back')
-        return {key: body.get(key) for key in ('id', 'status', 'amount', 'create_time')}
+        return {key: body.get(key) for key in ('id', 'status', 'amount', 'create_time', 'custom_id')}
