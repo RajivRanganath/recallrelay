@@ -96,10 +96,12 @@ def capture_of(event):
 
 
 def apply_webhook(store, adapter, event):
-    """Settle a PENDING case from an already-verified refund event.
+    """Settle a PENDING or FAILED case from an already-verified refund event.
 
     The event is only a hint: the refund is read back from PayPal and must match the stored operation
-    (ID, COMPLETED, amount, currency) before the case moves. It can only ever move pending -> refunded.
+    (ID, COMPLETED, amount, currency, and this operation's ID as custom_id) before the case moves. It can
+    only ever move pending -> refunded or failed -> refunded; a failed case can be wrong when concurrent
+    requests got different answers and the refund really completed. Nothing else is ever changed.
     Returns the settled response, or None when the event changed nothing.
     """
     resource = event.get('resource') if isinstance(event, dict) else None
@@ -108,10 +110,10 @@ def apply_webhook(store, adapter, event):
     refund_id, capture_id = resource.get('id'), capture_of(event)
     if not isinstance(refund_id, str) or not capture_id:
         return None
-    case_id = store.pending_case_for_capture(capture_id)
+    case_id = store.unsettled_case_for_capture(capture_id)
     operation = store.operation(case_id) if case_id else None
     current = store.latest(case_id) if case_id else None
-    if (not operation or not current or current['status'] != 'pending' or not hasattr(adapter, 'get_refund')
+    if (not operation or not current or current['status'] not in ('pending', 'failed') or not hasattr(adapter, 'get_refund')
             or not _confirmed(adapter, operation, refund_id, bound=True)):
         return None
     done = store.finish(case_id, _response(current, adapter, 'refunded', 'Refund completed.', operation['operation_id'], refund_id))

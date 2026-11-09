@@ -109,11 +109,12 @@ class CaseStore:
                        (response['status'], json.dumps(response, sort_keys=True), case_id))
         return True
 
-    def pending_case_for_capture(self, capture_id):
-        """The case id of a pending refund on this payment, if exactly one exists."""
+    def unsettled_case_for_capture(self, capture_id):
+        """The case id of a refund on this payment that is still pending, or failed (a failure can be wrong
+        when concurrent requests got different answers), if exactly one such case exists."""
         with self.connect() as db:
             rows = db.execute('SELECT o.case_id FROM operations o JOIN cases c ON c.case_id=o.case_id '
-                              'WHERE o.capture_id=? AND c.status=?', (capture_id, 'pending')).fetchall()
+                              'WHERE o.capture_id=? AND c.status IN (?, ?)', (capture_id, 'pending', 'failed')).fetchall()
         return rows[0][0] if len(rows) == 1 else None
 
     def finish(self, case_id, response):

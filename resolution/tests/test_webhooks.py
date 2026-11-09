@@ -86,6 +86,32 @@ class WebhookTests(unittest.TestCase):
         # The refund that really belongs to this operation still settles it.
         self.assertEqual(apply_webhook(self.store, self.adapter, event(self.refund_id))['status'], 'refunded')
 
+    def test_a_case_wrongly_stored_as_failed_is_recovered_by_its_own_refund_event(self):
+        # One request completed the refund but lost its answer; another request stored "failed".
+        failed = dict(self.store.latest('case-demo-1'), status='failed', brief='PayPal refused the refund; no money moved.')
+        with self.store.connect() as db:
+            db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?', ('failed', json.dumps(failed, sort_keys=True), 'case-demo-1'))
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'failed')
+        # An event for a refund that is not this operation's cannot recover it...
+        self.adapter.amounts['R-HISTORIC'] = (4000, 'USD')
+        self.adapter.refunds['op-from-an-older-case'] = 'R-HISTORIC'
+        self.assertIsNone(apply_webhook(self.store, self.adapter, event('R-HISTORIC')))
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'failed')
+        # ...but the verified, operation-bound refund does.
+        done = apply_webhook(self.store, self.adapter, event(self.refund_id))
+        self.assertEqual((done['status'], done['refund_id']), ('refunded', self.refund_id))
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'refunded')
+
+    def test_a_genuinely_failed_case_stays_failed_without_a_matching_refund(self):
+        failed = dict(self.store.latest('case-demo-1'), status='failed', brief='PayPal refused the refund; no money moved.')
+        with self.store.connect() as db:
+            db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?', ('failed', json.dumps(failed, sort_keys=True), 'case-demo-1'))
+        adapter = FakePayPal()  # PayPal has no record of any refund for this operation.
+        adapter.amounts['R-NONE'] = (4000, 'USD')
+        for refund_id in ('R-NONE', 'R-UNKNOWN'):
+            self.assertIsNone(apply_webhook(self.store, adapter, event(refund_id)))
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'failed')
+
     def test_a_finished_case_is_never_changed_by_a_late_event(self):
         done = apply_webhook(self.store, self.adapter, event(self.refund_id))
         self.assertIsNone(apply_webhook(self.store, self.adapter, event(self.refund_id)))
