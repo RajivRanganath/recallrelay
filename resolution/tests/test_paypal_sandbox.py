@@ -9,15 +9,29 @@ import time
 import unittest
 
 from resolution.backend.envfile import read_secrets
-from resolution.backend.paypal import RefundRejected, RefundUnknown
+from resolution.backend.paypal import BalanceTooLow, BalanceUnclear, CaptureNotRefundable, OpenDispute, RefundRejected, RefundUnknown
 from resolution.backend.paypal_sandbox import SandboxPayPal, amount_text, load_credentials
 from resolution.backend.refund import approve, reconcile
 from resolution.backend.review import review
-from resolution.backend.store import CaseStore
+from resolution.backend.store import ApprovalConflict, CaseStore
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = json.loads((ROOT / 'contracts/fixtures/resolution-request.json').read_text())
 CAPTURE = 'STUBCAPTURE123'  # Not a fixture ID, so the sandbox guard lets it through to the local stub.
+
+
+def capture_body(status, value='100.00', currency='USD', order='ORDER1'):
+    return {'id': CAPTURE, 'status': status, 'amount': {'value': value, 'currency_code': currency},
+            'supplementary_data': {'related_ids': {'order_id': order}}}
+
+
+def order_body(refunds=(), captures=None):
+    captures = [{'id': CAPTURE}] if captures is None else captures
+    return {'status': 'COMPLETED', 'purchase_units': [{'payments': {'captures': captures, 'refunds': list(refunds)}}]}
+
+
+def refund_entry(value, status='COMPLETED', currency='USD'):
+    return {'id': 'R-OLD', 'status': status, 'amount': {'value': value, 'currency_code': currency}}
 
 
 class StubPayPal:
@@ -25,6 +39,11 @@ class StubPayPal:
 
     def __init__(self, replies=()):
         self.replies, self.requests, self.tokens = list(replies), [], 0
+        self.lookups = []
+        self.capture_reply = (200, capture_body('COMPLETED'))
+        self.order_reply = (200, order_body())
+        self.disputes_reply = (200, {'items': [], 'links': []})
+        self.verify_reply = (200, {'verification_status': 'SUCCESS'})
         stub = self
 
         class Handler(BaseHTTPRequestHandler):
@@ -45,6 +64,9 @@ class StubPayPal:
                     stub.tokens += 1
                     stub.requests.append(('token', {k.lower(): v for k, v in self.headers.items()}, body))
                     return self.reply(200, {'access_token': f'stub-token-{stub.tokens}', 'expires_in': 3600})
+                if self.path == '/v1/notifications/verify-webhook-signature':
+                    stub.requests.append(('verify', {k.lower(): v for k, v in self.headers.items()}, json.loads(body), self.path))
+                    return self.reply(*stub.verify_reply)
                 stub.requests.append(('refund', {k.lower(): v for k, v in self.headers.items()}, json.loads(body), self.path))
                 code, reply = stub.replies.pop(0) if stub.replies else (201, {'id': 'REFUND-1', 'status': 'COMPLETED'})
                 if code == 'slow':
@@ -53,6 +75,11 @@ class StubPayPal:
                 self.reply(code, reply)
 
             def do_GET(self):
+                for prefix, reply in (('/v2/payments/captures/', stub.capture_reply), ('/v2/checkout/orders/', stub.order_reply),
+                                      ('/v1/customer/disputes', stub.disputes_reply)):
+                    if self.path.startswith(prefix):
+                        stub.lookups.append(self.path)
+                        return self.reply(*reply)
                 self.reply(200, {'id': 'REFUND-1', 'status': 'COMPLETED', 'amount': {'value': '40.00', 'currency_code': 'USD'}, 'secret': 'x'})
 
         self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
@@ -82,7 +109,7 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(refund[3], f'/v2/payments/captures/{CAPTURE}/refund')
         self.assertEqual(refund[1]['authorization'], 'Bearer stub-token-1')
         self.assertEqual(refund[1]['paypal-request-id'], 'op-abc')
-        self.assertEqual(refund[2], {'amount': {'value': '40.05', 'currency_code': 'USD'}})
+        self.assertEqual(refund[2], {'amount': {'value': '40.05', 'currency_code': 'USD'}, 'custom_id': 'op-abc'})  # Binds the refund to its operation.
 
     def test_token_is_cached_and_replaced_after_a_401(self):
         stub = StubPayPal([(201, {'id': 'R1', 'status': 'COMPLETED'}), (401, {'name': 'AUTHENTICATION_FAILURE'}),
@@ -145,6 +172,94 @@ class AdapterTests(unittest.TestCase):
             result = SandboxPayPal('i', 's', base_url=url).get_refund('REFUND-1')
         self.assertEqual((result['status'], result['amount']['value']), ('COMPLETED', '40.00'))
         self.assertNotIn('secret', result)
+        self.assertIn('custom_id', result)  # Present so a webhook can be tied to one operation.
+
+
+    def test_capture_check_allows_only_refundable_payments_that_fit_the_amount(self):
+        paid = lambda status, value='100.00', cur='USD': (200, capture_body(status, value, cur))
+        cases = [(paid('COMPLETED'), None), (paid('PARTIALLY_REFUNDED'), None), (paid('COMPLETED', '40.00'), None),
+                 (paid('REFUNDED'), CaptureNotRefundable), (paid('PENDING'), CaptureNotRefundable), (paid('DECLINED'), CaptureNotRefundable),
+                 (paid('COMPLETED', '39.99'), CaptureNotRefundable), (paid('COMPLETED', '100.00', 'EUR'), CaptureNotRefundable),
+                 (paid('COMPLETED', 'abc'), CaptureNotRefundable), ((404, {}), CaptureNotRefundable),
+                 ((500, {}), RefundUnknown), ((401, {}), RefundUnknown), ((200, None), RefundUnknown)]
+        for reply, expected in cases:
+            stub = StubPayPal()
+            stub.capture_reply = reply
+            with self.subTest(reply=reply), stub as url:
+                adapter = SandboxPayPal('i', 's', base_url=url)
+                if expected is None:
+                    adapter.check_capture(CAPTURE, 4000, 'USD')
+                else:
+                    with self.assertRaises(expected):
+                        adapter.check_capture(CAPTURE, 4000, 'USD')
+
+
+    def check(self, **replies):
+        stub = StubPayPal()
+        for name, reply in replies.items():
+            setattr(stub, name, reply)
+        with stub as url:
+            SandboxPayPal('i', 's', base_url=url).check_capture(CAPTURE, 4000, 'USD')
+
+    def test_refunded_balance_is_read_from_the_order(self):
+        self.check(order_reply=(200, order_body([refund_entry('60.00')])))  # 100.00 - 60.00 = exactly 40.00 left: allowed.
+        self.check(order_reply=(200, order_body([refund_entry('90.00', 'FAILED'), refund_entry('10.00', 'CANCELLED')])))
+        with self.assertRaises(BalanceTooLow):
+            self.check(order_reply=(200, order_body([refund_entry('60.01')])))
+        with self.assertRaises(BalanceTooLow):  # An unfamiliar status counts as refunded: fail toward blocking.
+            self.check(order_reply=(200, order_body([refund_entry('61.00', 'ODD')])))
+        with self.assertRaises(BalanceTooLow):  # Several refunds add up.
+            self.check(order_reply=(200, order_body([refund_entry('30.00'), refund_entry('31.00', 'PENDING')])))
+
+    def test_unclear_refund_history_goes_to_manual_handling_or_blocks(self):
+        for reply in ((200, order_body(captures=[])), (200, order_body(captures=[{'id': CAPTURE}, {'id': 'OTHER'}])),
+                      (200, order_body(captures=[{'id': 'OTHER'}])), (200, order_body([refund_entry('abc')])),
+                      (200, order_body([refund_entry('5.00', currency='EUR')])), (200, order_body([refund_entry('1.005')])),
+                      (200, order_body(['junk']))):
+            with self.subTest(reply=reply), self.assertRaises(BalanceUnclear):
+                self.check(order_reply=reply)
+        with self.assertRaises(BalanceUnclear):  # No order linked to the payment.
+            body = capture_body('COMPLETED')
+            del body['supplementary_data']
+            self.check(capture_reply=(200, body))
+        for reply in ((500, {}), (404, {}), (200, None)):
+            with self.subTest(reply=reply), self.assertRaises(RefundUnknown):
+                self.check(order_reply=reply)
+
+    def test_only_resolved_disputes_are_allowed_and_no_answer_blocks(self):
+        self.check(disputes_reply=(200, {'items': [{'status': 'RESOLVED'}, {'status': 'RESOLVED'}]}))
+        for status in ('OPEN', 'WAITING_FOR_BUYER_RESPONSE', 'WAITING_FOR_SELLER_RESPONSE', 'UNDER_REVIEW', 'OTHER', None, 'resolved'):
+            with self.subTest(status=status), self.assertRaises(OpenDispute):
+                self.check(disputes_reply=(200, {'items': [{'status': 'RESOLVED'}, {'status': status}]}))
+        with self.assertRaises(OpenDispute):
+            self.check(disputes_reply=(200, {'items': ['junk']}))
+        for reply in ((403, {'name': 'NOT_AUTHORIZED'}), (500, {}), (200, {}), (200, {'items': 'x'}), (200, None)):
+            with self.subTest(reply=reply), self.assertRaises(RefundUnknown):  # Fail closed: silence is not "no dispute".
+                self.check(disputes_reply=reply)
+
+    def test_webhook_verification_is_done_by_paypal_and_needs_an_explicit_success(self):
+        headers = {'paypal-auth-algo': 'SHA256withRSA', 'paypal-cert-url': 'https://api.sandbox.paypal.com/cert', 'paypal-transmission-id': 'tid',
+                   'paypal-transmission-sig': 'sig', 'paypal-transmission-time': '2026-11-09T00:00:00Z'}
+        raw = json.dumps({'event_type': 'PAYMENT.CAPTURE.REFUNDED', 'resource': {'id': 'R1'}}).encode()
+        stub = StubPayPal()
+        with stub as url:
+            adapter = SandboxPayPal('i', 's', base_url=url)
+            self.assertTrue(adapter.verify_webhook(headers, raw, 'WH-1'))
+            sent = [r for r in stub.requests if r[0] == 'verify'][0][2]
+            self.assertEqual((sent['webhook_id'], sent['transmission_id'], sent['webhook_event']['resource']['id']), ('WH-1', 'tid', 'R1'))
+            for reply in ((200, {'verification_status': 'FAILURE'}), (200, {}), (200, None), (400, {}), (401, {})):
+                stub.verify_reply = reply
+                with self.subTest(reply=reply):
+                    self.assertFalse(adapter.verify_webhook(headers, raw, 'WH-1'))
+            sent_before = len(stub.requests)
+            for bad_headers in ({}, dict(headers, **{'paypal-transmission-sig': ''}), {k: v for k, v in headers.items() if k != 'paypal-cert-url'}):
+                self.assertFalse(adapter.verify_webhook(bad_headers, raw, 'WH-1'))
+            self.assertFalse(adapter.verify_webhook(headers, b'not json', 'WH-1'))
+            self.assertFalse(adapter.verify_webhook(headers, b'[1]', 'WH-1'))
+            self.assertFalse(adapter.verify_webhook(headers, raw, ''))
+            self.assertEqual(len(stub.requests), sent_before)  # Malformed events never reach PayPal.
+        with self.assertRaises(RefundUnknown):
+            SandboxPayPal('i', 's', base_url=url, timeout=1).verify_webhook(headers, raw, 'WH-1')  # Server is gone.
 
 
 class EnvFileTests(unittest.TestCase):
@@ -188,6 +303,55 @@ class SandboxFlowTests(unittest.TestCase):
         with StubPayPal() as url:
             done = approve(self.store, SandboxPayPal('i', 's', base_url=url), 'case-demo-1', self.approval)
         self.assertEqual((done['status'], done['mode'], done['refund_id']), ('refunded', 'sandbox', 'REFUND-1'))
+
+    def test_an_already_refunded_payment_blocks_approval_before_any_refund_is_sent(self):
+        stub = StubPayPal()
+        stub.capture_reply = (200, capture_body('REFUNDED'))
+        with stub as url, self.assertRaises(ApprovalConflict):
+            approve(self.store, SandboxPayPal('i', 's', base_url=url), 'case-demo-1', self.approval)
+        self.assertEqual([r for r in stub.requests if r[0] == 'refund'], [])
+        self.assertIsNone(self.store.operation('case-demo-1'))
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'manual_required')
+
+    def test_an_open_dispute_sends_the_case_to_manual_handling_without_any_refund(self):
+        stub = StubPayPal()
+        stub.disputes_reply = (200, {'items': [{'dispute_id': 'PP-D-1', 'status': 'WAITING_FOR_SELLER_RESPONSE'}]})
+        with stub as url, self.assertRaises(ApprovalConflict) as caught:
+            approve(self.store, SandboxPayPal('i', 's', base_url=url), 'case-demo-1', self.approval)
+        held = self.store.latest('case-demo-1')
+        self.assertEqual(held['status'], 'manual_required')
+        self.assertIn('open dispute', held['brief'])
+        self.assertNotIn('PP-D-1', held['brief'] + str(caught.exception))  # Nothing from PayPal is copied in.
+        self.assertEqual([r for r in stub.requests if r[0] == 'refund'], [])
+        self.assertIsNone(self.store.operation('case-demo-1'))
+
+    def test_earlier_refunds_reduce_what_can_be_approved(self):
+        stub = StubPayPal()
+        stub.order_reply = (200, order_body([refund_entry('70.00')]))  # 100.00 paid, 70.00 already refunded: 30.00 left.
+        with stub as url, self.assertRaises(ApprovalConflict):
+            approve(self.store, SandboxPayPal('i', 's', base_url=url), 'case-demo-1', self.approval)  # Asks for 40.00.
+        self.assertIn('less left to refund', self.store.latest('case-demo-1')['brief'])
+        self.assertEqual(self.store.latest('case-demo-1')['status'], 'manual_required')
+
+    def test_a_held_case_can_be_approved_after_the_problem_is_gone(self):
+        stub = StubPayPal()
+        stub.disputes_reply = (200, {'items': [{'status': 'OPEN'}]})
+        with stub as url:
+            adapter = SandboxPayPal('i', 's', base_url=url)
+            with self.assertRaises(ApprovalConflict):
+                approve(self.store, adapter, 'case-demo-1', self.approval)
+            stub.disputes_reply = (200, {'items': [{'status': 'RESOLVED'}]})
+            request = self.store.request('case-demo-1')
+            self.store.save_review(request, review(request))  # The merchant reviews the case again.
+            done = approve(self.store, adapter, 'case-demo-1', self.approval)
+        self.assertEqual(done['status'], 'refunded')
+
+    def test_the_completed_refund_is_read_back_from_paypal_before_it_is_reported(self):
+        stub = StubPayPal([(201, {'id': 'REFUND-1', 'status': 'COMPLETED'})])
+        with stub as url:
+            done = approve(self.store, SandboxPayPal('i', 's', base_url=url), 'case-demo-1', self.approval)
+        self.assertEqual(done['status'], 'refunded')
+        self.assertEqual(len(stub.lookups), 3)  # Payment, order (refund history) and disputes, all before the refund.
 
     def test_pending_reply_then_reconcile_reuses_the_same_request_id(self):
         stub = StubPayPal([(500, {}), (201, {'id': 'REFUND-1', 'status': 'COMPLETED'})])

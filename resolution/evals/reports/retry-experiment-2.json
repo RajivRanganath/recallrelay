@@ -1,0 +1,22 @@
+{
+  "request_id": "retry-210ae622b22a43a7a57ff48c",
+  "capture_id": "6WJ74541HH375824T",
+  "amount": "10.00",
+  "first_call": "refund created; answer discarded to simulate a dropped response",
+  "first_refund_id": "44S260928C838640A",
+  "retry_refund_id": "44S260928C838640A",
+  "read_back": {
+    "id": "44S260928C838640A",
+    "status": "COMPLETED",
+    "amount": {
+      "currency_code": "USD",
+      "value": "10.00"
+    },
+    "create_time": "2026-11-09T09:08:11-08:00",
+    "custom_id": "retry-210ae622b22a43a7a57ff48c"
+  },
+  "same_refund_id": true,
+  "read_back_matches": true,
+  "custom_id_matches": true,
+  "passed": true
+}

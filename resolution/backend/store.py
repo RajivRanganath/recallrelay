@@ -98,8 +98,40 @@ class CaseStore:
                        ('pending', json.dumps(pending_response, sort_keys=True), case_id))
         return pending_response, True
 
-    def finish(self, case_id, response):
+    def hold(self, case_id, response):
+        """Move a case that is still awaiting approval to manual handling. Never touches money states."""
         with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT status FROM cases WHERE case_id=?', (case_id,)).fetchone()
+            if not row or row[0] != 'awaiting_approval':
+                return False
+            db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?',
+                       (response['status'], json.dumps(response, sort_keys=True), case_id))
+        return True
+
+    def unsettled_case_for_capture(self, capture_id):
+        """The case id of a refund on this payment that is still pending, or failed (a failure can be wrong
+        when concurrent requests got different answers), if exactly one such case exists."""
+        with self.connect() as db:
+            rows = db.execute('SELECT o.case_id FROM operations o JOIN cases c ON c.case_id=o.case_id '
+                              'WHERE o.capture_id=? AND c.status IN (?, ?)', (capture_id, 'pending', 'failed')).fetchall()
+        return rows[0][0] if len(rows) == 1 else None
+
+    def finish(self, case_id, response):
+        """Settle a pending case. A case that already left 'pending' is never overwritten, with one exception.
+
+        Two overlapping reconciles can both start from 'pending'; the first to finish wins and the
+        later one gets the stored state back, so a completed refund can never revert to pending.
+        The exception: a case stored as 'failed' may still become 'refunded'. Concurrent requests with
+        the same ID can get different answers from PayPal, and callers only report 'refunded' after the
+        refund has been read back from PayPal as COMPLETED, so money that really moved must not stay
+        hidden behind an earlier failure. Nothing else ever overwrites 'failed' or 'refunded'.
+        """
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT status, response FROM cases WHERE case_id=?', (case_id,)).fetchone()
+            if row and row[0] != 'pending' and not (row[0] == 'failed' and response['status'] == 'refunded'):
+                return json.loads(row[1])
             db.execute('UPDATE cases SET status=?, response=? WHERE case_id=?',
                        (response['status'], json.dumps(response, sort_keys=True), case_id))
         return response

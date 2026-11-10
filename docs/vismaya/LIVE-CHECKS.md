@@ -1,6 +1,6 @@
 # Live checks (you run these; credentials never go through Claude or into git)
 
-Two pieces were built and tested against stubs. The **PayPal sandbox refund (check 2) has been run and verified once, on 9 November 2026**; see the runbook. The **real AI brief evaluation (check 1) was run four times on 9 November 2026** against `gemini-3.1-flash-lite` through the direct Gemini API: 10, 10, 12 and 12 of 14 briefs came from the model and the rest fell back to the template, with the checker changed between runs and then frozen for the last one (case names, reasons and limits are in the runbook). The app itself has not yet been run with `--brief gemini` against Google. An OmniRoute gateway was started in Docker that day, but its dashboard setup failed at the provider step ("Invalid provider") before any model call, so OmniRoute was never used. In the demo, describe the brief as "AI-drafted when it passes our checks, template otherwise", and only after you have seen it work in the app.
+Two pieces were built and tested against stubs. The **PayPal sandbox refund (check 2) has been run and verified once, on 9 November 2026**; see the runbook. The **real AI brief evaluation (check 1) was run four times on 9 November 2026** against `gemini-3.1-flash-lite` through the direct Gemini API: 10, 10, 12 and 12 of 14 briefs came from the model and the rest fell back to the template, with the checker changed between runs and then frozen for the last one (case names, reasons and limits are in the runbook). The app itself was run once with `--brief gemini` on 9 November 2026 and one "Write brief" on the demo case returned an accepted AI draft (see the runbook); the live fallback path was not exercised. An OmniRoute gateway was started in Docker that day, but its dashboard setup failed at the provider step ("Invalid provider") before any model call, so OmniRoute was never used. In the demo, describe the brief as "AI-drafted when it passes our checks, template otherwise", and only after you have seen it work in the app.
 
 ## Keep secrets safe
 
@@ -68,6 +68,20 @@ One-time setup in the PayPal Developer dashboard (sandbox): create an app to get
    It should print `status: COMPLETED` and the amount. Only then call the sandbox refund verified.
 
 If the refund comes back `pending`, PayPal answered with something unexpected or the network failed. Use **Check refund again** (same operation ID, so no duplicate), then verify.
+
+## 3. Sandbox retry experiment (run once on 9 November 2026: PASSED)
+
+Result, report saved as `resolution/evals/reports/retry-experiment-1.json`: one 10.00 USD partial refund on a fresh sandbox payment, sent twice with the same request ID (the first answer discarded). Both calls returned refund `6AJ1390216671813F`, and PayPal's read-back showed COMPLETED for 10.00 USD. One partial refund and one retry only. The script now also requires PayPal's read-back to return the request ID as the refund's `custom_id`. **Run again the same day (report `retry-experiment-2.json`): PASSED**, refund `44S260928C838640A` returned by both calls, read-back COMPLETED for 10.00 USD with the matching `custom_id`, so the real sandbox accepts and returns that tag. It stops before contacting PayPal if the report file already exists, so a repeated command cannot create another refund. The payment has 20.00 of 40.00 refunded now; use a fresh payment for any further run.
+
+Tests the claim "a retry with the same request ID does not create a second refund" against the real sandbox, using a partial refund (10.00 of the 40.00 payment).
+
+1. Make a **fresh** sandbox payment and case file (check 2, step 1), for example `--output resolution/.local/sandbox-case-retry.json`. Do not approve it in the app first.
+2. Run:
+   ```
+   python -m resolution.sandbox.retry_experiment resolution/.local/sandbox-case-retry.json --paypal-env C:\Users\VISMAYA\secrets\paypal.env --output resolution/evals/reports/retry-experiment-1.json
+   ```
+3. It sends the refund, discards the answer (as if the connection dropped), sends the same request again, and reads the refund back. The last line says `RESULT: PASSED` only if both calls returned the same refund ID and PayPal's read-back shows COMPLETED for 10.00 USD. Record exactly what printed, including a failure.
+4. It covers one partial refund and one retry. It does not prove behaviour under every failure.
 
 ## What to write down
 
