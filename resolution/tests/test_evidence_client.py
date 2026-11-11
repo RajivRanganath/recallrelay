@@ -71,6 +71,17 @@ class EvidenceClientTests(unittest.TestCase):
         with self.assertRaises(Exception):
             EvidenceClient('http://127.0.0.1:1').assess(bad)
 
+    def test_response_is_bound_to_the_requested_campaign_and_version(self):
+        wrong_campaign = dict(RESPONSE, campaign_id='different-campaign')
+        future_version = dict(RESPONSE, campaign_version=42)
+        newer_request = copy.deepcopy(REQUEST)
+        newer_request['campaign']['version'] = REQUEST['campaign']['version'] + 1
+        for request, response in ((REQUEST, wrong_campaign), (REQUEST, future_version), (newer_request, RESPONSE)):
+            with self.subTest(request_version=request['campaign']['version'], response_version=response['campaign_version']), \
+                    Running(fake(200, json.dumps(response).encode())) as url:
+                with self.assertRaisesRegex(EvidenceUnavailable, 'campaign snapshot'):
+                    EvidenceClient(url).assess(request)
+
 
 if __name__ == '__main__':
     unittest.main()

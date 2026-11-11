@@ -49,6 +49,10 @@ class EvidenceClient:
             validate_contract('assessment-response', data)
             if data['case_id'] != assessment_request['order']['case_id']:
                 raise EvidenceUnavailable('Evidence returned a different case')
+            campaign = assessment_request['campaign']
+            if (data['campaign_id'] != campaign['campaign_id']
+                    or data['campaign_version'] != campaign['version']):
+                raise EvidenceUnavailable('Evidence returned a different campaign snapshot')
             return data
         except HTTPError as error:
             error.close()
