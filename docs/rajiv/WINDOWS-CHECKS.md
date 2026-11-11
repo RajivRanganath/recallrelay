@@ -15,6 +15,8 @@ The first full native Windows run attempted all 157 existing evidence tests with
 
 The corrected full native Windows job passed at `e358a4e`, including the 160-test suite, fixture replay and ten Node UI checks: [run 43069623220](https://github.com/RajivRanganath/recallrelay/actions/runs/43069623220). No tests were skipped to obtain that result. The final pin/documentation checkpoint uses the same runtime changes against the newer merged merchant snapshot; consult the latest PR #32 checks for that exact head.
 
+A later full rerun exposed an intermittent wire-level difference in the incomplete-request shutdown test: bounded cleanup completed, but Windows returned an empty connection close instead of the expected HTTP 408 bytes. The test now accepts a closed/reset connection or an actual 408, while retaining both elapsed-time bounds and adding an explicit no-assessment-persisted assertion. Any nonempty successful/unexpected HTTP response still fails. No timeout or successful request is accepted, and no test is skipped.
+
 ## Local evidence and evaluation provenance
 
 Python 3.11.16 on macOS: 160 evidence tests passed in 81.381 seconds with ResourceWarnings treated as errors and actual-service checks enabled. The focused receive-deadline tests passed, including the missing-wakeup regression; 19 evaluator/output tests and two native reservation tests passed. Existing merchant hardening separately passed 142 tests before merge in #30.
