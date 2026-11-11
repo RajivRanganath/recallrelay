@@ -57,6 +57,14 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(self.call('GET', '/v1/resolutions/unknown')[0], 404)
         self.assertEqual(self.call('GET', '/v1/resolutions/unknown')[0], 404)
 
+    def test_reposted_handoff_cannot_clear_merchant_confirmation(self):
+        self.call('POST', '/v1/resolutions', copy.deepcopy(FIXTURE))
+        _, confirmed = self.call('POST', '/v1/cases/case-demo-1/remedy-conditions')
+        self.assertEqual(self.call('POST', '/v1/resolutions', copy.deepcopy(FIXTURE)), (200, confirmed))
+        detail = self.call('GET', '/v1/cases/case-demo-1')[1]
+        self.assertTrue(detail['remedy_conditions_met'])
+        self.assertIsNone(detail['operation'])
+
     def test_invalid_bodies_are_rejected_without_echoing_input(self):
         bad = self.eligible()
         bad['order']['paid_minor'] = 'SECRET-VALUE'

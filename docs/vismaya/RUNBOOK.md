@@ -1,5 +1,7 @@
 # Vismaya's resolution runbook
 
+Integration maintenance: [INTEGRATION-DEPENDENCIES.md](INTEGRATION-DEPENDENCIES.md) records the existing merchant case-detail fields used by customer retry recovery and the merchant-side transaction guard that preserves remedy confirmation and payment holds during a delayed identical handoff. A changed assessment/order still needs fresh confirmation; locked money states retain their existing protection.
+
 Merchant decision and settlement lane. Everything here is synthetic. By default payments use a **fake PayPal adapter** and the brief is a **template**. The PayPal sandbox adapter was run once against the real PayPal sandbox (see "Verified live results"); the AI brief (direct Gemini) was evaluated four times against a real model on 9 November 2026, with the checker changed between runs (see "Evaluation" below and [LIVE-CHECKS.md](LIVE-CHECKS.md)).
 
 ## Run it
