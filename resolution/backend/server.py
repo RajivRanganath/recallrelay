@@ -1,15 +1,21 @@
 """Loopback-only merchant UI plus the internal frozen v1 resolution API. Fake PayPal only."""
 import argparse
 import copy
+import io
 import json
 import os
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import re
+import socket
+import threading
+import time
+from http.server import BaseHTTPRequestHandler
 from urllib.parse import unquote
 
 from resolution.ai.brief import BriefService
 from resolution.ai.gemini import GeminiBrief, read_key as read_gemini_key
 from resolution.ai.omniroute import OmniRouteBrief, read_key
 from resolution.backend.errors import InvalidInput
+from resolution.backend.intake import BoundedThreadingHTTPServer, DeadlineReader, ReceiveDeadline
 from resolution.backend.json_input import strict_json
 from resolution.backend.paypal import FakePayPal, RefundUnknown
 from resolution.backend.paypal_sandbox import SandboxPayPal, load_credentials
@@ -39,7 +45,42 @@ def case_detail(store, case_id):
             'order': {key: order[key] for key in ('order_id', 'paid_minor', 'previously_refunded_minor', 'age_days', 'quantity')}}
 
 
-def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=None):
+PUBLIC_HOST = re.compile(r'(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}')
+PUBLIC_WEBHOOK_PATH = '/v1/paypal/webhook'
+MAX_PUBLIC_WINDOW_SECONDS = 7200
+PUBLIC_DENIED = {'error': 'Not available on the public host'}
+RECEIVE_SECONDS = 10      # Total time allowed to receive one whole request (line, headers and body).
+MAX_CONNECTIONS = 32      # Simultaneous handler threads; further connections are closed at once.
+MAX_PUBLIC_HANDLERS = 4   # Simultaneous public webhook calls (each waits on PayPal); more get 503.
+INCOMPLETE = object()     # read_body result: the body did not arrive inside the receive budget.
+
+
+def public_host_name(value):
+    """A plain DNS name (no scheme, port, path, IP address or localhost) for the one temporary public host."""
+    host = value.strip().lower() if isinstance(value, str) else ''
+    if not PUBLIC_HOST.fullmatch(host) or host.endswith('.localhost'):
+        raise ValueError('The public host must be a plain DNS name such as abc-def.example.com')
+    return host
+
+
+def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=None,
+                public_host=None, public_window_seconds=1800, receive_seconds=RECEIVE_SECONDS, max_connections=MAX_CONNECTIONS):
+    """`public_host` is for a temporary, explicitly approved sandbox webhook test (docs/vismaya/WEBHOOK-EXCEPTION.md).
+
+    Requests whose Host header equals it may reach ONLY `POST /v1/paypal/webhook`, and only until the window
+    closes; everything else on that host is refused before any handler runs. Without it, any non-loopback
+    Host is refused exactly as before.
+    """
+    if public_host is not None:
+        public_host = public_host_name(public_host)
+        if not webhook_id or not hasattr(adapter, 'verify_webhook'):
+            raise ValueError('A public host needs a webhook ID and an adapter that can verify webhooks')
+        if not 0 < public_window_seconds <= MAX_PUBLIC_WINDOW_SECONDS:
+            raise ValueError('The public window must be between 1 second and 2 hours')
+    if not 0 < receive_seconds <= 60 or not 1 <= max_connections <= 256:
+        raise ValueError('The receive budget must be 0-60 seconds and the connection cap 1-256')
+    public_deadline = time.monotonic() + public_window_seconds
+    public_slots = threading.BoundedSemaphore(MAX_PUBLIC_HANDLERS)
     store = CaseStore(db_path or ROOT / 'resolution' / '.local' / 'cases.sqlite3')
     adapter = adapter if adapter is not None else FakePayPal()
     brief = brief if brief is not None else BriefService()
@@ -47,6 +88,13 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
 
     class Handler(BaseHTTPRequestHandler):
         timeout = 5
+
+        def setup(self):
+            super().setup()
+            # One total budget for receiving the request, not just a per-wait timeout (see intake.py).
+            self.receive = ReceiveDeadline(self.connection, receive_seconds, self.timeout)
+            self.rfile.close()
+            self.rfile = io.BufferedReader(DeadlineReader(self.connection, self.receive))
 
         def log_message(self, *args):
             pass  # No bodies, identifiers, or secrets in access logs.
@@ -66,6 +114,31 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return len(self.headers.get_all('Host', [])) == 1 and self.headers.get('Host') in {
                 f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
 
+        def reject_public(self):
+            """Refuse a public-host request from its headers alone, without waiting for any body.
+
+            The reply goes out first. Then whatever the sender already sent is discarded for at most half a second,
+            bounded in bytes too, so closing does not reset the connection and lose the reply."""
+            self.receive.complete()
+            self.close_connection = True
+            self.reply(403, PUBLIC_DENIED)
+            try:
+                self.connection.shutdown(socket.SHUT_WR)
+                end, left = time.monotonic() + 0.5, MAX_BODY_BYTES
+                while left > 0 and time.monotonic() < end:
+                    self.connection.settimeout(max(end - time.monotonic(), 0.01))
+                    chunk = self.connection.recv(min(left, 65536))
+                    if not chunk:
+                        break
+                    left -= len(chunk)
+            except OSError:
+                pass
+
+        def public_request(self):
+            """True only for the one configured public host, matched exactly (no port, one Host header)."""
+            hosts = self.headers.get_all('Host', [])
+            return public_host is not None and len(hosts) == 1 and hosts[0].lower() == public_host
+
         def same_origin(self):
             # Browsers always send Origin on cross-origin POSTs, so a hostile page cannot omit it.
             # Non-browser callers (evidence service, tests) send none and stay allowed.
@@ -74,6 +147,9 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return origin is None or origin in {f'http://127.0.0.1:{port}', f'http://localhost:{port}'}
 
         def do_GET(self):
+            self.receive.complete()  # A GET has no body to wait for.
+            if self.public_request():  # The public host serves the webhook POST only; no page, case or health data.
+                return self.reject_public()
             if not self.allowed_host():
                 return self.reply(403, {'error': 'Loopback Host required'})
             if self.path in ASSETS:
@@ -98,10 +174,26 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
                 size = -1
             if not 0 <= size <= MAX_BODY_BYTES:
                 self.close_connection = True  # Cannot safely drain an unbounded or malformed body.
+                self.receive.complete()
                 return None
-            return self.rfile.read(size)
+            data = self.rfile.read(size)
+            self.receive.complete()
+            if len(data) != size:  # The total receive budget ran out, or the sender hung up, before the body arrived.
+                self.close_connection = True
+                return INCOMPLETE
+            return data
 
         def webhook(self, raw):
+            public = self.public_request()
+            if public and not public_slots.acquire(blocking=False):
+                return self.reply(503, {'error': 'Busy; try again later'})
+            try:
+                return self._webhook(raw)
+            finally:
+                if public:
+                    public_slots.release()
+
+        def _webhook(self, raw):
             """PayPal event receiver. Off unless a webhook ID is configured. Unverified events change nothing,
             and a verified one only settles a pending refund after PayPal confirms it by a direct read."""
             if not webhook_id or not hasattr(adapter, 'verify_webhook'):
@@ -121,16 +213,24 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return self.reply(200, {'accepted': True, 'settled': apply_webhook(store, adapter, event) is not None})
 
         def do_POST(self):
+            if self.public_request() and (self.path != PUBLIC_WEBHOOK_PATH or time.monotonic() >= public_deadline):
+                return self.reject_public()  # Decided from the headers alone: the body is never waited for.
             raw = self.read_body()
+            if raw is INCOMPLETE:
+                return self.reply(408, {'error': 'The request was not received in time'})
             if raw is None:
                 return self.reply(400, {'error': 'Body size is outside the allowed range'})
-            if not self.allowed_host():
+            if self.public_request():
+                # Exact path only (no query string), and only while the approved window is open.
+                if self.path != PUBLIC_WEBHOOK_PATH or time.monotonic() >= public_deadline:
+                    return self.reply(403, PUBLIC_DENIED)
+            elif not self.allowed_host():
                 return self.reply(403, {'error': 'Loopback Host required'})
             if not self.same_origin():
                 return self.reply(403, {'error': 'Cross-origin requests are not allowed'})
             parts = self.path.strip('/').split('/')
             action = parts[3] if len(parts) == 4 and parts[:2] == ['v1', 'cases'] and parts[3] in ('approve', 'reconcile', 'remedy-conditions', 'brief') else None
-            if self.path == '/v1/paypal/webhook':
+            if self.path == PUBLIC_WEBHOOK_PATH:
                 return self.webhook(raw)
             if self.path not in ('/v1/resolutions', '/v1/demo/case') and not action:
                 return self.reply(404, {'error': 'Not found'})
@@ -172,7 +272,7 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             except ValueError:
                 self.reply(400, {'error': 'Invalid request'})
 
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    return BoundedThreadingHTTPServer(('127.0.0.1', port), Handler, max_connections)
 
 
 if __name__ == '__main__':
@@ -183,6 +283,10 @@ if __name__ == '__main__':
                         help='sandbox sends real refunds to the PayPal SANDBOX only; fake never leaves this process')
     parser.add_argument('--paypal-env', help='Existing env file holding PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET (read, never executed)')
     parser.add_argument('--paypal-webhook-id', help='Turns on POST /v1/paypal/webhook for events of this PayPal sandbox webhook (needs --paypal sandbox)')
+    parser.add_argument('--paypal-webhook-public-host', help='TEMPORARY, approved sandbox test only (docs/vismaya/WEBHOOK-EXCEPTION.md): the one public DNS name '
+                        'of a tunnel. That host can reach only POST /v1/paypal/webhook, for a limited window. Needs --paypal sandbox and --paypal-webhook-id')
+    parser.add_argument('--paypal-webhook-window-minutes', type=int, default=30,
+                        help='How long the public host is served after startup (1-120, default 30)')
     parser.add_argument('--brief', choices=('template', 'omniroute', 'gemini'), default='template',
                         help='omniroute (local gateway) or gemini (Google API) drafts the merchant brief; output is validated or replaced by the template')
     parser.add_argument('--omniroute-env', help='Existing env file holding OMNIROUTE_API_KEY (read, never executed)')
@@ -196,8 +300,18 @@ if __name__ == '__main__':
             adapter = SandboxPayPal(*load_credentials(args.paypal_env))
         except (OSError, ValueError):
             parser.error('Could not load PayPal sandbox credentials; check PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET or --paypal-env')
-    elif args.paypal_env or args.paypal_webhook_id:
-        parser.error('--paypal-env and --paypal-webhook-id need --paypal sandbox')
+    elif args.paypal_env or args.paypal_webhook_id or args.paypal_webhook_public_host:
+        parser.error('--paypal-env, --paypal-webhook-id and --paypal-webhook-public-host need --paypal sandbox')
+    public_host = None
+    if args.paypal_webhook_public_host is not None:
+        if not args.paypal_webhook_id:
+            parser.error('--paypal-webhook-public-host needs --paypal-webhook-id')
+        if not 1 <= args.paypal_webhook_window_minutes <= MAX_PUBLIC_WINDOW_SECONDS // 60:
+            parser.error('--paypal-webhook-window-minutes must be between 1 and 120')
+        try:
+            public_host = public_host_name(args.paypal_webhook_public_host)
+        except ValueError as error:
+            parser.error(str(error))
     provider = None
     if args.brief == 'omniroute':
         try:
@@ -217,4 +331,8 @@ if __name__ == '__main__':
         parser.error('--gemini-env and --gemini-model need --brief gemini')
     note = 'PayPal SANDBOX refunds (no live money)' if adapter else 'fake PayPal only, no money movement'
     print(f'resolution on http://127.0.0.1:{args.port}; {note}; brief: {"AI via " + provider.name + " (validated)" if provider else "template"}', flush=True)
-    make_server(args.port, args.db, adapter, BriefService(provider), args.paypal_webhook_id).serve_forever()
+    if public_host:
+        print(f'TEMPORARY PUBLIC HOST: {public_host} may reach ONLY POST {PUBLIC_WEBHOOK_PATH} for {args.paypal_webhook_window_minutes} minutes. '
+              'Stop the tunnel and delete the webhook when the test is over.', flush=True)
+    make_server(args.port, args.db, adapter, BriefService(provider), args.paypal_webhook_id,
+                public_host, args.paypal_webhook_window_minutes * 60).serve_forever()
