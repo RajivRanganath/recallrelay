@@ -19,6 +19,8 @@ A later full rerun exposed an intermittent wire-level difference in the incomple
 
 The paired push/PR rerun also exposed Windows `ConnectionAbortedError` when an overloaded connection was closed with unread input, including a health probe racing handler cleanup. Overload checks now accept only a 503 or reset/abort/closed connection, still require exactly two admitted application calls and zero persistence before release, and require a genuine healthy response within the existing recovery window. A new deterministic peer check verifies that overload formats a 503 without admitting a handler, independent of whether a real TCP peer receives the best-effort bytes. Timeouts, arbitrary errors and successful excess requests remain failures. The final suite has 161 tests.
 
+One later run exposed a fixture race: receipt of the successful recovery health response preceded that same handler's admission-slot release, so the immediate test POST could itself be rejected as busy. The recovery helper now observes the slot release within the same one-second recovery budget before starting its next operation. It does not sleep arbitrarily, retry a state-changing request, raise a timing threshold or accept a failed assessment. The POST must still return 200 and an eligible synthetic assessment.
+
 ## Local evidence and evaluation provenance
 
 Python 3.11.16 on macOS: 160 evidence tests passed in 81.381 seconds with ResourceWarnings treated as errors and actual-service checks enabled. The focused receive-deadline tests passed, including the missing-wakeup regression; 19 evaluator/output tests and two native reservation tests passed. Existing merchant hardening separately passed 142 tests before merge in #30.

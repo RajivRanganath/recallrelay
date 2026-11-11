@@ -99,6 +99,10 @@ class RequestLimitTests(unittest.TestCase):
             time.sleep(.01)
         self.assertEqual(status, 200)
         self.assertEqual(body['service'], 'evidence')
+        # A health response can arrive before that handler releases its slot.
+        # Observe release inside the same recovery budget before the next POST.
+        self.assertTrue(server._slots.acquire(timeout=max(0, end - time.monotonic())))
+        server._slots.release()
         self.assertIsNone(AssessmentStore(self.db).latest('case-demo-1'))
 
     def test_trickling_headers_expire_and_release_capacity(self):
@@ -193,7 +197,8 @@ class RequestLimitTests(unittest.TestCase):
                         raise
             self.assert_recovers_without_assessment(server)
             status, saved = self.call(server, '/v1/assessments', fixture())
-            self.assertEqual((status, saved['decision']), (200, 'eligible'))
+            self.assertEqual(status, 200, saved)
+            self.assertEqual(saved['decision'], 'eligible')
 
     def test_server_close_joins_admitted_incomplete_request(self):
         server = make_server(0, self.db, request_timeout=.3)
