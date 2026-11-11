@@ -96,6 +96,21 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             self.rfile.close()
             self.rfile = io.BufferedReader(DeadlineReader(self.connection, self.receive))
 
+        def parse_request(self):
+            parsed = super().parse_request()
+            if parsed and self.receive.timed_out:
+                # The budget ran out while the request was still arriving. The reader reports that as end of input and
+                # the header parser accepts it, so a half-received request would look complete. Refuse it here,
+                # before anything is dispatched to a route.
+                return self.refuse_unfinished()
+            return parsed
+
+        def refuse_unfinished(self):
+            self.receive.complete()
+            self.close_connection = True
+            self.reply(408, {'error': 'The request was not received in time'})
+            return False
+
         def log_message(self, *args):
             pass  # No bodies, identifiers, or secrets in access logs.
 
@@ -147,6 +162,8 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return origin is None or origin in {f'http://127.0.0.1:{port}', f'http://localhost:{port}'}
 
         def do_GET(self):
+            if self.receive.timed_out:  # Also checked in parse_request; never serve a request cut off by the budget.
+                return self.refuse_unfinished()
             self.receive.complete()  # A GET has no body to wait for.
             if self.public_request():  # The public host serves the webhook POST only; no page, case or health data.
                 return self.reject_public()
@@ -213,6 +230,8 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return self.reply(200, {'accepted': True, 'settled': apply_webhook(store, adapter, event) is not None})
 
         def do_POST(self):
+            if self.receive.timed_out:  # Also checked in parse_request; never act on a request cut off by the budget.
+                return self.refuse_unfinished()
             if self.public_request() and (self.path != PUBLIC_WEBHOOK_PATH or time.monotonic() >= public_deadline):
                 return self.reject_public()  # Decided from the headers alone: the body is never waited for.
             raw = self.read_body()

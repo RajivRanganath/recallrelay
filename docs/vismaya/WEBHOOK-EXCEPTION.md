@@ -40,7 +40,7 @@ Behaviour:
 - Any other non-loopback host is refused as before. A request with two Host headers is never trusted.
 - The webhook handler is unchanged: JSON body, bounded size, browser-style cross-origin requests refused, PayPal's own verification API must answer SUCCESS before anything changes, and the refund must be read back from PayPal and carry the operation's `custom_id` before a pending (or wrongly failed) case can become refunded.
 - Note: Python's built-in server collapses extra leading slashes (`//v1/paypal/webhook` becomes `/v1/paypal/webhook`). That is the same single route and is still verified. It is covered by a test.
-- Tests: `resolution/tests/test_public_webhook.py` (20 tests), including trickled bodies and headers, the total receive budget, the connection cap and the public handler cap.
+- Tests: `resolution/tests/test_public_webhook.py` (25 tests), including trickled bodies and headers, requests left unfinished at the deadline (refused before any route runs, with no state change), the total receive budget, the connection cap and the public handler cap.
 
 ## Credentials
 
