@@ -1,5 +1,17 @@
 # Final local integration checks
 
+## Review follow-up: portability and lost-response retry
+
+The initial macOS/Linux check missed a Windows pipe limitation. Python documents that Windows selectors support sockets, not pipes ([official documentation](https://docs.python.org/3/library/selectors.html)). A regression that rejects pipe selection reproduced the launcher error on the original implementation. A second regression reproduced the lost-response retry reposting an already accepted assessment after merchant remedy confirmation.
+
+The launcher now uses a bounded reader thread and timeout queue, cleans up child processes on EOF/malformed readiness/timeout/customer-startup failure, and uses ASCII CLI instructions compatible with legacy Windows console encoding. Five startup tests cover those failures, port collision, and console output. The integrated tests also check selector-free startup and accepted-but-lost response recovery. The client checks the merchant's structured assessment and order bindings before posting an unacknowledged transfer; malformed or unavailable reads cannot cause a repost. Different new assessments still reach an unapproved case.
+
+Focused local follow-up: 13 integrated/startup tests passed, plus 4 bounded handoff client tests. Windows gets a dedicated `windows-integration` CI job for those 17 tests. Local execution is macOS; a locally simulated selector restriction is not a Windows execution result. The earlier 135-test merchant result below is historical; merchant source is unchanged by this follow-up. Recording, real webhook delivery, concurrent-writer atomicity and merchant-side duplicate-review hardening remain outside this change.
+
+Final local follow-up: the complete evidence suite passed **157 tests in 81.291 seconds**, with actual-service checks enabled and ResourceWarnings treated as errors. The 10 Node UI checks passed, the original development-v2 plan verified unchanged, and whitespace checks passed. The Windows job's native result is recorded in PR #29 checks; do not substitute the local selector simulation for that result.
+
+## Initial integration verification
+
 11 November 2026. Base: merged main `f29a9f3ee0dd46c9fd86b86588f4d30ae3eb94d1`. Branch: `work/rajiv-final-integration`. Python 3.11.16 with existing installed lane dependencies. These are local results; no hosted CI, new provider measurement, fresh dependency install or production claim is implied.
 
 | Check | Result |

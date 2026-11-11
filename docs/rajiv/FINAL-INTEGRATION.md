@@ -10,9 +10,20 @@ Use the existing evidence environment or install `evidence/requirements.lock.txt
 evidence/.venv/bin/python -B -m evidence.integrated
 ```
 
+Windows PowerShell, from the repository root:
+
+```powershell
+py -3.11 -m venv evidence/.venv
+.\evidence\.venv\Scripts\python.exe -m pip install -r evidence/requirements.lock.txt
+.\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0 --merchant-port 0
+```
+
+An existing environment can be reused without recreating it. Read the printed URLs when using port `0`. Startup reads the merchant process's first bounded output line in a thread, with a ten-second deadline; it does not select on a process pipe. A stalled, malformed or failed startup terminates and waits for the owned child before closing the pipe. Windows has its own focused integration CI job.
+
 - Customer: <http://127.0.0.1:8101>
 - Merchant: <http://127.0.0.1:8102>
 - If either port is occupied, choose `--port 8111 --merchant-port 8112`, or use `0` for automatically selected ports and read the printed URLs.
+- An occupied port is a startup error. The launcher never terminates another listener to free a port. Use different ports rather than killing an unidentified process.
 - Ctrl+C stops both owned services and removes their temporary rehearsal data. Restart to get an empty merchant case list. This launcher deliberately uses temporary state; it is not durable hosting.
 
 The launcher starts the actual merchant server as a separate process with a minimal environment, **fake PayPal and template briefs**. It starts the actual evidence server with **mock fixture extraction and deterministic assessment**. Each service owns a separate temporary SQLite database. Neither service imports the other's implementation or opens its database. No provider keys, real AI calls, sandbox refunds or external payment calls are involved in this launcher.
@@ -35,7 +46,9 @@ The route is opt-in and available only in the integrated launcher. Ordinary `evi
 
 Editing an identifier invalidates the UI's saved handoff. The backend rejects an assessment that is no longer the latest saved assessment. A confirmed handoff is recorded in the evidence store; repeating that same transfer reads merchant status rather than reposting and resetting remedy confirmation. Concurrent browser handoffs are rejected while one is running. A merchant refusal or outage is visible, while evidence remains saved and typed entry stays available.
 
-A response loss or crash between merchant acceptance and local acknowledgement can leave an uncertain handoff. Read merchant status and inspect the merchant assessment before retrying. This is not an exactly-once cross-service transaction or an atomic freshness guarantee against concurrent reassessment. A case ID identifies a merchant case, not every later customer edit; the customer status text states that it belongs to the last submitted snapshot.
+A response loss or crash between merchant acceptance and local acknowledgement can leave an uncertain handoff. Before a locally unacknowledged transfer, the client reads the merchant's existing `/v1/cases/{case_id}` endpoint. If the assessment ID, its displayed fields, campaign version, capture, currency and order match the saved snapshot, the existing resolution is acknowledged without posting again. A plain status response has no structured assessment ID and is not enough to establish that match. Missing cases may be created; a genuinely new assessment may replace an unapproved case. Inconsistent bindings, unavailable/invalid reads and locked cases fail visibly instead of being reposted. The regression recreates acceptance followed by a lost response, merchant remedy confirmation, and a successful retry with zero new review POSTs.
+
+This preflight read is not an atomic compare-and-set or an exactly-once cross-service transaction: separate concurrent writers can still race between reading and posting. Merchant-side duplicate-review hardening remains the merchant owner's responsibility. A case ID identifies a merchant case, not every later customer edit; the customer status text states that it belongs to the last submitted snapshot.
 
 ## Verification scope
 

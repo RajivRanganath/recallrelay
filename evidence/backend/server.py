@@ -160,7 +160,7 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                         if store.was_handed_off(saved['assessment_id']):
                             reviewed = client.get_status(saved['case_id'])
                         else:
-                            reviewed = client.handoff(snapshot['order'], saved)
+                            reviewed = client.handoff_if_needed(snapshot['order'], saved)
                             store.mark_handed_off(saved['assessment_id'])
                     finally:
                         handoff_lock.release()

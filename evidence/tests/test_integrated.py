@@ -10,6 +10,7 @@ import json
 
 from evidence.integrated import integrated_session
 from evidence.backend.server import make_server
+from evidence.backend.resolution_client import ResolutionClient, ResolutionUnavailable
 from test_assessment import fixture
 from test_resolution_client import RunningServer
 from test_resolution_integration import call
@@ -124,6 +125,40 @@ class IntegratedTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 with integrated_session(port=value):
                     self.fail('Invalid port accepted')
+
+    def test_launcher_does_not_select_on_process_pipes(self):
+        # Windows selectors accept sockets but reject subprocess output pipes.
+        with patch('selectors.DefaultSelector', side_effect=OSError(10038, 'Socket operation on nonsocket')):
+            with integrated_session() as session:
+                self.assertEqual(call(session.resolution_url, '/health')[1]['mode'], 'mock')
+
+    def test_retry_after_lost_response_preserves_merchant_remedy_confirmation(self):
+        original = ResolutionClient.handoff
+        def accepted_but_response_lost(client, order, assessment):
+            original(client, order, assessment)
+            raise ResolutionUnavailable('Synthetic lost response after merchant acceptance')
+        with integrated_session() as session:
+            saved = self.submit(session)
+            with patch.object(ResolutionClient, 'handoff', accepted_but_response_lost):
+                self.assertEqual(self.handoff(session, saved)[0], 503)
+            merchant = session.resolution_url
+            self.assertEqual(call(merchant, '/v1/cases/case-demo-1/remedy-conditions', {})[1]['status'], 'awaiting_approval')
+            with patch.object(ResolutionClient, 'handoff', side_effect=AssertionError('Must read the accepted snapshot, not repost it')):
+                code, reviewed = self.handoff(session, saved)
+            self.assertEqual((code, reviewed['status']), (200, 'awaiting_approval'))
+            self.assertTrue(call(merchant, '/v1/cases/case-demo-1')[1]['remedy_conditions_met'])
+
+    def test_a_new_assessment_still_replaces_an_unapproved_snapshot(self):
+        with integrated_session() as session:
+            first = self.submit(session)
+            self.assertEqual(self.handoff(session, first)[0], 200)
+            changed = copy.deepcopy(fixture()['label'])
+            changed['confirmed_batch'] = ''
+            latest = self.submit(session, changed)
+            code, reviewed = self.handoff(session, latest)
+            self.assertEqual((code, reviewed['status']), (200, 'needs_information'))
+            detail = call(session.resolution_url, '/v1/cases/case-demo-1')[1]
+            self.assertEqual(detail['assessment']['assessment_id'], latest['assessment_id'])
 
 
 if __name__ == '__main__':

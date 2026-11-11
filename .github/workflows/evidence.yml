@@ -30,3 +30,13 @@ jobs:
           RECALLRELAY_RESOLUTION_SOURCE: ${{ github.workspace }}/.integration-resolution
       - run: python -m evidence.evals.run --check
       - run: node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js
+  windows-integration:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r evidence/requirements.lock.txt
+      - run: python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_integrated*.py' -v
+      - run: python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_handoff_client.py' -v

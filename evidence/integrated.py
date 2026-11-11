@@ -4,7 +4,7 @@ from contextlib import contextmanager, ExitStack
 import json
 import os
 from pathlib import Path
-import selectors
+import queue
 import subprocess
 import sys
 import tempfile
@@ -13,6 +13,16 @@ import threading
 from evidence.backend.server import make_server
 from evidence.backend.validation import ROOT
 from evidence.demo import DemoSession, running
+
+READY_TIMEOUT = 10
+
+
+def readiness_line(stream, result):
+    """A blocking pipe read works on Windows; only the owning thread waits on it."""
+    try:
+        result.put(stream.readline(256))
+    except (OSError, ValueError):
+        result.put(b'')
 
 
 # The merchant service owns its store and dependencies. It runs in a separate
@@ -38,12 +48,14 @@ def merchant_process(folder, port=0):
         [sys.executable, '-I', '-B', '-u', '-c', MERCHANT, str(ROOT),
          str(folder / 'resolution.sqlite3'), str(port)], cwd=ROOT, env=env,
         stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    lines = queue.Queue(maxsize=1)
+    reader = threading.Thread(target=readiness_line, args=(process.stdout, lines), daemon=True)
     try:
-        with selectors.DefaultSelector() as selector:
-            selector.register(process.stdout, selectors.EVENT_READ)
-            if not selector.select(timeout=10):
-                raise RuntimeError('Merchant service did not start within ten seconds')
-            line = process.stdout.readline(256)
+        reader.start()
+        try:
+            line = lines.get(timeout=READY_TIMEOUT)
+        except queue.Empty:
+            raise RuntimeError('Merchant service did not start within the readiness deadline') from None
         try:
             selected = json.loads(line)['port']
             if type(selected) is not int or not 0 < selected <= 65535:
@@ -59,6 +71,8 @@ def merchant_process(folder, port=0):
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
+        if reader.ident is not None:
+            reader.join(timeout=2)
         process.stdout.close()
 
 
@@ -85,7 +99,7 @@ def main():
             print('Customer: ' + session.customer_url, flush=True)
             print('Merchant: ' + session.resolution_url, flush=True)
             print('Synthetic only. Mock extraction, deterministic assessment, template briefs, fake payments.', flush=True)
-            print('Confirm label → check match → send for merchant review → open merchant → confirm remedy → approve fake refund → refresh customer status.', flush=True)
+            print('Confirm label -> check match -> send for merchant review -> open merchant -> confirm remedy -> approve fake refund -> refresh customer status.', flush=True)
             print('Fresh separate temporary stores. Ctrl+C stops both apps and removes rehearsal state.', flush=True)
             try:
                 threading.Event().wait()

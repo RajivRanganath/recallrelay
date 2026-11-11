@@ -83,3 +83,45 @@ class HandoffClientTests(unittest.TestCase):
         bad['unexpected'] = 'not-part-of-contract'
         with self.assertRaises(ResolutionUnavailable):
             ResolutionClient('http://127.0.0.1:1').handoff(request['order'], bad)
+
+    def test_recovery_checks_bound_snapshot_and_never_reposts_on_read_errors(self):
+        request = fixture()
+        saved = assess(request)
+        resolution = json.loads((ROOT / 'contracts/fixtures/resolution-response.json').read_text())
+        summary_fields = ('assessment_id', 'decision', 'model', 'batch', 'reason', 'evidence', 'mode', 'missing_fields', 'clarification')
+        order_fields = ('order_id', 'paid_minor', 'previously_refunded_minor', 'age_days', 'quantity')
+        detail = {'resolution': resolution, 'assessment': {key: saved[key] for key in summary_fields},
+                  'binding': {'assessment_id': saved['assessment_id'], 'campaign_version': saved['campaign_version'],
+                              'capture_id': request['order']['capture_id'], 'currency': request['order']['currency']},
+                  'order': {key: request['order'][key] for key in order_fields}}
+        bad_capture = copy.deepcopy(detail)
+        bad_capture['binding']['capture_id'] = 'wrong-capture'
+        bad_identity = copy.deepcopy(detail)
+        bad_identity['binding']['assessment_id'] = 'wrong-assessment'
+        wrong_case = copy.deepcopy(detail)
+        wrong_case['resolution']['case_id'] = 'wrong-case'
+        for code, output, succeeds in [(200, detail, True), (200, bad_capture, False),
+                                       (200, bad_identity, False), (200, wrong_case, False),
+                                       (200, {}, False), (503, {}, False)]:
+            received = []
+            class Handler(BaseHTTPRequestHandler):
+                def log_message(self, *args):
+                    pass
+                def do_GET(self):
+                    received.append(('GET', self.path))
+                    raw = json.dumps(output).encode()
+                    self.send_response(code)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Content-Length', str(len(raw)))
+                    self.end_headers()
+                    self.wfile.write(raw)
+                def do_POST(self):
+                    received.append(('POST', self.path))
+                    self.send_error(500)
+            with self.subTest(code=code, succeeds=succeeds), RunningServer(ThreadingHTTPServer(('127.0.0.1', 0), Handler)) as url:
+                if succeeds:
+                    self.assertEqual(ResolutionClient(url).handoff_if_needed(request['order'], saved), resolution)
+                else:
+                    with self.assertRaises(ResolutionUnavailable):
+                        ResolutionClient(url).handoff_if_needed(request['order'], saved)
+                self.assertEqual(received, [('GET', '/v1/cases/case-demo-1')])
