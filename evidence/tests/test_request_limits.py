@@ -13,6 +13,7 @@ from unittest.mock import patch
 
 from evidence.backend.server import make_server
 from evidence.backend.store import AssessmentStore
+from evidence.backend.http_server import IntakeDeadline
 from test_assessment import fixture
 from test_resolution_client import RunningServer
 
@@ -42,10 +43,13 @@ class RequestLimitTests(unittest.TestCase):
                    f'Host: 127.0.0.1:{server.server_port}\r\n'
                    f'Content-Type: application/json\r\nContent-Length: {len(raw)}\r\n\r\n').encode()
         with socket.create_connection(server.server_address, timeout=2) as peer:
-            peer.sendall(headers + raw)
-            with HTTPResponse(peer) as response:
-                response.begin()
-                return response.status, json.loads(response.read())
+            try:
+                peer.sendall(headers + raw)
+                with HTTPResponse(peer) as response:
+                    response.begin()
+                    return response.status, json.loads(response.read())
+            except (ConnectionResetError, ConnectionAbortedError, RemoteDisconnected, IncompleteRead):
+                return None, {}  # Overload may close without delivering its best-effort 503.
 
     def slow_request(self, server, prefix):
         # Keep supplying data well inside the inactivity timeout. The receive
@@ -70,7 +74,7 @@ class RequestLimitTests(unittest.TestCase):
                     response.begin()
                     status = response.status
                     raw = response.read()
-            except (ConnectionResetError, RemoteDisconnected, IncompleteRead):
+            except (ConnectionResetError, ConnectionAbortedError, RemoteDisconnected, IncompleteRead):
                 pass  # Closing an actively uploading peer can reset the socket.
             finally:
                 stop.set()
@@ -84,12 +88,21 @@ class RequestLimitTests(unittest.TestCase):
     def assert_recovers_without_assessment(self, server):
         # The response can precede handler cleanup by a few instructions.
         end = time.monotonic() + 1
+        status, body = None, {}
         while True:
-            status, body = self.call(server)
+            try:
+                status, body = self.call(server)
+            except (ConnectionResetError, ConnectionAbortedError, RemoteDisconnected, IncompleteRead):
+                status, body = None, {}
             if status == 200 or time.monotonic() >= end:
                 break
             time.sleep(.01)
-        self.assertEqual((status, body['service']), (200, 'evidence'))
+        self.assertEqual(status, 200)
+        self.assertEqual(body['service'], 'evidence')
+        # A health response can arrive before that handler releases its slot.
+        # Observe release inside the same recovery budget before the next POST.
+        self.assertTrue(server._slots.acquire(timeout=max(0, end - time.monotonic())))
+        server._slots.release()
         self.assertIsNone(AssessmentStore(self.db).latest('case-demo-1'))
 
     def test_trickling_headers_expire_and_release_capacity(self):
@@ -152,8 +165,9 @@ class RequestLimitTests(unittest.TestCase):
                     entered.wait(3)
                     for _ in range(4):
                         status, body = self.buffered_post(server, fixture())
-                        self.assertEqual(status, 503)
-                        self.assertIn('busy', body['error'])
+                        self.assertIn(status, (503, None))
+                        if status == 503:
+                            self.assertIn('busy', body['error'])
                         self.assertNotIn('assessment_id', body)
                     self.assertEqual(len(calls), 2)
                     self.assertIsNone(AssessmentStore(self.db).latest('case-demo-1'))
@@ -183,7 +197,8 @@ class RequestLimitTests(unittest.TestCase):
                         raise
             self.assert_recovers_without_assessment(server)
             status, saved = self.call(server, '/v1/assessments', fixture())
-            self.assertEqual((status, saved['decision']), (200, 'eligible'))
+            self.assertEqual(status, 200, saved)
+            self.assertEqual(saved['decision'], 'eligible')
 
     def test_server_close_joins_admitted_incomplete_request(self):
         server = make_server(0, self.db, request_timeout=.3)
@@ -195,13 +210,58 @@ class RequestLimitTests(unittest.TestCase):
             elapsed = time.monotonic() - start
             self.assertGreater(elapsed, .1)
             self.assertLess(elapsed, 1.5)
-            self.assertTrue(peer.recv(4096).startswith(b'HTTP/1.0 408'))
+            try:
+                raw = peer.recv(4096)
+            except (ConnectionResetError, ConnectionAbortedError):
+                raw = b''
+            # With an incomplete request Windows may close/reset without a
+            # response. Preserve the deadline bounds above; any HTTP reply
+            # must still be 408, and the request must never reach persistence.
+            if raw:
+                self.assertTrue(raw.startswith(b'HTTP/1.0 408'), raw)
+            self.assertIsNone(AssessmentStore(self.db).latest('case-demo-1'))
+
+    def test_deadline_still_bounds_reads_when_shutdown_does_not_wake_recv(self):
+        def expire_without_shutdown(deadline):
+            with deadline._lock:
+                if not deadline._done:
+                    deadline._expired = True
+        with patch.object(IntakeDeadline, '_expire', expire_without_shutdown):
+            self.test_server_close_joins_admitted_incomplete_request()
 
     def assert_closed(self, peer):
         try:
             self.assertEqual(peer.recv(4096), b'')
-        except ConnectionResetError:
+        except (ConnectionResetError, ConnectionAbortedError):
             pass
+
+    def test_overload_formats_503_without_admitting_a_handler(self):
+        class Peer:
+            def __init__(self):
+                self.sent = b''
+                self.closed = False
+            def settimeout(self, value):
+                self.timeout = value
+            def sendall(self, raw):
+                self.sent += raw
+            def shutdown(self, how):
+                pass
+            def close(self):
+                self.closed = True
+        server = make_server(0, self.db, max_handlers=1)
+        peer = Peer()
+        self.assertTrue(server._slots.acquire(blocking=False))
+        try:
+            with patch.object(server, 'finish_request') as work:
+                server.process_request(peer, ('127.0.0.1', 1))
+                work.assert_not_called()
+            self.assertTrue(peer.sent.startswith(b'HTTP/1.0 503'))
+            self.assertIn(b'busy', peer.sent)
+            self.assertTrue(peer.closed)
+            self.assertIsNone(AssessmentStore(self.db).latest('case-demo-1'))
+        finally:
+            server._slots.release()
+            server.server_close()
 
     def test_worker_start_failure_still_allows_clean_shutdown(self):
         server = make_server(0, self.db, max_handlers=1)

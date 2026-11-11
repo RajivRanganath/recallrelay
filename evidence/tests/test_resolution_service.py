@@ -7,13 +7,15 @@ import copy
 import json
 import os
 from pathlib import Path
-import selectors
+import queue
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 
 from evidence.backend.server import make_server
+from evidence.integrated import readiness_line
 from test_assessment import fixture
 from test_resolution_client import RunningServer
 from test_resolution_integration import call
@@ -60,16 +62,19 @@ class ActualResolutionServiceTests(unittest.TestCase):
         self.folder = Path(temporary.name)
         self.payment_attempt = self.folder / 'payment-attempt'
         self.env = {'PATH': os.defpath, 'PYTHONDONTWRITEBYTECODE': '1'}
+        self.env.update({key: os.environ[key] for key in ('SYSTEMROOT', 'TEMP', 'TMP') if key in os.environ})
         self.merchant = subprocess.Popen(
             [sys.executable, '-I', '-B', '-u', '-c', SERVER, str(self.source),
              str(self.folder / 'resolution.sqlite3'), str(self.payment_attempt)],
             cwd=self.source, env=self.env, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         self.addCleanup(self.stop_merchant)
-        with selectors.DefaultSelector() as selector:
-            selector.register(self.merchant.stdout, selectors.EVENT_READ)
-            if not selector.select(timeout=8):
-                self.fail('Actual resolution server did not start within eight seconds')
-            raw = self.merchant.stdout.readline(256)
+        lines = queue.Queue(maxsize=1)
+        self.reader = threading.Thread(target=readiness_line, args=(self.merchant.stdout, lines), daemon=True)
+        self.reader.start()
+        try:
+            raw = lines.get(timeout=8)
+        except queue.Empty:
+            self.fail('Actual resolution server did not start within eight seconds')
         try:
             port = json.loads(raw)['port']
             self.assertIs(type(port), int)
@@ -89,6 +94,9 @@ class ActualResolutionServiceTests(unittest.TestCase):
             except subprocess.TimeoutExpired:
                 self.merchant.kill()
                 self.merchant.wait(timeout=3)
+        reader = getattr(self, 'reader', None)
+        if reader is not None and reader.ident is not None:
+            reader.join(timeout=2)
         self.merchant.stdout.close()
 
     def assert_no_payment_attempt(self):

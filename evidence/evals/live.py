@@ -12,6 +12,7 @@ from evidence.ai.fixture_extractor import DEFAULT_MANIFEST
 from evidence.ai.omniroute import OmniRouteExtractor, read_key
 from evidence.backend.assessment import assess
 from evidence.evals.plan import load_dataset, read_plan, snapshot, verify
+from evidence.evals.report_output import reserve_new_report
 
 
 def evaluate(adapter, manifest_path=DEFAULT_MANIFEST, case_ids=None, progress=None, plan_path=None):
@@ -100,7 +101,7 @@ def main():
         # Reserve the final path before credentials or quota-consuming work. Both
         # planned and legacy runs must preserve any existing file or symlink.
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        destination = args.output.open('x')
+        destination = reserve_new_report(args.output)
     except (OSError, ValueError):
         parser.error('Could not reserve a new report file; check its parent and choose an unused path')
     try:

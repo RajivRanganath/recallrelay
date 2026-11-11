@@ -127,13 +127,13 @@ class EvaluationOutputTests(unittest.TestCase):
     def test_credential_failure_closes_reservation_without_extraction(self):
         output = self.folder / 'key-failure.json'
         opened = []
-        original = Path.open
-        def capture(path, *args, **kwargs):
-            file = original(path, *args, **kwargs)
-            if path == output and args and args[0] == 'x':
+        original = live.reserve_new_report
+        def capture(path):
+            file = original(path)
+            if path == output:
                 opened.append(file)
             return file
-        with patch('sys.argv', self.arguments(output)), patch.object(Path, 'open', capture), \
+        with patch('sys.argv', self.arguments(output)), patch.object(live, 'reserve_new_report', capture), \
                 patch('evidence.evals.live.read_key', side_effect=ValueError('synthetic key error')), \
                 patch.object(OmniRouteExtractor, 'extract') as extract, redirect_stderr(StringIO()):
             with self.assertRaises(SystemExit) as error:
@@ -146,7 +146,7 @@ class EvaluationOutputTests(unittest.TestCase):
 
     def test_write_or_close_failure_after_calls_is_visible_and_does_not_retry(self):
         output = self.folder / 'write-failure.json'
-        original = Path.open
+        original = live.reserve_new_report
         opened = []
         class FailingWriter:
             def __init__(self, file): self.file = file
@@ -155,14 +155,14 @@ class EvaluationOutputTests(unittest.TestCase):
                 self.file.close()
                 raise OSError('private synthetic close detail')
             def write(self, value): raise OSError('private synthetic write detail')
-        def capture(path, *args, **kwargs):
-            file = original(path, *args, **kwargs)
-            if path == output and args and args[0] == 'x':
+        def capture(path):
+            file = original(path)
+            if path == output:
                 opened.append(file)
                 return FailingWriter(file)
             return file
         errors = StringIO()
-        with patch('sys.argv', self.arguments(output)), patch.object(Path, 'open', capture), \
+        with patch('sys.argv', self.arguments(output)), patch.object(live, 'reserve_new_report', capture), \
                 patch('evidence.evals.live.read_key', return_value='synthetic-test-key') as key, \
                 patch.object(OmniRouteExtractor, 'extract', return_value=raw_output()) as extract, \
                 redirect_stdout(StringIO()), redirect_stderr(errors):
