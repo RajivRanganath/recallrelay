@@ -19,7 +19,7 @@ jobs:
       # Pin actual resolution source without merging or changing the other lane.
       - uses: actions/checkout@v4
         with:
-          ref: e1e16be6928afcdd52015097a3bbab6b42ddbd8b
+          ref: f29a9f3ee0dd46c9fd86b86588f4d30ae3eb94d1
           path: .integration-resolution
           sparse-checkout: |
             resolution
@@ -30,3 +30,13 @@ jobs:
           RECALLRELAY_RESOLUTION_SOURCE: ${{ github.workspace }}/.integration-resolution
       - run: python -m evidence.evals.run --check
       - run: node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js
+  windows-integration:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r evidence/requirements.lock.txt
+      - run: python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_integrated*.py' -v
+      - run: python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_handoff_client.py' -v

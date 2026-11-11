@@ -5,6 +5,9 @@ let previewUrl = null;
 let uploadGeneration = 0;
 let busy = false;
 let extractionMode = null;
+let handoffEnabled = false;
+let savedAssessment = null;
+let sentAssessment = null;
 const labels = {eligible: 'Identifiers match', excluded: 'Outside this campaign', needs_information: 'A detail needs attention'};
 
 async function request(path, body, timeout = 8000) {
@@ -19,6 +22,10 @@ async function request(path, body, timeout = 8000) {
   return data;
 }
 function invalidate() {
+  savedAssessment = null;
+  sentAssessment = null;
+  $('send-review').disabled = true;
+  $('handoff-message').textContent = '';
   $('confirmed').checked = false;
   $('result').hidden = true;
   $('message').textContent = '';
@@ -38,6 +45,7 @@ function releasePhoto(clearInput = true) {
 function lock(value) {
   busy = value;
   for (const id of ['assess', 'load-sample', 'upload', 'remove-photo', 'model', 'batch', 'confirmed', 'sample', 'suggest-image']) $(id).disabled = value || (id === 'suggest-image' && extractionMode === null);
+  $('send-review').disabled = value || !handoffEnabled || !savedAssessment || sentAssessment === savedAssessment;
 }
 $('model').addEventListener('input', invalidate);
 $('batch').addEventListener('input', invalidate);
@@ -131,6 +139,9 @@ $('assessment-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   if (busy || !$('confirmed').checked) return;
   lock(true);
+  savedAssessment = null;
+  sentAssessment = null;
+  $('handoff-message').textContent = '';
   $('result').hidden = true;
   $('message').textContent = 'Checking confirmed identifiers…';
   try {
@@ -144,6 +155,7 @@ $('assessment-form').addEventListener('submit', async (event) => {
     $('clarification').hidden = !data.clarification;
     $('clarification').textContent = data.clarification || '';
     $('assessment-id').textContent = `Saved locally · ${data.assessment_id}`;
+    savedAssessment = data.assessment_id;
     $('result').hidden = false;
     $('message').textContent = '';
     $('result').focus();
@@ -156,9 +168,27 @@ $('refresh-status').addEventListener('click', async () => {
   try {
     const data = await request('/demo/resolution-status');
     const mode = data.mode === 'mock' ? 'MOCK · simulated resolution, no real payment' : 'PAYPAL SANDBOX · test environment';
-    $('resolution').textContent = `${mode}\n${data.status.replaceAll('_', ' ')}\n${data.brief}\nSeparate merchant record; not proof of a handoff from this assessment.`;
+    const note = handoffEnabled
+      ? 'Merchant case: case-demo-1. Status belongs to the last submitted snapshot; label edits require a new review.'
+      : 'Separate merchant record; not proof of a handoff from this assessment.';
+    $('resolution').textContent = `${mode}\n${data.status.replaceAll('_', ' ')}\n${data.brief}\n${note}`;
   } catch (error) { $('resolution').textContent = `Status unavailable. ${error.message}`; }
   finally { $('refresh-status').disabled = false; }
+});
+
+$('send-review').addEventListener('click', async () => {
+  if (busy || !handoffEnabled || !savedAssessment || sentAssessment === savedAssessment) return;
+  const assessmentId = savedAssessment;
+  lock(true);
+  $('handoff-message').textContent = 'Sending the confirmed assessment for merchant review…';
+  try {
+    const data = await request('/demo/handoff', {assessment_id: assessmentId});
+    sentAssessment = assessmentId;
+    $('handoff-message').textContent = `Sent ${assessmentId} · ${data.status.replaceAll('_', ' ')}. Open merchant review and select case-demo-1. Merchant confirmation and approval are still required.`;
+    $('resolution').textContent = 'Handoff confirmed. Read case status after merchant review.';
+  } catch (error) {
+    $('handoff-message').textContent = error.message;
+  } finally { lock(false); }
 });
 
 async function configureExtraction() {
@@ -166,6 +196,17 @@ async function configureExtraction() {
     const health = await request('/health');
     if (!['mock', 'ai'].includes(health.extraction_mode)) throw new Error('Invalid extraction configuration.');
     extractionMode = health.extraction_mode;
+    handoffEnabled = health.handoff_enabled === true;
+    $('send-review').hidden = !handoffEnabled;
+    if (handoffEnabled) {
+      const merchant = new URL(health.merchant_url);
+      if (merchant.protocol !== 'http:' || !['127.0.0.1', 'localhost'].includes(merchant.hostname)
+          || !merchant.port || merchant.username || merchant.password || merchant.pathname !== '/'
+          || merchant.search || merchant.hash) throw new Error('Invalid merchant configuration.');
+      $('merchant-link').href = merchant.origin;
+      $('merchant-link').hidden = false;
+      $('handoff-help').textContent = 'After checking the label, send its saved assessment to the merchant. The merchant reviews the same case and approves any fake refund separately.';
+    }
     const live = extractionMode === 'ai';
     $('suggest-image').textContent = live ? 'Read label with AI' : 'Suggest from fixture image (mock)';
     $('fixture-help').textContent = live
@@ -175,6 +216,9 @@ async function configureExtraction() {
     $('photo-caption').textContent = 'Local preview. Use the suggestion button or type the identifiers yourself.';
   } catch {
     extractionMode = null;
+    handoffEnabled = false;
+    $('send-review').hidden = true;
+    $('merchant-link').hidden = true;
     $('suggest-image').disabled = true;
     $('fixture-help').textContent = 'Could not read extraction configuration. Typed entry remains available.';
     $('extraction-status').textContent = 'Extraction: configuration unavailable · typed entry available';

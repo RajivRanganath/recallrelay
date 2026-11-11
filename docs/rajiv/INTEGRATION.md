@@ -1,4 +1,10 @@
-# Actual-service HTTP integration smoke
+# Actual-service HTTP integration
+
+## Current integration: 11 November 2026
+
+Use [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md) for the one-command two-app launcher, explicit customer handoff, merchant approval and customer status walkthrough. It uses actual services, separate stores and fake payments, based on merged main `f29a9f3`. The integration branch also updates evidence CI's source pin to that merged revision. Recording and joint acceptance remain separate.
+
+## Historical smoke checkpoint: 8 November 2026
 
 This evidence-owned check uses resolution commit `e1e16be6928afcdd52015097a3bbab6b42ddbd8b` (Vismaya's review/approval/fake-PayPal implementation) and evidence based on merged main `171b5ea2868beb9664ab9884f43610b20284207d`. Resolution source is exported read-only into a separate directory; its branch and tracked files are untouched. No resolution PR existed when checked on 8 November 2026. This is local compatibility evidence for that commit, not a merge or release of the resolution lane.
 
