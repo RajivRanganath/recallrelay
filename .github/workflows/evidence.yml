@@ -19,7 +19,7 @@ jobs:
       # Pin actual resolution source without merging or changing the other lane.
       - uses: actions/checkout@v4
         with:
-          ref: f29a9f3ee0dd46c9fd86b86588f4d30ae3eb94d1
+          ref: 0734b8e00a366bb8a12502cdb6d5fe3bfce3b88e
           path: .integration-resolution
           sparse-checkout: |
             resolution
@@ -33,6 +33,7 @@ jobs:
   windows-integration:
     name: Windows full evidence suite
     runs-on: windows-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -41,7 +42,7 @@ jobs:
       - run: python -m pip install -r evidence/requirements.lock.txt
       - uses: actions/checkout@v4
         with:
-          ref: 9fc4da28dbf136d6fbf016c0fa0773c6ad2517ac
+          ref: 0734b8e00a366bb8a12502cdb6d5fe3bfce3b88e
           path: .integration-resolution
           sparse-checkout: |
             resolution

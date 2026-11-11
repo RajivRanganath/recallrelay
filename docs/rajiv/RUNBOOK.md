@@ -2,6 +2,8 @@
 
 ## Current integration: 11 November 2026
 
+Maintenance follow-up: [WINDOWS-CHECKS.md](WINDOWS-CHECKS.md) records full native Windows coverage, portable receive deadlines and report reservation. The current offline evaluator plan is development-v3; old plans/reports remain historical. Integration #29, merchant replay hardening #30 and shared setup/status #31 are merged. Real webhook delivery still requires the approved external prerequisites, and recording stays deferred.
+
 The integration launcher now uses portable thread-based readiness and checks a merchant snapshot before retrying a lost handoff acknowledgement. [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md) includes Windows PowerShell setup and collision-free ephemeral ports. A dedicated Windows job covers the integrated/startup and handoff-client tests; Linux retains the full evidence suite.
 
 Run `evidence/.venv/bin/python -B -m evidence.integrated` to start the actual customer and merchant apps together, with explicit same-case handoff, mock extraction, template briefs and fake payments. Open the printed customer and merchant URLs (defaults 8101/8102). Ctrl+C stops both and removes temporary state. Follow [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md) for the complete flow, verification and remaining acceptance. PRs #25 and #28 are merged; #1–#4 are closed. The new integration changes are local on `work/rajiv-final-integration` pending contributor review. No human timing task needs repeating.
