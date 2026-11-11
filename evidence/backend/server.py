@@ -2,6 +2,7 @@
 import argparse
 import copy
 import json
+import io
 import os
 import sqlite3
 import threading
@@ -13,7 +14,7 @@ from evidence.ai.mock_extractor import propose
 from evidence.ai.extraction import ExtractionService, ExtractionUnavailable
 from evidence.ai.fixture_extractor import FixtureExtractor
 from evidence.ai.omniroute import OmniRouteExtractor, read_key
-from evidence.backend.http_server import BoundedHTTPServer, IntakeDeadline
+from evidence.backend.http_server import BoundedHTTPServer, DeadlineReader, IntakeDeadline
 from evidence.backend.images import decode_image
 from evidence.backend.assessment import assess
 from evidence.backend.json_input import strict_json
@@ -42,6 +43,8 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
         def setup(self):
             super().setup()
             self.intake = IntakeDeadline(self.connection, self.server.request_timeout)
+            self.rfile.close()
+            self.rfile = io.BufferedReader(DeadlineReader(self.connection, self.intake))
 
         def finish(self):
             try:

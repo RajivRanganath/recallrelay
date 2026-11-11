@@ -16,6 +16,7 @@ from evidence.backend.assessment import assess
 from evidence.backend.images import decode_image, MAX_IMAGE_BYTES
 from evidence.backend.json_input import strict_json
 from evidence.backend.validation import ROOT
+from evidence.evals.report_output import reserve_new_report
 
 SOURCE_FILES = (
     'evidence/ai/omniroute.py', 'evidence/ai/extraction.py',
@@ -23,7 +24,7 @@ SOURCE_FILES = (
     'evidence/backend/assessment.py', 'evidence/backend/validation.py',
     'evidence/backend/images.py', 'evidence/backend/json_input.py',
     'evidence/backend/errors.py', 'evidence/evals/live.py', 'evidence/evals/plan.py',
-    'evidence/requirements.lock.txt', 'contracts/fixtures/assessment-request.json',
+    'evidence/evals/report_output.py', 'evidence/requirements.lock.txt', 'contracts/fixtures/assessment-request.json',
     'contracts/schemas/assessment-request.schema.json',
     'contracts/schemas/assessment-response.schema.json',
     'contracts/schemas/resolution-response.schema.json',
@@ -174,7 +175,7 @@ def main():
         else:
             plan = freeze(dataset, adapter)
             args.output.parent.mkdir(parents=True, exist_ok=True)
-            with args.output.open('x') as file:
+            with reserve_new_report(args.output) as file:
                 file.write(json.dumps(plan, indent=2) + '\n')
     except (OSError, ValueError, TypeError) as error:
         parser.error(str(error))

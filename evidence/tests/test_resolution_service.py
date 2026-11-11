@@ -62,6 +62,7 @@ class ActualResolutionServiceTests(unittest.TestCase):
         self.folder = Path(temporary.name)
         self.payment_attempt = self.folder / 'payment-attempt'
         self.env = {'PATH': os.defpath, 'PYTHONDONTWRITEBYTECODE': '1'}
+        self.env.update({key: os.environ[key] for key in ('SYSTEMROOT', 'TEMP', 'TMP') if key in os.environ})
         self.merchant = subprocess.Popen(
             [sys.executable, '-I', '-B', '-u', '-c', SERVER, str(self.source),
              str(self.folder / 'resolution.sqlite3'), str(self.payment_attempt)],
@@ -93,8 +94,9 @@ class ActualResolutionServiceTests(unittest.TestCase):
             except subprocess.TimeoutExpired:
                 self.merchant.kill()
                 self.merchant.wait(timeout=3)
-        if self.reader.ident is not None:
-            self.reader.join(timeout=2)
+        reader = getattr(self, 'reader', None)
+        if reader is not None and reader.ident is not None:
+            reader.join(timeout=2)
         self.merchant.stdout.close()
 
     def assert_no_payment_attempt(self):

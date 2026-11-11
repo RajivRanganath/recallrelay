@@ -13,6 +13,7 @@ from unittest.mock import patch
 
 from evidence.backend.server import make_server
 from evidence.backend.store import AssessmentStore
+from evidence.backend.http_server import IntakeDeadline
 from test_assessment import fixture
 from test_resolution_client import RunningServer
 
@@ -196,6 +197,14 @@ class RequestLimitTests(unittest.TestCase):
             self.assertGreater(elapsed, .1)
             self.assertLess(elapsed, 1.5)
             self.assertTrue(peer.recv(4096).startswith(b'HTTP/1.0 408'))
+
+    def test_deadline_still_bounds_reads_when_shutdown_does_not_wake_recv(self):
+        def expire_without_shutdown(deadline):
+            with deadline._lock:
+                if not deadline._done:
+                    deadline._expired = True
+        with patch.object(IntakeDeadline, '_expire', expire_without_shutdown):
+            self.test_server_close_joins_admitted_incomplete_request()
 
     def assert_closed(self, peer):
         try:
