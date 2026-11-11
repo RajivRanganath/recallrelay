@@ -17,6 +17,8 @@ The corrected full native Windows job passed at `e358a4e`, including the 160-tes
 
 A later full rerun exposed an intermittent wire-level difference in the incomplete-request shutdown test: bounded cleanup completed, but Windows returned an empty connection close instead of the expected HTTP 408 bytes. The test now accepts a closed/reset connection or an actual 408, while retaining both elapsed-time bounds and adding an explicit no-assessment-persisted assertion. Any nonempty successful/unexpected HTTP response still fails. No timeout or successful request is accepted, and no test is skipped.
 
+The paired push/PR rerun also exposed Windows `ConnectionAbortedError` when an overloaded connection was closed with unread input, including a health probe racing handler cleanup. Overload checks now accept only a 503 or reset/abort/closed connection, still require exactly two admitted application calls and zero persistence before release, and require a genuine healthy response within the existing recovery window. A new deterministic peer check verifies that overload formats a 503 without admitting a handler, independent of whether a real TCP peer receives the best-effort bytes. Timeouts, arbitrary errors and successful excess requests remain failures. The final suite has 161 tests.
+
 ## Local evidence and evaluation provenance
 
 Python 3.11.16 on macOS: 160 evidence tests passed in 81.381 seconds with ResourceWarnings treated as errors and actual-service checks enabled. The focused receive-deadline tests passed, including the missing-wakeup regression; 19 evaluator/output tests and two native reservation tests passed. Existing merchant hardening separately passed 142 tests before merge in #30.
