@@ -65,6 +65,21 @@ class ServerTests(unittest.TestCase):
         self.assertTrue(detail['remedy_conditions_met'])
         self.assertIsNone(detail['operation'])
 
+    def test_case_detail_keeps_the_shape_the_evidence_handoff_recovery_reads(self):
+        # The evidence service (handoff_if_needed) compares these exact fields to decide whether a lost
+        # acknowledgement already reached this service. Changing them breaks that recovery; see
+        # docs/vismaya/INTEGRATION-DEPENDENCIES.md.
+        sent = copy.deepcopy(FIXTURE)
+        sent['remedy_conditions_met'] = False
+        self.call('POST', '/v1/resolutions', sent)
+        detail = self.call('GET', '/v1/cases/case-demo-1')[1]
+        self.assertEqual(set(detail['assessment']), {'assessment_id', 'decision', 'model', 'batch', 'reason', 'evidence', 'mode',
+                                                     'missing_fields', 'clarification'})
+        self.assertEqual(set(detail['order']), {'order_id', 'paid_minor', 'previously_refunded_minor', 'age_days', 'quantity'})
+        self.assertTrue({'assessment_id', 'campaign_version', 'capture_id', 'currency'} <= set(detail['binding']))
+        self.assertEqual(detail['resolution']['case_id'], 'case-demo-1')
+        self.assertIn('status', detail['resolution'])
+
     def test_invalid_bodies_are_rejected_without_echoing_input(self):
         bad = self.eligible()
         bad['order']['paid_minor'] = 'SECRET-VALUE'
