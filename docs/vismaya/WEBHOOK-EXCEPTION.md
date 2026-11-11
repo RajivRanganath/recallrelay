@@ -21,7 +21,7 @@ Real PayPal webhook delivery has never been verified. The route, PayPal's signat
 
 `https://<TUNNEL_HOST>/v1/paypal/webhook`
 
-`<TUNNEL_HOST>` does not exist yet. It is generated when the tunnel starts. It is filled in below, and both contributors confirm that exact URL, before anything is registered with PayPal. Only the route `POST /v1/paypal/webhook` on that one host is meant to be public. No other host, path or method is.
+`<TUNNEL_HOST>` does not exist yet. It is generated when the tunnel starts. It is recorded **only in a comment on the pull request, never in a file in the repository**, and both contributors confirm that exact URL in that comment before anything is registered with PayPal. Only the route `POST /v1/paypal/webhook` on that one host is meant to be public. No other host, path or method is.
 
 ## Server changes (implemented on a feature branch; no tunnel needed to test them)
 
@@ -34,10 +34,13 @@ Behaviour:
 
 - A request whose `Host` header equals the configured name exactly (case-insensitive, one Host header, no port) may reach **only** `POST /v1/paypal/webhook`, **exact path** (no query string, no trailing slash), and only while the window is open. Everything else on that host (pages, health, case data, every other route, every GET) is refused with 403 before any handler runs.
 - After the window closes, the public host gets 403 for everything. Loopback keeps working.
+- A public-host request is judged from its **headers alone**: unless it is `POST /v1/paypal/webhook` inside the window it is refused at once, without waiting for any body. The reply is sent first, then bytes the sender already sent are discarded for at most half a second (and a capped number of bytes) so closing does not reset the connection and lose the reply.
+- Every connection gets one **total** budget (10 seconds) to deliver its whole request line, headers and body. The old per-wait socket timeout alone did not bound a sender that trickles one byte at a time: before this change a trickling request on the public host was reproduced staying open for the full 20 seconds of a test while the window was already closed; after it, the same request is answered with a refusal in about a second. A body that does not arrive in time gets 408.
+- At most 32 connections are served at once (further connections are closed immediately, without a reply), and at most 4 public webhook calls run at once (more get 503 "Busy", which PayPal retries).
 - Any other non-loopback host is refused as before. A request with two Host headers is never trusted.
 - The webhook handler is unchanged: JSON body, bounded size, browser-style cross-origin requests refused, PayPal's own verification API must answer SUCCESS before anything changes, and the refund must be read back from PayPal and carry the operation's `custom_id` before a pending (or wrongly failed) case can become refunded.
 - Note: Python's built-in server collapses extra leading slashes (`//v1/paypal/webhook` becomes `/v1/paypal/webhook`). That is the same single route and is still verified. It is covered by a test.
-- Tests: `resolution/tests/test_public_webhook.py` (12 tests).
+- Tests: `resolution/tests/test_public_webhook.py` (20 tests), including trickled bodies and headers, the total receive budget, the connection cap and the public handler cap.
 
 ## Credentials
 
@@ -45,11 +48,11 @@ The sandbox credentials stay in the existing file outside the repository (`C:\Us
 
 ## Execution plan (to be confirmed separately; do not run)
 
-Who: **Vismaya** does the PayPal dashboard login, the buyer approval and starts and stops the tunnel (a person must do these). **Claude** prepares and runs local checks and any throwaway launcher. **Rajiv** reviews the server pull request and confirms the URL and the results.
+Who: **Vismaya** does the PayPal dashboard login, the buyer approval and starts and stops the tunnel (a person must do these), and prepares and runs the local checks and any throwaway launcher. **Rajiv** reviews the server pull request and confirms the URL and the results.
 
 1. Review and merge the server pull request.
 2. Start the server on loopback with **no** public options. With no public host configured, every public request is refused, including the webhook.
-3. Start a temporary tunnel to `http://127.0.0.1:8102` (suggestion: a Cloudflare quick tunnel, `cloudflared tunnel --url http://127.0.0.1:8102`, which needs no account; downloading it needs explicit permission). Record the generated host here, and both confirm the exact URL.
+3. Start a temporary tunnel to `http://127.0.0.1:8102` (suggestion: a Cloudflare quick tunnel, `cloudflared tunnel --url http://127.0.0.1:8102`, which needs no account; downloading it needs explicit permission). Post the generated host in a pull request comment (not in any repository file), and both confirm the exact URL there.
 4. In the PayPal Developer dashboard (**Sandbox**), register a webhook at that URL for `PAYMENT.CAPTURE.REFUNDED` only. Copy the webhook ID.
 5. Restart the server with `--paypal sandbox --paypal-env <env file> --paypal-webhook-id <ID> --paypal-webhook-public-host <TUNNEL_HOST> --paypal-webhook-window-minutes 30`. The window starts now.
 6. **Negative checks:** a forged POST to the public URL returns 401; `/`, `/health`, `/v1/cases` and every other path on the public host return 403.
@@ -69,7 +72,7 @@ The forged event is rejected; every other public path is blocked; the real event
 2. Delete the webhook registration in the PayPal Developer dashboard.
 3. Stop the server; delete the throwaway launcher and its temporary database.
 4. Confirm the old tunnel URL no longer answers.
-5. Confirm no webhook ID, URL or credential was written to the repository.
+5. Confirm no webhook ID, tunnel URL or credential was written to any repository file. The only record of the URL is the pull request comment, and after cleanup it no longer answers.
 6. Record the results and the end of the exception in `docs/vismaya/RUNBOOK.md` and `LIVE-CHECKS.md`. The public-host option stays off unless explicitly used.
 
 ## Risks and limits
@@ -83,9 +86,11 @@ The forged event is rejected; every other public path is blocked; the real event
 
 The exception ends when the cleanup above is complete, or at the end of the session in which the test is run, whichever is first. Any further public exposure needs a new written approval.
 
-## Confirmations (blank until filled in by each person, on the pull request)
+## Confirmations
 
-- [ ] Rajiv confirms this proposal and the server change as reviewed: ______
-- [ ] Vismaya confirms this proposal and the server change as reviewed: ______
-- [ ] Both confirm the generated callback URL before registration: `https://________/v1/paypal/webhook`
-- [ ] Cleanup completed and recorded: ______
+These boxes stay blank in the file. Each person confirms by a comment on the pull request, and the callback URL is quoted only in that comment, never committed.
+
+- [ ] Rajiv confirms this proposal and the server change as reviewed.
+- [ ] Vismaya confirms this proposal and the server change as reviewed.
+- [ ] Both confirm the generated callback URL, in a pull request comment, before registration (`https://<TUNNEL_HOST>/v1/paypal/webhook`).
+- [ ] Cleanup completed and recorded.

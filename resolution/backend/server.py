@@ -1,17 +1,21 @@
 """Loopback-only merchant UI plus the internal frozen v1 resolution API. Fake PayPal only."""
 import argparse
 import copy
+import io
 import json
 import os
 import re
+import socket
+import threading
 import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
 from urllib.parse import unquote
 
 from resolution.ai.brief import BriefService
 from resolution.ai.gemini import GeminiBrief, read_key as read_gemini_key
 from resolution.ai.omniroute import OmniRouteBrief, read_key
 from resolution.backend.errors import InvalidInput
+from resolution.backend.intake import BoundedThreadingHTTPServer, DeadlineReader, ReceiveDeadline
 from resolution.backend.json_input import strict_json
 from resolution.backend.paypal import FakePayPal, RefundUnknown
 from resolution.backend.paypal_sandbox import SandboxPayPal, load_credentials
@@ -45,6 +49,10 @@ PUBLIC_HOST = re.compile(r'(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[
 PUBLIC_WEBHOOK_PATH = '/v1/paypal/webhook'
 MAX_PUBLIC_WINDOW_SECONDS = 7200
 PUBLIC_DENIED = {'error': 'Not available on the public host'}
+RECEIVE_SECONDS = 10      # Total time allowed to receive one whole request (line, headers and body).
+MAX_CONNECTIONS = 32      # Simultaneous handler threads; further connections are closed at once.
+MAX_PUBLIC_HANDLERS = 4   # Simultaneous public webhook calls (each waits on PayPal); more get 503.
+INCOMPLETE = object()     # read_body result: the body did not arrive inside the receive budget.
 
 
 def public_host_name(value):
@@ -56,7 +64,7 @@ def public_host_name(value):
 
 
 def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=None,
-                public_host=None, public_window_seconds=1800):
+                public_host=None, public_window_seconds=1800, receive_seconds=RECEIVE_SECONDS, max_connections=MAX_CONNECTIONS):
     """`public_host` is for a temporary, explicitly approved sandbox webhook test (docs/vismaya/WEBHOOK-EXCEPTION.md).
 
     Requests whose Host header equals it may reach ONLY `POST /v1/paypal/webhook`, and only until the window
@@ -69,7 +77,10 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             raise ValueError('A public host needs a webhook ID and an adapter that can verify webhooks')
         if not 0 < public_window_seconds <= MAX_PUBLIC_WINDOW_SECONDS:
             raise ValueError('The public window must be between 1 second and 2 hours')
+    if not 0 < receive_seconds <= 60 or not 1 <= max_connections <= 256:
+        raise ValueError('The receive budget must be 0-60 seconds and the connection cap 1-256')
     public_deadline = time.monotonic() + public_window_seconds
+    public_slots = threading.BoundedSemaphore(MAX_PUBLIC_HANDLERS)
     store = CaseStore(db_path or ROOT / 'resolution' / '.local' / 'cases.sqlite3')
     adapter = adapter if adapter is not None else FakePayPal()
     brief = brief if brief is not None else BriefService()
@@ -77,6 +88,13 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
 
     class Handler(BaseHTTPRequestHandler):
         timeout = 5
+
+        def setup(self):
+            super().setup()
+            # One total budget for receiving the request, not just a per-wait timeout (see intake.py).
+            self.receive = ReceiveDeadline(self.connection, receive_seconds, self.timeout)
+            self.rfile.close()
+            self.rfile = io.BufferedReader(DeadlineReader(self.connection, self.receive))
 
         def log_message(self, *args):
             pass  # No bodies, identifiers, or secrets in access logs.
@@ -96,6 +114,26 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return len(self.headers.get_all('Host', [])) == 1 and self.headers.get('Host') in {
                 f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
 
+        def reject_public(self):
+            """Refuse a public-host request from its headers alone, without waiting for any body.
+
+            The reply goes out first. Then whatever the sender already sent is discarded for at most half a second,
+            bounded in bytes too, so closing does not reset the connection and lose the reply."""
+            self.receive.complete()
+            self.close_connection = True
+            self.reply(403, PUBLIC_DENIED)
+            try:
+                self.connection.shutdown(socket.SHUT_WR)
+                end, left = time.monotonic() + 0.5, MAX_BODY_BYTES
+                while left > 0 and time.monotonic() < end:
+                    self.connection.settimeout(max(end - time.monotonic(), 0.01))
+                    chunk = self.connection.recv(min(left, 65536))
+                    if not chunk:
+                        break
+                    left -= len(chunk)
+            except OSError:
+                pass
+
         def public_request(self):
             """True only for the one configured public host, matched exactly (no port, one Host header)."""
             hosts = self.headers.get_all('Host', [])
@@ -109,8 +147,9 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return origin is None or origin in {f'http://127.0.0.1:{port}', f'http://localhost:{port}'}
 
         def do_GET(self):
+            self.receive.complete()  # A GET has no body to wait for.
             if self.public_request():  # The public host serves the webhook POST only; no page, case or health data.
-                return self.reply(403, PUBLIC_DENIED)
+                return self.reject_public()
             if not self.allowed_host():
                 return self.reply(403, {'error': 'Loopback Host required'})
             if self.path in ASSETS:
@@ -135,10 +174,26 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
                 size = -1
             if not 0 <= size <= MAX_BODY_BYTES:
                 self.close_connection = True  # Cannot safely drain an unbounded or malformed body.
+                self.receive.complete()
                 return None
-            return self.rfile.read(size)
+            data = self.rfile.read(size)
+            self.receive.complete()
+            if len(data) != size:  # The total receive budget ran out, or the sender hung up, before the body arrived.
+                self.close_connection = True
+                return INCOMPLETE
+            return data
 
         def webhook(self, raw):
+            public = self.public_request()
+            if public and not public_slots.acquire(blocking=False):
+                return self.reply(503, {'error': 'Busy; try again later'})
+            try:
+                return self._webhook(raw)
+            finally:
+                if public:
+                    public_slots.release()
+
+        def _webhook(self, raw):
             """PayPal event receiver. Off unless a webhook ID is configured. Unverified events change nothing,
             and a verified one only settles a pending refund after PayPal confirms it by a direct read."""
             if not webhook_id or not hasattr(adapter, 'verify_webhook'):
@@ -158,7 +213,11 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             return self.reply(200, {'accepted': True, 'settled': apply_webhook(store, adapter, event) is not None})
 
         def do_POST(self):
+            if self.public_request() and (self.path != PUBLIC_WEBHOOK_PATH or time.monotonic() >= public_deadline):
+                return self.reject_public()  # Decided from the headers alone: the body is never waited for.
             raw = self.read_body()
+            if raw is INCOMPLETE:
+                return self.reply(408, {'error': 'The request was not received in time'})
             if raw is None:
                 return self.reply(400, {'error': 'Body size is outside the allowed range'})
             if self.public_request():
@@ -213,7 +272,7 @@ def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=No
             except ValueError:
                 self.reply(400, {'error': 'Invalid request'})
 
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    return BoundedThreadingHTTPServer(('127.0.0.1', port), Handler, max_connections)
 
 
 if __name__ == '__main__':
