@@ -4,9 +4,10 @@ import copy
 import json
 import os
 import sqlite3
+import threading
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit
 
 from evidence.ai.mock_extractor import propose
 from evidence.ai.extraction import ExtractionService, ExtractionUnavailable
@@ -16,7 +17,7 @@ from evidence.backend.http_server import BoundedHTTPServer, IntakeDeadline
 from evidence.backend.images import decode_image
 from evidence.backend.assessment import assess
 from evidence.backend.json_input import strict_json
-from evidence.backend.resolution_client import ResolutionClient, ResolutionNotFound, ResolutionUnavailable
+from evidence.backend.resolution_client import ResolutionClient, ResolutionConflict, ResolutionNotFound, ResolutionUnavailable
 from evidence.backend.store import AssessmentStore, Conflict
 from evidence.backend.validation import InvalidInput, MAX_BODY_BYTES, ROOT
 
@@ -24,11 +25,16 @@ WEB = ROOT / 'evidence' / 'web'
 
 
 def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter=None,
-                *, max_handlers=8, request_timeout=10):
+                *, max_handlers=8, request_timeout=10, enable_handoff=False):
     store = AssessmentStore(db_path or ROOT / 'evidence' / '.local' / 'assessments.sqlite3')
     client = ResolutionClient(resolution_url or os.environ.get('RESOLUTION_BASE_URL', 'http://127.0.0.1:8102'))
+    if enable_handoff:
+        parsed = urlsplit(client.base_url)
+        if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or not parsed.port:
+            raise ValueError('Review handoff requires an explicit loopback HTTP origin')
     extraction = ExtractionService(extraction_adapter if extraction_adapter is not None else FixtureExtractor())
     fixture = json.loads((ROOT / 'contracts' / 'fixtures' / 'assessment-request.json').read_text())
+    handoff_lock = threading.Lock()
 
     class Handler(BaseHTTPRequestHandler):
         timeout = 5
@@ -86,7 +92,8 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                 name, content_type = assets[self.path]
                 self.reply(200, (WEB / name).read_bytes(), content_type)
             elif self.path == '/health':
-                self.reply(200, {'service': 'evidence', 'mode': 'manual', 'extraction_mode': extraction.adapter.mode, 'extraction_provider': extraction.adapter.provider_name, 'synthetic_only': True})
+                self.reply(200, {'service': 'evidence', 'mode': 'manual', 'extraction_mode': extraction.adapter.mode, 'extraction_provider': extraction.adapter.provider_name, 'synthetic_only': True,
+                                 'handoff_enabled': enable_handoff, 'merchant_url': client.base_url if enable_handoff else None})
             elif self.path.startswith('/v1/assessments/'):
                 try:
                     data = store.latest(unquote(self.path[len('/v1/assessments/'):]))
@@ -113,7 +120,8 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                     or (origins and origins[0] != f'http://{self.headers.get("Host")}')):
                 self.reply(403, {'error': 'Cross-origin writes are disabled'})
                 return
-            if self.path not in ('/v1/assessments', '/demo/assessments', '/demo/extraction', '/demo/image-extraction'):
+            if (self.path not in ('/v1/assessments', '/demo/assessments', '/demo/extraction', '/demo/image-extraction', '/demo/handoff')
+                    or (self.path == '/demo/handoff' and not enable_handoff)):
                 self.reply(404, {'error': 'Not found'})
                 return
             try:
@@ -136,6 +144,28 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                 if len(raw) != size:
                     raise InvalidInput('Incomplete request body')
                 body = strict_json(raw)
+                if self.path == '/demo/handoff':
+                    if (not isinstance(body, dict) or set(body) != {'assessment_id'}
+                            or not isinstance(body['assessment_id'], str) or not 0 < len(body['assessment_id']) <= 128):
+                        raise InvalidInput('Provide the saved assessment ID only')
+                    # Serialize browser retries so a confirmed transfer is not reposted
+                    # and cannot reset the merchant's later remedy confirmation.
+                    if not handoff_lock.acquire(blocking=False):
+                        raise Conflict('A review handoff is already in progress; read its status')
+                    try:
+                        record = store.latest_snapshot(fixture['order']['case_id'])
+                        if not record or record[1]['assessment_id'] != body['assessment_id']:
+                            raise Conflict('Check the current identifiers again before sending for review')
+                        snapshot, saved = record
+                        if store.was_handed_off(saved['assessment_id']):
+                            reviewed = client.get_status(saved['case_id'])
+                        else:
+                            reviewed = client.handoff(snapshot['order'], saved)
+                            store.mark_handed_off(saved['assessment_id'])
+                    finally:
+                        handoff_lock.release()
+                    self.reply(200, reviewed)
+                    return
                 if self.path == '/demo/image-extraction':
                     if not isinstance(body, dict) or set(body) != {'image_base64', 'mime_type'}:
                         raise InvalidInput('Provide an image and its MIME type only')
@@ -159,6 +189,10 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
                 self.reply(503, {'error': str(error)})
             except Conflict as error:
                 self.reply(409, {'error': str(error)})
+            except ResolutionConflict as error:
+                self.reply(409, {'error': str(error)})
+            except ResolutionUnavailable:
+                self.reply(503, {'error': 'Merchant handoff could not be confirmed. Read case status before retrying; your assessment is saved.'})
             except (InvalidInput, ValueError, TypeError, KeyError, UnicodeError):
                 self.reply(400, {'error': 'Invalid input; use the v1 schema, bounded PNG/JPEG and confirmed identifiers'})
             except TimeoutError:

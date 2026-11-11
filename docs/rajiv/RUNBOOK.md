@@ -1,5 +1,11 @@
 # Rajiv's evidence runbook
 
+## Current integration: 11 November 2026
+
+Run `evidence/.venv/bin/python -B -m evidence.integrated` to start the actual customer and merchant apps together, with explicit same-case handoff, mock extraction, template briefs and fake payments. Open the printed customer and merchant URLs (defaults 8101/8102). Ctrl+C stops both and removes temporary state. Follow [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md) for the complete flow, verification and remaining acceptance. PRs #25 and #28 are merged; #1–#4 are closed. The new integration changes are local on `work/rajiv-final-integration` pending contributor review. No human timing task needs repeating.
+
+## Historical evaluation checkpoint: 9 November 2026
+
 Current checkpoint: 9 November 2026, work/rajiv-evaluation-results. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records the reference review, preserved mock pilot and separate completed live-AI human comparison: 24/24 first attempts, twelve actual proposals, zero observed completed field mismatches and five unresolved results per arm. Issues #1–#3 are closed; #4 results await contributor acceptance/merge. Integration and recording in #5 are deferred at the owner's request. [LIVE-AI-TIMING.md](LIVE-AI-TIMING.md) preserves collection/provenance and limits. No holdout or causal savings claim follows.
 
 ## Previous checkpoint: study-report tool

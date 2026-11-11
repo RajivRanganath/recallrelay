@@ -1,6 +1,10 @@
 # Rajiv lane completion checkpoint
 
-## Current checkpoint — 9 November 2026
+## Current integration: 11 November 2026
+
+PRs #25 and #28 are merged, and #1–#4 are closed. [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md) documents the new local two-app launcher and customer-to-merchant same-case handoff through the existing APIs, with merchant confirmation/approval and fake-refund status returned to the customer. Changes are on `work/rajiv-final-integration` for contributor review before merge. Recording/joint acceptance in #5 remains open. Earlier checkpoints below preserve their original scope and pending states.
+
+## Historical checkpoint — 9 November 2026
 
 Issues #1–#3 are closed for the local synthetic prototype. Task #4's work is now collected and analysed: twelve-label review, preserved earlier mock pilot, and a separate real-provider human comparison with all 24 tasks completed and twelve actual AI proposals. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) records timings, errors, unresolved decisions, provider/model details, deviations and limitations. No holdout, general accuracy or causal time-saving claim follows.
 

@@ -19,7 +19,7 @@ jobs:
       # Pin actual resolution source without merging or changing the other lane.
       - uses: actions/checkout@v4
         with:
-          ref: e1e16be6928afcdd52015097a3bbab6b42ddbd8b
+          ref: f29a9f3ee0dd46c9fd86b86588f4d30ae3eb94d1
           path: .integration-resolution
           sparse-checkout: |
             resolution

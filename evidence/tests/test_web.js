@@ -13,7 +13,7 @@ function deferred() {
 const turn = () => new Promise(setImmediate);
 const response = (data) => ({ok: true, json: async () => data});
 // DOM doubles test async state; they do not replace browser QA.
-function app() {
+function app(extra = {}) {
   const elements = new Map();
   const element = (id) => {
     if (!elements.has(id)) elements.set(id, {
@@ -26,21 +26,24 @@ function app() {
   const health = deferred();
   const sample = deferred();
   const calls = [];
+  const bodies = [];
   class Reader {
     readAsDataURL() { this.result = 'data:image/png;base64,c3ludGhldGlj'; this.onload(); }
   }
   vm.runInNewContext(source, {
     document: {getElementById: element}, FileReader: Reader,
-    URL: {createObjectURL: () => 'blob:synthetic', revokeObjectURL() {}},
+    URL: class extends URL { static createObjectURL() { return 'blob:synthetic'; } static revokeObjectURL() {} },
     AbortSignal: {timeout() {}},
-    fetch: async (url) => {
+    fetch: async (url, options) => {
       calls.push(url);
+      bodies.push(options.body === undefined ? null : JSON.parse(options.body));
       if (url === '/health') return health.promise;
       if (url === '/demo/extraction') return sample.promise;
+      if (extra[url]) return extra[url]();
       throw new Error('Unexpected request: ' + url);
     }
   });
-  return {element, health, sample, calls};
+  return {element, health, sample, calls, bodies};
 }
 async function upload(ui) {
   ui.element('upload').files = [{type: 'image/png', size: 16}];
@@ -90,4 +93,63 @@ test('invalid health keeps extraction disabled and typed entry usable', async ()
   assert.equal(ui.element('model').disabled, false);
   assert.match(ui.element('extraction-status').textContent, /unavailable/i);
   assert.deepEqual(ui.calls, ['/health']);
+});
+
+async function integrated(ui) {
+  ui.health.resolve(response({extraction_mode: 'mock', handoff_enabled: true, merchant_url: 'http://127.0.0.1:8102'}));
+  await turn();
+  assert.equal(ui.element('merchant-link').href, 'http://127.0.0.1:8102');
+  assert.equal(ui.element('send-review').hidden, false);
+}
+async function assess(ui) {
+  ui.element('confirmed').checked = true;
+  await ui.element('assessment-form').listeners.submit({preventDefault() {}});
+}
+test('handoff needs a saved assessment and sends only its ID once', async () => {
+  const pending = deferred();
+  const ui = app({
+    '/demo/assessments': () => response({assessment_id: 'saved-1', decision: 'eligible'}),
+    '/demo/handoff': () => pending.promise
+  });
+  await integrated(ui);
+  assert.equal(ui.element('send-review').disabled, true);
+  await ui.element('send-review').listeners.click();
+  assert.deepEqual(ui.calls, ['/health']);
+  await assess(ui);
+  assert.equal(ui.element('send-review').disabled, false);
+  const sent = ui.element('send-review').listeners.click();
+  assert.equal(ui.element('send-review').disabled, true);
+  await ui.element('send-review').listeners.click();
+  pending.resolve(response({status: 'manual_required'}));
+  await sent;
+  assert.deepEqual(ui.bodies.at(-1), {assessment_id: 'saved-1'});
+  assert.equal(ui.calls.filter(url => url === '/demo/handoff').length, 1);
+  assert.equal(ui.element('send-review').disabled, true);
+  assert.match(ui.element('handoff-message').textContent, /confirmation and approval are still required/);
+});
+test('editing identifiers invalidates the handoff and a failed reassessment cannot restore it', async () => {
+  let fail = false;
+  const ui = app({'/demo/assessments': () => fail
+    ? {ok: false, json: async () => ({error: 'Synthetic failure'})}
+    : response({assessment_id: 'saved-1', decision: 'eligible'})});
+  await integrated(ui);
+  await assess(ui);
+  ui.element('batch').listeners.input();
+  assert.equal(ui.element('send-review').disabled, true);
+  assert.equal(ui.element('confirmed').checked, false);
+  fail = true;
+  await assess(ui);
+  assert.equal(ui.element('send-review').disabled, true);
+  await ui.element('send-review').listeners.click();
+  assert.equal(ui.calls.includes('/demo/handoff'), false);
+});
+test('malformed or remote merchant links keep handoff unavailable', async () => {
+  for (const merchant_url of ['https://example.com', 'http://127.0.0.1:8102/?secret=x', 'http://user:pass@localhost:8102']) {
+    const ui = app();
+    ui.health.resolve(response({extraction_mode: 'mock', handoff_enabled: true, merchant_url}));
+    await turn();
+    assert.equal(ui.element('merchant-link').hidden, true);
+    assert.equal(ui.element('send-review').hidden, true);
+    assert.equal(ui.element('send-review').disabled, true);
+  }
 });

@@ -1,4 +1,5 @@
-"""Read-only HTTP boundary. No resolution imports, storage access or payment calls."""
+"""Bounded HTTP status and explicit review handoff. No payment calls or shared storage."""
+import json
 import math
 import multiprocessing
 import threading
@@ -6,11 +7,14 @@ import time
 from urllib.error import HTTPError
 from urllib.parse import quote, urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
+from jsonschema import Draft202012Validator
 
-from evidence.backend.validation import validate_contract
+from evidence.backend.validation import ROOT, validate_contract
 from evidence.backend.json_input import strict_json
 
 MAX_RESPONSE_BYTES = 65536
+HANDOFF_SCHEMA = Draft202012Validator(json.loads(
+    (ROOT / 'contracts/schemas/resolution-request.schema.json').read_text()))
 
 
 class ResolutionUnavailable(RuntimeError):
@@ -21,15 +25,22 @@ class ResolutionNotFound(ResolutionUnavailable):
     pass
 
 
+class ResolutionConflict(ResolutionUnavailable):
+    pass
+
+
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
         return None
 
 
-def _status_worker(pipe, url, timeout):
+def _status_worker(pipe, url, timeout, body=None):
     """Return bounded bytes or a sanitized failure; never log upstream bodies."""
     try:
-        request = Request(url, headers={'Accept': 'application/json'}, method='GET')
+        headers = {'Accept': 'application/json'}
+        if body is not None:
+            headers['Content-Type'] = 'application/json'
+        request = Request(url, headers=headers, data=body, method='GET' if body is None else 'POST')
         with build_opener(ProxyHandler({}), NoRedirect()).open(request, timeout=timeout) as response:
             if response.status != 200:
                 raise ValueError()
@@ -50,6 +61,8 @@ def _status_worker(pipe, url, timeout):
         pipe.send((raw, None))
     except Exception as error:
         failure = 'not_found' if isinstance(error, HTTPError) and error.code == 404 else 'unavailable'
+        if isinstance(error, HTTPError) and error.code == 409:
+            failure = 'conflict'
         if isinstance(error, HTTPError):
             error.close()
         try:
@@ -75,6 +88,21 @@ class ResolutionClient:
         self._slots = threading.BoundedSemaphore(2)
 
     def get_status(self, case_id):
+        return self._exchange(case_id, '/v1/resolutions/' + quote(case_id, safe=''))
+
+    def handoff(self, order, assessment):
+        # Only an explicitly configured local demo can create a review. No approval,
+        # remedy assertion, credentials, image bytes or browser-supplied order crosses here.
+        parsed = urlsplit(self.base_url)
+        if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost'):
+            raise ResolutionUnavailable('Review handoff requires a local merchant service')
+        body = {'schema_version': '1.0', 'order': order, 'assessment': assessment,
+                'remedy_conditions_met': False}
+        if not HANDOFF_SCHEMA.is_valid(body):
+            raise ResolutionUnavailable('Saved assessment does not match the merchant contract')
+        return self._exchange(assessment['case_id'], '/v1/resolutions', json.dumps(body).encode())
+
+    def _exchange(self, case_id, path, body=None):
         if not self._slots.acquire(blocking=False):
             raise ResolutionUnavailable('Resolution status is busy; try again later')
         process = receive = send = None
@@ -85,7 +113,7 @@ class ResolutionClient:
             context = multiprocessing.get_context('spawn')
             receive, send = context.Pipe(duplex=False)
             process = context.Process(target=_status_worker,
-                                      args=(send, f'{self.base_url}/v1/resolutions/{quote(case_id, safe="")}', self.timeout),
+                                      args=(send, self.base_url + path, self.timeout, body),
                                       daemon=True)
             process.start()
             send.close()
@@ -94,6 +122,8 @@ class ResolutionClient:
             raw, failure = receive.recv()
             if failure == 'not_found':
                 raise ResolutionNotFound('No resolution record exists for this case')
+            if failure == 'conflict':
+                raise ResolutionConflict('Merchant case is already processing or finished; read its status')
             if failure:
                 raise ResolutionUnavailable('Resolution status could not be read or validated')
             data = strict_json(raw)

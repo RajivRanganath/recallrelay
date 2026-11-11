@@ -24,6 +24,7 @@ class AssessmentStore:
                 request_key TEXT NOT NULL, snapshot TEXT NOT NULL, response TEXT NOT NULL
             )''')
             db.execute('CREATE INDEX IF NOT EXISTS case_history ON assessments(case_id, sequence)')
+            db.execute('CREATE TABLE IF NOT EXISTS review_handoffs (assessment_id TEXT PRIMARY KEY)')
 
     @contextmanager
     def connect(self):
@@ -38,6 +39,21 @@ class AssessmentStore:
         with self.connect() as db:
             row = db.execute('SELECT response FROM assessments WHERE case_id=? ORDER BY sequence DESC LIMIT 1', (case_id,)).fetchone()
         return json.loads(row[0]) if row else None
+
+    def latest_snapshot(self, case_id):
+        """Read our own saved context and assessment together for an explicit handoff."""
+        with self.connect() as db:
+            row = db.execute('SELECT snapshot, response FROM assessments WHERE case_id=? '
+                             'ORDER BY sequence DESC LIMIT 1', (case_id,)).fetchone()
+        return (json.loads(row[0]), json.loads(row[1])) if row else None
+
+    def was_handed_off(self, assessment_id):
+        with self.connect() as db:
+            return db.execute('SELECT 1 FROM review_handoffs WHERE assessment_id=?', (assessment_id,)).fetchone() is not None
+
+    def mark_handed_off(self, assessment_id):
+        with self.connect() as db:
+            db.execute('INSERT OR IGNORE INTO review_handoffs VALUES(?)', (assessment_id,))
 
     def save(self, request, response):
         # Persist only trusted context and confirmed text. Uploaded images are transient.
