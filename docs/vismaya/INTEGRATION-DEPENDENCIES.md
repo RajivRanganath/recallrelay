@@ -20,3 +20,7 @@ A genuinely changed assessment or order does not inherit prior remedy confirmati
 This closes the confirmation reset for identical handoffs, including concurrent confirmation and replay transactions. It does not impose an ordering policy between different assessment snapshots, create a distributed transaction, verify a human's identity, or establish exactly-once delivery.
 
 Tests: `resolution/tests/test_review_replay.py` and the repeated-handoff HTTP regression in `test_server.py`. They use synthetic records, temporary databases and no provider credentials.
+
+## Assessment response identity
+
+`EvidenceClient.assess` accepts a response only when its case ID, campaign ID and campaign version match the requested order/campaign snapshot. A valid schema and matching case alone are insufficient: an older, newer or different campaign is a visible `EvidenceUnavailable` error and is not passed on as an assessment. `test_evidence_client.py` checks these mismatches against synthetic HTTP responses. The HTTP caller must continue to stop the workflow on this error; it must not substitute an eligible fixture or silently downgrade the campaign.
