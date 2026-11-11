@@ -59,9 +59,18 @@ class CaseStore:
     def save_review(self, request, response):
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute('SELECT status FROM cases WHERE case_id=?', (response['case_id'],)).fetchone()
+            row = db.execute('SELECT status, request, response FROM cases WHERE case_id=?', (response['case_id'],)).fetchone()
             if row and row[0] in LOCKED_STATUSES:
                 raise AlreadyInProgress('Case already has a refund in progress or finished')
+            if row and row[1]:
+                previous = json.loads(row[1])
+                same_snapshot = all(previous.get(key) == request.get(key)
+                                    for key in ('schema_version', 'order', 'assessment'))
+                if (same_snapshot and previous.get('remedy_conditions_met') is True
+                        and request.get('remedy_conditions_met') is False):
+                    # A delayed customer handoff must not retract merchant confirmation
+                    # or replace a provider hold. Compare and return under the write lock.
+                    return json.loads(row[2])
             db.execute('INSERT INTO cases(case_id,status,response,request) VALUES(?,?,?,?) '
                        'ON CONFLICT(case_id) DO UPDATE SET status=excluded.status, response=excluded.response, request=excluded.request',
                        (response['case_id'], response['status'], json.dumps(response, sort_keys=True),
