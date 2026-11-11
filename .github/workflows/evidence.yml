@@ -31,6 +31,7 @@ jobs:
       - run: python -m evidence.evals.run --check
       - run: node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js
   windows-integration:
+    name: Windows full evidence suite
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,5 +39,16 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install -r evidence/requirements.lock.txt
-      - run: python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_integrated*.py' -v
-      - run: python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_handoff_client.py' -v
+      - uses: actions/checkout@v4
+        with:
+          ref: 9fc4da28dbf136d6fbf016c0fa0773c6ad2517ac
+          path: .integration-resolution
+          sparse-checkout: |
+            resolution
+            contracts
+          persist-credentials: false
+      - run: python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -v
+        env:
+          RECALLRELAY_RESOLUTION_SOURCE: ${{ github.workspace }}/.integration-resolution
+      - run: python -m evidence.evals.run --check
+      - run: node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js
