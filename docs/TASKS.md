@@ -1,5 +1,11 @@
 # Balanced task board
 
+## Delivery status: 11 November 2026
+
+Issues #1–#9 are closed. Both implemented services and the explicit same-case customer/merchant HTTP flow are merged through [PR #29](https://github.com/RajivRanganath/recallrelay/pull/29). This is a local synthetic prototype, not production acceptance. [#10](https://github.com/RajivRanganath/recallrelay/issues/10) remains open for merchant demo completion; final recording is deliberately deferred.
+
+Merchant duplicate-review hardening, its case-detail dependency note, and Windows full-suite maintenance are separate follow-up changes requiring their own CI and contributor review. [Webhook delivery verification](WEBHOOK-VERIFICATION.md) is blocked by absent approved callback/registration and the existing no-public-deployment boundary. It must not be marked verified from mock tests. The original effort allocation and scope below remain the planning record, not a statement that the repository is still a scaffold.
+
 Points express relative effort, not time. Each person has 20 points across the same categories. Re-estimate after the first working slice; reduce scope if needed rather than moving all backend work to one person.
 
 | Task | Rajiv: evidence lane | Vismaya: resolution lane | Points each |
@@ -18,7 +24,7 @@ Points express relative effort, not time. Each person has 20 points across the s
 - Backend APIs are internal server-to-server boundaries. Browsers call their own lane backend; do not share secrets or rely on permissive CORS.
 - The resolution lane owns canonical case/payment state. The evidence lane owns evidence/assessment records. Handoff uses a frozen assessment snapshot, not shared mutable state.
 
-## Delivery sequence (same for both)
+## Original delivery sequence (same for both)
 1. First slice: lane skeleton + mock client + one UI path. No external keys required.
 2. Next: deterministic rules/storage + provider adapter interfaces + failure paths.
 3. Next: actual AI/provider setup with account owner consent; benchmark against baseline.

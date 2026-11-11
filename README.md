@@ -2,7 +2,31 @@
 
 A two-person, sandbox-only recall-resolution prototype.
 
-**Status: collaboration scaffold, contracts, fixtures and mock servers only.** There is no implemented AI, customer authentication, real assessment, payment execution, production UI or deployment yet. Mock responses are labeled `mock`; no money moves.
+**Status: implemented local synthetic prototype.** The customer and merchant apps are connected through HTTP: confirmed label assessment → merchant review and approval → refund result → customer status. AI adapters and a PayPal sandbox adapter are implemented with limited recorded evaluations. The integrated launcher uses mock extraction, template briefs and fake payments by default. Authentication, real customer use, live-money payments and public deployment are outside this prototype.
+
+## Run both apps
+
+From the repository root, on macOS/Linux with Python 3.11:
+
+```sh
+python3 -m venv evidence/.venv
+evidence/.venv/bin/python -m pip install -r evidence/requirements.lock.txt
+evidence/.venv/bin/python -B -m evidence.integrated --port 0 --merchant-port 0
+```
+
+Windows PowerShell:
+
+```powershell
+py -3.11 -m venv evidence/.venv
+.\evidence\.venv\Scripts\python.exe -m pip install -r evidence/requirements.lock.txt
+.\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0 --merchant-port 0
+```
+
+Open the printed customer and merchant URLs. Check and confirm a synthetic label, assess it, then choose **Send for merchant review**. In the merchant app select the same case, review it and confirm remedy conditions before approving the exact fake refund amount. Return to the customer app to read its status. The merchant's **Load demo case** button is a separate fixture seeder and is not the customer handoff.
+
+Both services use separate temporary databases. Ctrl+C stops them and removes rehearsal state; restarting creates a fresh session. Port `0` chooses unused ports without terminating other listeners. Reuse an existing lane environment if already installed.
+
+[Full integration instructions and limits](docs/rajiv/FINAL-INTEGRATION.md) · [Verification record](docs/rajiv/FINAL-INTEGRATION-CHECKS.md)
 
 ## Equal ownership
 
@@ -13,7 +37,7 @@ A two-person, sandbox-only recall-resolution prototype.
 
 Both own tests, evaluation and documentation for their feature. Each lane has **20 relative effort points**, including integration and demo work. These are planning estimates, not promised hours. No person is the other's frontend or backend implementer.
 
-## Start independently
+## Original independent mock setup
 
 Python 3.11+ is enough for the mock servers. No keys or accounts required.
 
@@ -43,18 +67,24 @@ curl -s -X POST http://127.0.0.1:8102/v1/resolutions -H 'Content-Type: applicati
 
 Use `X-Mock-Scenario: missing` or `excluded` for evidence; `manual`, `pending`, or `failed` for resolution. These are mock-only headers, not production API inputs. Inspect response headers for `X-RecallRelay-Mode: mock`.
 
-## Verify setup
+## Verify the implementation
 
 ```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements-dev.txt
-python -m unittest discover -s tests -v
-python -m unittest discover -s evidence/tests -v
-python -m unittest discover -s resolution/tests -v
+evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s tests -v
+RECALLRELAY_RESOLUTION_SOURCE="$PWD" evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -v
+evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s resolution/tests -v
+node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js
 ```
 
-The shared tests check fixture schemas, fixed port mocks and invalid mock input. Lane tests currently verify their example contracts; replace/extend them with behavior tests as implementation lands. Passing scaffold checks does not validate AI or payment correctness.
+On Windows, use `.\evidence\.venv\Scripts\python.exe` for the Python executable and set `$env:RECALLRELAY_RESOLUTION_SOURCE = (Get-Location).Path` before the evidence suite. Tests use synthetic fixtures, local stubs or fake/disabled payments. CI and the dated verification records identify the exact platform, commit and scope; passing these checks does not establish general AI accuracy, user savings or production readiness.
+
+## Evidence and remaining acceptance
+
+- Customer label review, mock pilot and separate real-provider human timing: [evaluation results](docs/rajiv/EVALUATION-RESULTS.md). These are familiar synthetic development inputs, not a validated holdout or causal time-saving study.
+- Merchant model evaluation and real PayPal sandbox experiments: [resolution runbook](docs/vismaya/RUNBOOK.md). Historical provider runs are separate from the default fake-payment launcher.
+- [PR #29](https://github.com/RajivRanganath/recallrelay/pull/29) merged the same-case local integration. Tracker issues #1–#9 are closed as of 11 November 2026; [#10](https://github.com/RajivRanganath/recallrelay/issues/10) remains for merchant demo completion. Final joint recording is deferred.
+- Follow-up merchant hardening and Windows maintenance are separately reviewed changes; consult current PR checks before treating them as merged.
+- Real PayPal webhook delivery has not been verified. There is no approved callback or webhook registration. [Prerequisites and approval boundary](docs/WEBHOOK-VERIFICATION.md) explain the remaining external setup without exposing the local app.
 
 ## Product boundary
 
