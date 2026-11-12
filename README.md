@@ -140,7 +140,7 @@ Two Python services with separate stores and dependencies, joined by a [frozen J
 
 ## More
 
-[Documentation index](docs/README.md) · [Submission summary](docs/evidence/SUBMISSION.md) · [Development guide and tests](docs/DEVELOPMENT.md) · [API contract](contracts/README.md)
+[Documentation index](docs/README.md) · [Development guide and tests](docs/DEVELOPMENT.md) · [API contract](contracts/README.md)
 
 ## License
 
