@@ -183,6 +183,13 @@ window.addEventListener('hashchange', () => {
   if (state.view !== 'label') run('app-message', refreshCase);
 });
 $('refresh').addEventListener('click', () => run('app-message', refreshCase));
+// Hosted demo only: every visitor shares one fictional case, so anyone may start a fresh session.
+$('reset-demo').addEventListener('click', () => run('app-message', async () => {
+  const response = await fetch('/api/session/reset', {method: 'POST', signal: AbortSignal.timeout(50000)});
+  if (!response.ok) throw new Error('The demo could not be reset. Try again.');
+  message('app-message', 'Starting a fresh demo session…');
+  setTimeout(() => { location.hash = 'label'; location.reload(); }, 3000);
+}));
 
 function invalidate() {
   state.saved = null;
@@ -335,6 +342,7 @@ run('app-message', async () => {
   Object.assign(modes, {ai: customer.extraction_mode === 'ai', aiBrief: merchant.brief === 'ai',
     sandbox: merchant.mode === 'sandbox', loseFirst: session.lose_first_refund_response === true});
   applyModes();
+  $('reset-demo').hidden = session.hosted !== true;
   try {
     state.saved = await request('customer', '/v1/assessments/case-demo-1');
     $('model').value = state.saved.model || ''; $('batch').value = state.saved.batch || '';

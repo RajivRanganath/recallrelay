@@ -1,9 +1,12 @@
 """Opt-in live modes of the unified workspace against LOCAL stubs: no PayPal, model or credential is used."""
+import http.client
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import tempfile
+import threading
 import unittest
+from urllib.parse import urlsplit
 
 from evidence.ai.extraction import ExtractionResult
 from evidence.demo import running
@@ -126,6 +129,51 @@ class LiveWorkspaceTests(unittest.TestCase):
                     pass
             self.assertIn('configuration', str(failure.exception))
             self.assertNotIn('SECRETISH', str(failure.exception))
+
+    def test_public_host_serves_only_that_host_and_resets_only_when_hosted(self):
+        def send(app, method, path, host, origin=None):
+            connection = http.client.HTTPConnection('127.0.0.1', urlsplit(app).port, timeout=5)
+            try:
+                connection.putrequest(method, path, skip_host=True)
+                connection.putheader('Host', host)
+                if origin:
+                    connection.putheader('Origin', origin)
+                connection.putheader('Content-Length', '0')
+                connection.endheaders()
+                response = connection.getresponse()
+                return response.status, response.read()
+            finally:
+                connection.close()
+
+        reset = threading.Event()
+        with integrated_session(public_host='demo.example.test', on_reset=reset.set) as session:
+            app = session.application_url
+            self.assertEqual(send(app, 'GET', '/', 'demo.example.test')[0], 200)
+            self.assertEqual(json.loads(send(app, 'GET', '/api/session', 'demo.example.test')[1]),
+                             {'lose_first_refund_response': False, 'hosted': True})
+            self.assertEqual(json.loads(send(app, 'GET', '/api/merchant/health', 'demo.example.test')[1])['mode'], 'mock')
+            for host, origin in (('other.example.test', None), ('demo.example.test:80', None),
+                                 ('demo.example.test', 'http://demo.example.test'),
+                                 ('demo.example.test', 'https://other.example.test')):
+                with self.subTest(host=host, origin=origin):
+                    self.assertEqual(send(app, 'POST', '/api/session/reset', host, origin)[0], 403)
+            self.assertFalse(reset.is_set())
+            self.assertEqual(send(app, 'POST', '/api/session/reset', 'demo.example.test', 'https://demo.example.test')[0], 200)
+            self.assertTrue(reset.is_set())
+        with integrated_session() as session:  # A local workspace has no reset route and rejects the public host.
+            self.assertEqual(call(session.application_url, '/api/session/reset', {})[0], 404)
+            self.assertEqual(send(session.application_url, 'GET', '/', 'demo.example.test')[0], 403)
+
+    def test_public_host_refuses_credentials_and_malformed_names(self):
+        for kwargs in ({'extraction_adapter': StubModel()}, {'merchant_options': {'brief': 'omniroute'}},
+                       {'merchant_options': {'paypal': 'sandbox'}, 'order': ORDER}):
+            with self.subTest(kwargs=sorted(kwargs)), self.assertRaises(ValueError):
+                with integrated_session(public_host='demo.example.test', **kwargs):
+                    pass
+        for name in ('Demo.example.test', 'demo.example.test:443', 'https://demo.example.test', ''):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                with integrated_session(public_host=name):
+                    pass
 
     def test_sandbox_case_file_supplies_only_payment_fields(self):
         with tempfile.TemporaryDirectory() as folder:
