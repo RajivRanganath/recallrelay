@@ -1,5 +1,11 @@
 # Customer demo rehearsal
 
+## Current combined walkthrough: 12 November 2026
+
+Use [FINAL-DEMO.md](FINAL-DEMO.md) for the current same-case customer and merchant recording outline. It uses the integrated launcher, explicit saved-assessment handoff, merchant approval and customer status. [HANDOVER-CHECKPOINT.md](HANDOVER-CHECKPOINT.md) records current verification and remaining work. No finished recording is claimed.
+
+## Historical standalone outline
+
 Current checkpoint, 9 November 2026: standalone evaluation work now includes a completed actual-provider human timing pilot; see [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). Integration with the resolution lane and recording remain deferred at the owner's request. The rehearsal instructions below do not constitute a completed joint demo.
 
 This is the first 75 seconds of the synthetic RecallRelay demo. The timing below is a recording outline, not a measured user-completion result or a finished recording. No real product, customer, payment or AI recognition is shown in the default rehearsal.
