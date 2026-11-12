@@ -91,4 +91,15 @@ Checked afterwards, read-only, straight from PayPal: refund `77E50303VH9314045` 
 
 This is one refund on one capture. Native Windows execution of the new tests is left to CI.
 
+### Demo video recording
+
+Recorded on 12 November 2026, 22:39 to 22:42 IST, on commit `0ebedac`, with every live flag, model `gemini/gemini-3.5-flash` and `--lose-first-refund-response`. The header read "Live AI label reading · AI brief · PayPal sandbox refunds". Sandbox order `8L711441JK5005629`, capture `99F58278FJ985905R`.
+
+- **How it was made.** A scripted browser clicked through the real workspace. The pointer, highlights, captions, title card and closing card are overlays drawn by the recorder, not part of the app. The narration is two synthetic voices added afterwards.
+- **Labels.** `cropped.png`: batch left blank, "A detail needs attention". `instruction-note.png`: batch B103, "Outside this campaign". `clear-png.png`: LAMP-100 and B101, "Identifiers match". Each read returned in under a second, so the gateway probably served cached answers from identical requests made minutes earlier.
+- **Brief.** The model provider did not answer within 20 seconds, so the screen shows the template with reason `network`. There is no AI-written brief in the video.
+- **Refund.** 39.99 was refused; 40.00 was approved; the case went pending with operation `op-8249b47293fbc71239e385e9`. The first press of **Check pending refund again** did not settle the case within 20 seconds; the second ended at **Refunded**, refund `829636786G556384T`. The cause of the first miss was not investigated. PayPal's read-back shows the refund `COMPLETED` for 40.00 USD with the operation ID as `custom_id`, and the order lists exactly one refund.
+- **Edits.** Three waits were shortened (11.9 s for the brief, 4.8 s for the approval, 11.9 s for the re-check), each marked on screen as shortened in the edit. Nothing else was cut. Length 2:38.
+- **Retakes.** Four takes. The first was complete but showed "Fake payments" on the merchant banner in a sandbox session, a wording bug fixed in `0ebedac` (refund `2YD40711FG258084C`). Two attempts stopped at label reading before any approval because the model provider was unavailable. The third stalled at the re-check and was settled by calling the same reconcile route directly (refund `9K183728AW1383506`). The fourth is the video. Across the day's four sandbox captures, PayPal lists exactly one completed refund on each.
+
 These checks cover one synthetic case. They establish no AI accuracy, time saving, exactly-once guarantee or production readiness.
