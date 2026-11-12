@@ -35,7 +35,7 @@ async function app(initial = detail(), handlers = {}) {
   const context = vm.createContext({
     document: {getElementById: element, createElement: node, querySelectorAll: () => [...elements.values()], hidden: false},
     window: {addEventListener(name, work) { events[name] = work; }}, location,
-    AbortSignal: {timeout() {}}, setInterval(work) { events.interval = work; }, URL,
+    AbortSignal: {timeout() {}}, setInterval(work) { events.interval = work; }, setTimeout(work) { events.timeout = work; }, URL,
     fetch: async (url, options) => {
       calls.push({url, method: options.method, body: options.body && JSON.parse(options.body)});
       if (handlers[url]) return handlers[url](options, () => current, (value) => { current = value; });
@@ -143,6 +143,17 @@ test('labels follow the modes the services report, never a fixed claim', async (
   assert.equal(ui.element('outcome-mode').textContent, 'PayPal sandbox · simulated funds');
   const fake = await app(detail());
   assert.match(fake.element('review-status').textContent, /Fake payments: no money moves/);
+});
+test('the reset control appears only on the hosted demo and asks the gateway for a fresh session', async () => {
+  const local = await app();
+  assert.equal(local.element('reset-demo').hidden, true);
+  const ui = await app(detail(), {'/api/session': () => ok({lose_first_refund_response: false, hosted: true}),
+    '/api/session/reset': () => ok({reset: true})});
+  assert.equal(ui.element('reset-demo').hidden, false);
+  await ui.element('reset-demo').listeners.click();
+  assert.deepEqual(ui.calls.filter((call) => call.method === 'POST').map((call) => call.url), ['/api/session/reset']);
+  assert.match(ui.element('app-message').textContent, /fresh demo session/);
+  assert.equal(typeof ui.events.timeout, 'function');
 });
 test('a rejected AI draft is disclosed and replaced by the template', async () => {
   const ui = await app(detail(), {...live,
