@@ -26,7 +26,7 @@ WEB = ROOT / 'evidence' / 'web'
 
 
 def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter=None,
-                *, max_handlers=8, request_timeout=10, enable_handoff=False):
+                *, max_handlers=8, request_timeout=10, enable_handoff=False, order=None):
     store = AssessmentStore(db_path or ROOT / 'evidence' / '.local' / 'assessments.sqlite3')
     client = ResolutionClient(resolution_url or os.environ.get('RESOLUTION_BASE_URL', 'http://127.0.0.1:8102'))
     if enable_handoff:
@@ -35,6 +35,13 @@ def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter
             raise ValueError('Review handoff requires an explicit loopback HTTP origin')
     extraction = ExtractionService(extraction_adapter if extraction_adapter is not None else FixtureExtractor())
     fixture = json.loads((ROOT / 'contracts' / 'fixtures' / 'assessment-request.json').read_text())
+    if order is not None:
+        # A launcher-held PayPal sandbox order replaces the fixture payment; browsers still supply only a label.
+        if (set(order) - {'order_id', 'capture_id', 'paid_minor', 'previously_refunded_minor'}
+                or not all(isinstance(order.get(key), str) and 0 < len(order[key]) <= 128 for key in ('order_id', 'capture_id'))
+                or not all(type(value) is int and value >= 0 for key, value in order.items() if key.endswith('_minor'))):
+            raise ValueError('Order override needs order_id and capture_id text and non-negative minor amounts')
+        fixture['order'].update(order)
     handoff_lock = threading.Lock()
 
     class Handler(BaseHTTPRequestHandler):
