@@ -9,7 +9,7 @@
 
 When a product is recalled, a merchant has to answer one question per customer: *is this unit affected, and was it refunded exactly once?* The evidence is a label photo that may be blurred or cropped. The refund call can time out after the money already moved. RecallRelay is a working prototype built around those two failure points.
 
-<!-- Demo video: add the YouTube link here before submission. -->
+**[▶ Watch the demo (2:39)](https://youtu.be/DYouuKzh0PM)**: three labels read by a real model, then a real PayPal sandbox refund that survives a lost response.
 
 | | |
 |---|---|

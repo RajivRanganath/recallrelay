@@ -93,7 +93,7 @@ This is one refund on one capture. Native Windows execution of the new tests is 
 
 ### Demo video recording
 
-Recorded on 12 November 2026, 22:39 to 22:42 IST, on commit `0ebedac`, with every live flag, model `gemini/gemini-3.5-flash` and `--lose-first-refund-response`. The header read "Live AI label reading · AI brief · PayPal sandbox refunds". Sandbox order `8L711441JK5005629`, capture `99F58278FJ985905R`.
+[Watch it on YouTube](https://youtu.be/DYouuKzh0PM). Recorded on 12 November 2026, 22:39 to 22:42 IST, on commit `0ebedac`, with every live flag, model `gemini/gemini-3.5-flash` and `--lose-first-refund-response`. The header read "Live AI label reading · AI brief · PayPal sandbox refunds". Sandbox order `8L711441JK5005629`, capture `99F58278FJ985905R`.
 
 - **How it was made.** A scripted browser clicked through the real workspace. The pointer, highlights, captions, title card and closing card are overlays drawn by the recorder, not part of the app. The narration is two synthetic voices added afterwards.
 - **Labels.** `cropped.png`: batch left blank, "A detail needs attention". `instruction-note.png`: batch B103, "Outside this campaign". `clear-png.png`: LAMP-100 and B101, "Identifiers match". Each read returned in under a second, so the gateway probably served cached answers from identical requests made minutes earlier.
