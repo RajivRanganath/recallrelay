@@ -67,7 +67,7 @@ Reports bind raw session/trial/manifest hashes and the reporter source hash, omi
 
 ## Collected development pilot — 9 November 2026
 
-The returned review and actual task records are analysed in [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). Preserve all deviations: guided first label, preloaded images, browser monotonic timing, fixed typed-first order, one assigned-assisted task without a suggestion request, and an accidental stop followed by a separate retry. Originals remain local and unchanged. Human timing used mock suggestions; historical real-provider extraction is separate. This collection does not establish a holdout or independent human validation.
+The returned review and actual task records are analysed in [EVALUATION-RESULTS.md](../EVALUATION-RESULTS.md). Preserve all deviations: guided first label, preloaded images, browser monotonic timing, fixed typed-first order, one assigned-assisted task without a suggestion request, and an accidental stop followed by a separate retry. Originals remain local and unchanged. Human timing used mock suggestions; historical real-provider extraction is separate. This collection does not establish a holdout or independent human validation.
 
 ## Separate live-AI collection handoff — 9 November 2026
 
@@ -75,4 +75,4 @@ The returned review and actual task records are analysed in [EVALUATION-RESULTS.
 
 ## Completed actual-provider pilot — 9 November 2026
 
-The separate participant run now contains twelve typed and twelve actual AI-assisted first attempts, all completed. Every assisted task made one actual request, with twelve usable proposals and no unavailable calls. Median times were 8.0325 seconds typed and 4.8825 seconds assisted; all twelve pairs completed. Final identifier mismatches were zero on 48 field comparisons, with five unresolved needs_information results per arm. Raw autosaved records, source bindings and actual-call journal were checked and preserved locally. See [the results](EVALUATION-RESULTS.md). This supersedes the earlier pending-collection status above; the historical mock run remains separate. No new holdout, causal savings, authentication, integration or recording evidence is implied.
+The separate participant run now contains twelve typed and twelve actual AI-assisted first attempts, all completed. Every assisted task made one actual request, with twelve usable proposals and no unavailable calls. Median times were 8.0325 seconds typed and 4.8825 seconds assisted; all twelve pairs completed. Final identifier mismatches were zero on 48 field comparisons, with five unresolved needs_information results per arm. Raw autosaved records, source bindings and actual-call journal were checked and preserved locally. See [the results](../EVALUATION-RESULTS.md). This supersedes the earlier pending-collection status above; the historical mock run remains separate. No new holdout, causal savings, authentication, integration or recording evidence is implied.

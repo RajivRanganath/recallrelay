@@ -49,7 +49,7 @@ The launcher uses mock label lookup, confirmed-text rules, template briefs and f
 
 1. Integrate `521393a` through a follow-up PR and verify its current CI. Until then, main retains the last reported malformed-request regression.
 2. Complete the documentation checkpoint and correct the demo issue state: #5 and #10 include recording, which has not happened.
-3. Real sandbox webhook delivery is unverified. The [proposal](../vismaya/WEBHOOK-EXCEPTION.md) is preparation, not execution approval. An approved operator, temporary host, exact callback confirmation, registration, permitted refund and cleanup are required. The local integrated demo is not that test.
+3. Real sandbox webhook delivery is unverified. The [proposal](../../vismaya/WEBHOOK-EXCEPTION.md) is preparation, not execution approval. An approved operator, temporary host, exact callback confirmation, registration, permitted refund and cleanup are required. The local integrated demo is not that test.
 4. Record the final demo and obtain required acceptance. Submission destination and event-specific requirements were not supplied; do not invent them or submit automatically.
 
 ## Retained limitations

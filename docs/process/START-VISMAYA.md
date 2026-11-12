@@ -1,6 +1,6 @@
 # Start here: VismayaM2005
 
-Current implementation: use the [repository quick start](../README.md#run-both-apps) and [merchant runbook](vismaya/RUNBOOK.md) to run the implemented services. Issues #6–#9 are closed; #10 retains the demo work. The instructions below preserve the original independent scaffold workflow and lane boundaries.
+Current implementation: use the [repository quick start](../../README.md#run-both-apps) and [merchant runbook](../vismaya/RUNBOOK.md) to run the implemented services. Issues #6–#9 are closed; #10 retains the demo work. The instructions below preserve the original independent scaffold workflow and lane boundaries.
 
 You own `resolution/`, `docs/vismaya/`, and `.github/workflows/resolution.yml`. Your slice includes AI, backend, UI and testing. See [task board](TASKS.md) for the equal 20-point split.
 

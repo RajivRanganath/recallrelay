@@ -12,7 +12,7 @@ Each person owns AI, backend, UI, tests, evaluation and docs in their lane. Matc
 ## Branches and PRs
 Use `work/rajiv-evidence` and `work/vismaya-resolution` as starting branches. Prefer short feature branches under your lane. No direct feature commits to main. A small PR should change one lane only. Review one another's PRs; ownership is routing, not a claim that branch protections are enabled.
 
-Shared integration is divided in docs/TASKS.md. Nobody waits for a real provider: develop and test with fixtures first. If contract changes are proposed, continue on v1 until merged. Reserve a daily 15-minute integration check.
+Shared integration is divided in docs/process/TASKS.md. Nobody waits for a real provider: develop and test with fixtures first. If contract changes are proposed, continue on v1 until merged. Reserve a daily 15-minute integration check.
 
 ## Boundaries
 All examples are synthetic. No live payments, real customer outreach, public deployment or credentials in commits. AI proposes extracted information and prose; deterministic code and human approval control eligibility and refunds. Do not treat untrusted images or case notes as instructions. Never log full uploaded images or secrets. Keep uncertainty visible.

@@ -1,17 +1,54 @@
 # RecallRelay
 
-A two-person, sandbox-only recall-resolution prototype.
+**Recall refunds that admit uncertainty and survive a lost payment response.**
 
-**Status: implemented local synthetic prototype.** One workspace presents the complete workflow: confirmed label assessment → merchant review and approval → shared refund status. The services communicate through HTTP and keep separate stores behind the single application URL. AI adapters and a PayPal sandbox adapter are implemented with limited recorded evaluations. The integrated launcher uses mock extraction, template briefs and fake payments. Authentication, real customer use, live-money payments and public deployment are outside this prototype.
+When a product is recalled, a merchant has to answer one question per customer: *is this unit affected, and was it refunded exactly once?* The evidence is a label photo that may be blurred or cropped. The refund call can time out after the money already moved. RecallRelay is a working prototype built around those two failure points, using AI to read and summarize and the PayPal sandbox to refund.
 
-## Run RecallRelay
+Built for the PayPal AI hackathon by [Rajiv](https://github.com/RajivRanganath) and [Vismaya](https://github.com/VismayaM2005). Sandbox only: no live money, no real customer data.
 
-From the repository root, on macOS/Linux with Python 3.11:
+<!-- Demo video: add the YouTube link here before submission. -->
+
+## What it does
+
+One workspace follows a single case through three steps.
+
+### 1. Check the label
+
+The customer uploads a label photo. A model proposes the model and batch identifiers. Anything it cannot read is left blank and the app asks one targeted question instead of guessing. The customer confirms every identifier, and deterministic campaign rules decide the outcome.
+
+![A cropped label: the model read the product model, left the batch blank and asked for it](docs/images/01-label-uncertain.png)
+
+### 2. Merchant review
+
+The same case opens for the merchant. A model drafts a short brief, and code shows it only if every number, identifier and citation appears in the case records. The merchant confirms the remedy conditions and types the exact refund amount; any other amount is refused.
+
+![Merchant review with a validated AI brief and a refused wrong amount](docs/images/02-merchant-review.png)
+
+### 3. Refund status
+
+The refund is sent with a stored operation ID. If the response is lost, the case stays pending and nothing is retried automatically. Checking again sends the same operation ID, so the provider returns the one existing refund. Customer and merchant read the same case.
+
+![A refund recovered after a deliberately discarded acknowledgement, with no duplicate](docs/images/03-refund-recovered.png)
+
+Screenshots are from a run on 12 November 2026 with real model calls (`gemini-3.1-flash-lite`) and fake payments, as the header chip states.
+
+## Why it is different
+
+- **Uncertain evidence is a result, not an error.** An unreadable or conflicting label never becomes eligible. The screen shows what was uncertain and what was asked.
+- **An unknown payment outcome is neither success nor failure.** The operation ID is saved before PayPal is called and is reused as `PayPal-Request-Id`, so a retry cannot knowingly create a second refund.
+- **Events are hints, not truth.** A verified PayPal webhook settles a case only after PayPal's own read-back matches the stored operation, amount, currency and `custom_id`. A replayed event changes nothing.
+- **AI has no authority.** It proposes identifiers and prose. Rules decide eligibility; a person approves; code moves money.
+
+## Try it in two minutes
+
+No account or key is needed. Python 3.11, macOS or Linux:
 
 ```sh
+git clone https://github.com/RajivRanganath/recallrelay.git
+cd recallrelay
 python3 -m venv evidence/.venv
 evidence/.venv/bin/python -m pip install -r evidence/requirements.lock.txt
-evidence/.venv/bin/python -B -m evidence.integrated --port 0
+evidence/.venv/bin/python -B -m evidence.integrated --port 0 --lose-first-refund-response
 ```
 
 Windows PowerShell:
@@ -19,76 +56,83 @@ Windows PowerShell:
 ```powershell
 py -3.11 -m venv evidence/.venv
 .\evidence\.venv\Scripts\python.exe -m pip install -r evidence/requirements.lock.txt
-.\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0
+.\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0 --lose-first-refund-response
 ```
 
-Open the single printed **RecallRelay** URL. The navigation follows **Check label → Merchant review → Refund status** in one tab. Confirm a synthetic label, check the campaign match and choose **Send for merchant review**. That exact assessment opens automatically in merchant review. Check the evidence and remedy conditions, explicitly confirm those conditions, then approve the exact fake refund amount. The workspace opens the outcome and reads matching customer status. No second URL, manual case selection or demo-case seeding is needed.
+Open the printed URL and follow **Check label → Merchant review → Refund status**:
 
-Both services use separate temporary databases behind the workspace. Ctrl+C stops the workspace and its owned services and removes rehearsal state; restarting creates a fresh session. Port `0` chooses an unused application port; internal ports are automatic. Reuse an existing lane environment if already installed. No PayPal credentials or external AI calls are used by this launcher.
+1. Choose **Use example**, tick the confirmation and **Check campaign match**. Try the *Unreadable batch* and *Excluded batch* examples too.
+2. **Send for merchant review**, generate the brief, confirm the remedy conditions.
+3. Type `39.99` to see it refused, then `40.00` and a name, and approve.
+4. The refund shows **Refund pending**, because this launch deliberately discards the first acknowledgement. Choose **Check pending refund again** to see it recover with the same operation ID.
 
-[Unified workspace and verification](docs/rajiv/UNIFIED-WORKSPACE.md) · [Earlier integration record](docs/rajiv/FINAL-INTEGRATION-CHECKS.md)
+This default run uses mock label reading, template briefs and fake payments, and says so on screen. Ctrl+C stops everything and removes the temporary data.
 
-## Equal ownership
+## Run it live
 
-| Contributor | Complete feature | AI | Backend | UI |
-|---|---|---|---|---|
-| [Rajiv](https://github.com/RajivRanganath) | Customer evidence and eligibility | Label extraction and targeted clarification | Evidence storage, campaign rule checks, assessment API | Customer upload, confirmation and status flow |
-| [Vismaya](https://github.com/VismayaM2005) | Merchant decision and settlement | Evidence-grounded case briefs and next-action explanations | Case lifecycle, approval and PayPal refund adapter | Merchant review, approval and refund status flow |
-
-Both own tests, evaluation and documentation for their feature. Each lane has **20 relative effort points**, including integration and demo work. These are planning estimates, not promised hours. No person is the other's frontend or backend implementer.
-
-## Original independent mock setup
-
-Python 3.11+ is enough for the mock servers. No keys or accounts required.
+The same workspace runs with real model calls and PayPal **sandbox** refunds:
 
 ```sh
-git clone https://github.com/RajivRanganath/recallrelay.git
-cd recallrelay
-python3 scripts/mock_server.py evidence --port 8101
+evidence/.venv/bin/python -B -m evidence.integrated --port 8101 \
+  --extractor omniroute --brief omniroute --omniroute-env PATH/omniroute.env --model gemini/gemini-3.1-flash-lite \
+  --paypal sandbox --paypal-env PATH/paypal.env --sandbox-case PATH/sandbox-case.json \
+  --lose-first-refund-response
 ```
 
-In a second terminal:
+You need your own PayPal sandbox app and a model provider. Setup, the one-command sandbox payment and the measured runs are in the [live workspace guide](docs/rajiv/LIVE-WORKSPACE.md).
 
-```sh
-python3 scripts/mock_server.py resolution --port 8102
+## How AI and PayPal are used
+
+| | What it does | What keeps it safe |
+|---|---|---|
+| **AI: label reading** | Image to model and batch identifiers with self-reported confidence | Low confidence or conflict leaves the field blank; text printed on a label is data, never instructions; the customer confirms |
+| **AI: merchant brief** | Short grounded summary with citations and next steps | Code checks every number, identifier and citation against the records, or shows a template and says why |
+| **PayPal: before approval** | Reads the capture, its order's refund history and disputes | Anything unclear blocks approval or sends the case to manual handling |
+| **PayPal: refund** | Payments v2 capture refund with `PayPal-Request-Id` and `custom_id` | One operation ID per approved assessment, capture and amount; read-back before "refunded" |
+| **PayPal: webhooks** | `PAYMENT.CAPTURE.REFUNDED` with signature verification | Verified by PayPal's API, then confirmed by read-back; replays are no-ops |
+
+## What was measured
+
+| Check | Result | Record |
+|---|---|---|
+| Real sandbox lost-response recovery | One 20.00 USD refund, acknowledgement deliberately lost, settled by a genuine verified webhook; the replay changed nothing | [Webhook results](docs/WEBHOOK-RESULTS.md) |
+| Real sandbox idempotent retry | Two experiments: the same request ID returned the same refund both times | [Merchant runbook](docs/vismaya/RUNBOOK.md) |
+| Unified workspace with a real model | Five labels and one brief in one session: three uncertain labels left unresolved, one excluded, one matched and refunded through the recovery path (fake payments) | [Live workspace](docs/rajiv/LIVE-WORKSPACE.md) |
+| Label reading on 12 synthetic images | 24 of 24 fields agreed with authored references | [Evaluation results](docs/rajiv/EVALUATION-RESULTS.md) |
+| One participant, typed versus AI-assisted | Median 8.03 s typed, 4.88 s assisted; two of twelve cases were slower with AI | [Evaluation results](docs/rajiv/EVALUATION-RESULTS.md) |
+| Merchant brief on 14 invented cases, 4 with prompt injection | 12 of 14 model drafts passed the checker; 2 were replaced by the template | [Merchant runbook](docs/vismaya/RUNBOOK.md) |
+| Automated tests, 12 November 2026, macOS | 173 customer-side, 169 merchant-side, 3 contract, 19 UI: all passed | [Development guide](docs/DEVELOPMENT.md) |
+
+## How it is built
+
+```mermaid
+flowchart LR
+  B[Browser<br>one workspace] --> G[Loopback gateway<br>allowlisted routes]
+  G --> E[Evidence service<br>label reading, campaign rules]
+  G --> R[Resolution service<br>review, approval, refunds]
+  E -- assessment over HTTP --> R
+  E -. image .-> M[(Model provider)]
+  R -. case records .-> M
+  R -- refund, read-back, webhook verify --> P[(PayPal sandbox)]
+  E --- ES[(SQLite)]
+  R --- RS[(SQLite)]
 ```
 
-- Rajiv: [start here](docs/START-RAJIV.md), branch `work/rajiv-evidence`.
-- Vismaya: [start here](docs/START-VISMAYA.md), branch `work/vismaya-resolution`.
-- [Task split](docs/TASKS.md) · [API contract](contracts/README.md) · [Ownership](AGENTS.md) · [Scope](docs/SCOPE.md)
+Two Python services with separate stores and dependencies, joined by a [frozen JSON contract](contracts/README.md). Standard-library HTTP servers, SQLite, plain HTML, CSS and JavaScript; no framework and no build step.
 
-Try the fixtures (mock responses echo scenario data, not AI or live decisions):
+## Limits
 
-```sh
-curl -s http://127.0.0.1:8101/health
-curl -s -X POST http://127.0.0.1:8101/v1/assessments -H 'Content-Type: application/json' --data-binary @contracts/fixtures/assessment-request.json
-curl -s -X POST http://127.0.0.1:8102/v1/resolutions -H 'Content-Type: application/json' --data-binary @contracts/fixtures/resolution-request.json
-```
+- Synthetic labels, one fictional brand, one approved refund campaign, one order, USD.
+- Temporary storage, no login, loopback only. Not deployed.
+- The evaluation used one internal participant and images already seen during development. It supports no general accuracy or time-saving claim, and no merchant has used the product.
+- One lost-response exercise and one replay do not establish an exactly-once guarantee.
+- The unified workspace has not yet been run against the real PayPal sandbox; the sandbox adapter it starts was exercised separately, as recorded above.
+- A label photo is not proof of ownership, authenticity or safety. "Outside this campaign" is not a safety finding.
 
-Use `X-Mock-Scenario: missing` or `excluded` for evidence; `manual`, `pending`, or `failed` for resolution. These are mock-only headers, not production API inputs. Inspect response headers for `X-RecallRelay-Mode: mock`.
+## More
 
-## Verify the implementation
+[Documentation index](docs/README.md) · [Submission summary](docs/rajiv/SUBMISSION.md) · [Development guide and tests](docs/DEVELOPMENT.md) · [API contract](contracts/README.md)
 
-```sh
-evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s tests -v
-RECALLRELAY_RESOLUTION_SOURCE="$PWD" evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -v
-evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s resolution/tests -v
-node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js evidence/tests/test_workspace_web.js
-```
+## License
 
-On Windows, use `.\evidence\.venv\Scripts\python.exe` for the Python executable and set `$env:RECALLRELAY_RESOLUTION_SOURCE = (Get-Location).Path` before the evidence suite. Tests use synthetic fixtures, local stubs or fake/disabled payments. CI and the dated verification records identify the exact platform, commit and scope; passing these checks does not establish general AI accuracy, user savings or production readiness.
-
-## Evidence and remaining acceptance
-
-- Customer label review, mock pilot and separate real-provider human timing: [evaluation results](docs/rajiv/EVALUATION-RESULTS.md). These are familiar synthetic development inputs, not a validated holdout or causal time-saving study.
-- Merchant model evaluation and real PayPal sandbox experiments: [resolution runbook](docs/vismaya/RUNBOOK.md). Historical provider runs are separate from the default fake-payment launcher.
-- Integration, merchant hardening and Windows maintenance are merged through [PR #36](https://github.com/RajivRanganath/recallrelay/pull/36) and [PR #35](https://github.com/RajivRanganath/recallrelay/pull/35). Issues #1–#4 and #6–#9 are closed; [#5](https://github.com/RajivRanganath/recallrelay/issues/5) and [#10](https://github.com/RajivRanganath/recallrelay/issues/10) remain open for the deferred recording. [Combined recording outline](docs/rajiv/FINAL-DEMO.md).
-- [PR #39](https://github.com/RajivRanganath/recallrelay/pull/39) delivers the unified frontend and restricted local gateway; [PR #40](https://github.com/RajivRanganath/recallrelay/pull/40) updates these shared startup instructions. Local checks passed 168 evidence/integration and 16 UI tests, plus 12 fixture cases / 60 checks. Consult the PRs for current review, merge and Windows CI status.
-- One real PayPal **sandbox** webhook recovery and replay exercise passed on 12 November 2026: one simulated 20.00 USD refund, two verified deliveries, matching provider read-back and customer status. The temporary registration was deleted and the tunnel stopped. [Measured results and limits](docs/WEBHOOK-RESULTS.md).
-- Public access is disabled. A future external exercise requires a new scoped approval under the [prerequisites and approval boundary](docs/WEBHOOK-VERIFICATION.md). This single result does not establish production readiness or an exactly-once guarantee.
-
-## Product boundary
-
-One fictional US-selling brand, one approved refund campaign, USD, original PayPal captures within the supported refund window. Older or ambiguous cases stay unresolved. A label image is not proof of authenticity, ownership, disposal or safety. No claim of fraud detection or guaranteed recall compliance.
-
-This repository starts private. Making it public, deploying it or entering a hackathon is a separate action. Secrets and customer data must never be committed.
+[MIT](LICENSE)
