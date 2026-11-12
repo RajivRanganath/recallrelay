@@ -1,4 +1,4 @@
-name: Evidence lane
+name: Evidence service
 on:
   push:
     paths: ['evidence/**', 'contracts/**', 'requirements-dev.txt', '.github/workflows/evidence.yml']

@@ -1,4 +1,4 @@
-name: Resolution lane
+name: Resolution service
 on:
   push:
     paths: ['resolution/**', 'contracts/**', 'requirements-dev.txt', '.github/workflows/resolution.yml']
