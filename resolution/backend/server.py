@@ -65,7 +65,7 @@ def public_host_name(value):
 
 def make_server(port=8102, db_path=None, adapter=None, brief=None, webhook_id=None,
                 public_host=None, public_window_seconds=1800, receive_seconds=RECEIVE_SECONDS, max_connections=MAX_CONNECTIONS):
-    """`public_host` is for a temporary, explicitly approved sandbox webhook test (docs/vismaya/WEBHOOK-EXCEPTION.md).
+    """`public_host` is for a temporary, explicitly approved sandbox webhook test (docs/resolution/WEBHOOK-EXCEPTION.md).
 
     Requests whose Host header equals it may reach ONLY `POST /v1/paypal/webhook`, and only until the window
     closes; everything else on that host is refused before any handler runs. Without it, any non-loopback
@@ -302,7 +302,7 @@ if __name__ == '__main__':
                         help='sandbox sends real refunds to the PayPal SANDBOX only; fake never leaves this process')
     parser.add_argument('--paypal-env', help='Existing env file holding PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET (read, never executed)')
     parser.add_argument('--paypal-webhook-id', help='Turns on POST /v1/paypal/webhook for events of this PayPal sandbox webhook (needs --paypal sandbox)')
-    parser.add_argument('--paypal-webhook-public-host', help='TEMPORARY, approved sandbox test only (docs/vismaya/WEBHOOK-EXCEPTION.md): the one public DNS name '
+    parser.add_argument('--paypal-webhook-public-host', help='TEMPORARY, approved sandbox test only (docs/resolution/WEBHOOK-EXCEPTION.md): the one public DNS name '
                         'of a tunnel. That host can reach only POST /v1/paypal/webhook, for a limited window. Needs --paypal sandbox and --paypal-webhook-id')
     parser.add_argument('--paypal-webhook-window-minutes', type=int, default=30,
                         help='How long the public host is served after startup (1-120, default 30)')

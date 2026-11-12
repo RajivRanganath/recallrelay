@@ -53,7 +53,7 @@ Most refund flows are written for the case where everything is read correctly an
 ### What was measured
 
 - One real PayPal sandbox exercise on 12 November 2026: one simulated 20.00 USD refund, acknowledgement deliberately lost, two genuine verified webhook deliveries (original and replay), matching provider read-back and customer status. [Record](../WEBHOOK-RESULTS.md).
-- Two real sandbox retry experiments on 9 November 2026: the same request ID returned the same refund both times. [Merchant runbook](../vismaya/RUNBOOK.md).
+- Two real sandbox retry experiments on 9 November 2026: the same request ID returned the same refund both times. [Merchant runbook](../resolution/RUNBOOK.md).
 - Label reading through a real model on twelve synthetic development images: 24 of 24 fields agreed with authored references; one internal participant's median completion time was 4.88 s with AI assistance and 8.03 s typed, with two of twelve cases slower with AI. [Results and limits](EVALUATION-RESULTS.md).
 - Merchant brief on fourteen invented cases, including four prompt-injection cases: 12 of 14 model drafts passed the checker in the last run; the other two were replaced by the template.
 - Automated checks on 12 November 2026: 173 customer-side, 169 merchant-side, 3 contract and 19 UI tests passed on macOS.

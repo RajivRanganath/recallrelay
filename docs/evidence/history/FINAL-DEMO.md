@@ -45,7 +45,7 @@ On 12 November 2026, source `521393a` ran on two ephemeral loopback ports. The b
 
 ## Provider material and recording handoff
 
-- Existing [evaluation results](../EVALUATION-RESULTS.md) and the [merchant runbook](../../vismaya/RUNBOOK.md) record separate provider experiments and their limits. Do not label this default walkthrough live AI or PayPal sandbox.
+- Existing [evaluation results](../EVALUATION-RESULTS.md) and the [merchant runbook](../../resolution/RUNBOOK.md) record separate provider experiments and their limits. Do not label this default walkthrough live AI or PayPal sandbox.
 - The separately approved real sandbox webhook exercise and cleanup are recorded in [the measured result](../../WEBHOOK-RESULTS.md). The public access exception is over; a future exercise needs new scoped approval.
 - Preserve the visible modes, same-case linkage, rejection example and final customer status. Keep credentials, dashboard account details and env files off screen.
 - Save the final recording with its commit, modes, actual duration and retries. Recording and submission remain unperformed until an actual artifact and destination are supplied. Public release or submission is a separate action.

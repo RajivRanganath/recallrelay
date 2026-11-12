@@ -2,20 +2,20 @@
 
 For contributors. Judges and first-time readers should start with the [README](../README.md).
 
-## Two lanes, one contract
+## Two services, one contract
 
-RecallRelay is two services owned by two people, joined by a frozen HTTP contract. Neither service imports the other's code or opens its database.
+RecallRelay is one project made of two services joined by a fixed HTTP contract. Neither service imports the other's code or opens its database, so each can be run, tested and replaced on its own.
 
-| Contributor | Feature | AI | Backend | UI |
+| Service | Side | AI | Backend | UI |
 |---|---|---|---|---|
-| [Rajiv](https://github.com/RajivRanganath) | Customer evidence and eligibility (`evidence/`) | Label extraction and targeted clarification | Evidence storage, campaign rule checks, assessment API, unified workspace gateway | Customer upload, confirmation and status; unified workspace |
-| [Vismaya](https://github.com/VismayaM2005) | Merchant decision and settlement (`resolution/`) | Evidence-grounded case briefs | Case lifecycle, approval, PayPal refund adapter, webhook receiver | Merchant review, approval and refund status |
+| `evidence/` | Customer evidence and eligibility | Label extraction and targeted clarification | Evidence storage, campaign rule checks, assessment API, unified workspace gateway | Label upload, confirmation and status; the unified workspace |
+| `resolution/` | Merchant decision and settlement | Evidence-grounded case briefs | Case lifecycle, approval, PayPal refund adapter, webhook receiver | Merchant review, approval and refund status |
 
-Each person owns tests, evaluation and documentation for their feature. Collaboration rules are in [AGENTS.md](../AGENTS.md); the original task split and decisions are under [process/](process/).
+Built by [Rajiv](https://github.com/RajivRanganath) and [Vismaya](https://github.com/VismayaM2005). Working rules are in [AGENTS.md](../AGENTS.md).
 
 - API contract, schemas and fixtures: [contracts/](../contracts/README.md)
-- Customer lane: [evidence/README.md](../evidence/README.md), [runbook](rajiv/RUNBOOK.md)
-- Merchant lane: [resolution/README.md](../resolution/README.md), [runbook](vismaya/RUNBOOK.md)
+- Customer side: [evidence/README.md](../evidence/README.md), [runbook](evidence/RUNBOOK.md)
+- Merchant side: [resolution/README.md](../resolution/README.md), [runbook](resolution/RUNBOOK.md)
 
 ## Run the tests
 
@@ -32,7 +32,7 @@ On Windows, use `.\evidence\.venv\Scripts\python.exe` and set `$env:RECALLRELAY_
 
 ## Contract mocks
 
-Each lane can be developed against a mock of the other. Python 3.11 is enough; no keys.
+Each service can be developed against a mock of the other. Python 3.11 is enough; no keys.
 
 ```sh
 python3 scripts/mock_server.py evidence --port 8101
@@ -52,7 +52,8 @@ Use `X-Mock-Scenario: missing` or `excluded` for evidence; `manual`, `pending` o
 Dated records are kept as written, including failures and corrections.
 
 - Integration, merchant hardening and Windows maintenance: [PR #35](https://github.com/RajivRanganath/recallrelay/pull/35), [PR #36](https://github.com/RajivRanganath/recallrelay/pull/36)
-- Unified workspace: [PR #39](https://github.com/RajivRanganath/recallrelay/pull/39), [PR #40](https://github.com/RajivRanganath/recallrelay/pull/40), [guide](rajiv/UNIFIED-WORKSPACE.md)
-- Customer-lane records (reviews, integration checks, evaluation method, Windows checks): [rajiv/history/](rajiv/history/)
-- Merchant-lane records: [vismaya/](vismaya/)
+- Unified workspace: [PR #39](https://github.com/RajivRanganath/recallrelay/pull/39), [PR #40](https://github.com/RajivRanganath/recallrelay/pull/40), [guide](evidence/UNIFIED-WORKSPACE.md)
+- Customer-side records (reviews, integration checks, evaluation method, Windows checks): [evidence/history/](evidence/history/)
+- Merchant-side records: [resolution/](resolution/)
+- Planning notes from development: [process/](process/)
 - Webhook approval boundary: [WEBHOOK-VERIFICATION.md](WEBHOOK-VERIFICATION.md)

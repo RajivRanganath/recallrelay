@@ -1,4 +1,4 @@
-# Rajiv's evidence runbook
+# Evidence service runbook
 
 ## Current delivery: 12 November 2026
 
@@ -114,7 +114,7 @@ The full-lane review also fixed six accepted ambiguous inbound-header variants, 
 
 Final source-only export verification: 83 evidence tests with ResourceWarnings treated as errors, 4 dependency-free Node UI state tests, 3 shared contract tests, the unchanged 1-test resolution starter suite, and 12 fixture cases / 60 policy checks all passed. JavaScript syntax, dependency consistency, and whitespace checks passed. The export reused the installed pinned interpreter; no fresh dependency install or hosted CI run is claimed. The actual browser check covered sample/confirmation, edit invalidation, missing-batch clarification, and visible dependency failure in mock mode. The asynchronous configuration regressions use DOM doubles. No new live AI calls were made and existing provider reports are unchanged.
 
-Run the added UI checks with `node --test evidence/tests/test_web.js`; evidence CI now includes this command. This feature-branch checkpoint changes only `evidence/**`, `docs/rajiv/**`, and the owned `.github/workflows/evidence.yml`; Git records its commit and publication status. The previous 80-test gateway verification below records the stage before this critical follow-up.
+Run the added UI checks with `node --test evidence/tests/test_web.js`; evidence CI now includes this command. This feature-branch checkpoint changes only `evidence/**`, `docs/evidence/**`, and the owned `.github/workflows/evidence.yml`; Git records its commit and publication status. The previous 80-test gateway verification below records the stage before this critical follow-up.
 
 ## Earlier continuation: AI gateway response validation
 
@@ -124,7 +124,7 @@ Before changing the client, the new regression reproduced seven accepted malform
 
 Final continuation verification on Python 3.11.16: all 80 evidence tests passed with ResourceWarnings treated as errors; 3 shared contract tests and 12 fixture cases / 60 policy checks passed. Dependency consistency, JavaScript syntax, and whitespace checks passed. The initial shared-test attempt could not bind its mock socket in the read-only sandbox; it passed after rerunning with loopback access. Temporary storage and loopback tests required access beyond that sandbox.
 
-The full continuation changes only `evidence/**`, `docs/rajiv/**`, and the owned `.github/workflows/evidence.yml`. The resolution branch still points to the scaffold, so actual merchant-service integration, independently reviewed holdout evaluation, and the recorded demo remain pending. No public deployment, merchant message, payment, contract change, or other-lane edit occurred.
+The full continuation changes only `evidence/**`, `docs/evidence/**`, and the owned `.github/workflows/evidence.yml`. The resolution branch still points to the scaffold, so actual merchant-service integration, independently reviewed holdout evaluation, and the recorded demo remain pending. No public deployment, merchant message, payment, contract change, or other-lane edit occurred.
 
 Run the focused checks:
 
@@ -204,4 +204,4 @@ To repeat live calls, use the command in [evaluation instructions](../../evidenc
 
 Task 1 has a live image adapter and limited synthetic development evidence, including one instruction-bearing image; independently reviewed holdout and broader injection evaluation remain unfinished. Task 2 still lacks authentication and private real-data image storage. Task 3 remains synthetic; browser validation is bounded as described above. Task 4 still needs reviewed labels, holdout results, and a human study if making completion/savings claims. Task 5 still needs actual resolution-service integration, the daily integration check, and the recorded demo. None of the five full tasks is claimed complete.
 
-Eligibility remains deterministic after human confirmation. Payment decisions, merchant approval, and resolution storage remain Vismaya's responsibility. No messages or calendar events were sent. Feature edits stay within `evidence/**` and `docs/rajiv/**`; contracts, mocks, root dependencies/docs, shared CI, and Vismaya's lane are unchanged.
+Eligibility remains deterministic after human confirmation. Payment decisions, merchant approval, and resolution storage remain Vismaya's responsibility. No messages or calendar events were sent. Feature edits stay within `evidence/**` and `docs/evidence/**`; contracts, mocks, root dependencies/docs, shared CI, and Vismaya's lane are unchanged.

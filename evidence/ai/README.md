@@ -6,7 +6,7 @@ The opt-in `OmniRouteExtractor` uses the existing local gateway at `http://127.0
 
 ## Output and failure boundary
 
-The lane-local schema requires exactly model and batch, each with value, confidence, and uncertain. Extra approval/tool fields, malformed JSON, duplicate keys, non-finite confidence, refusals, tool calls, and incomplete generation are rejected. Missing/uncertain/ambiguous/below-threshold values stay blank with one clarification. The 0.85 threshold and model confidence are uncalibrated.
+The service's own schema requires exactly model and batch, each with value, confidence, and uncertain. Extra approval/tool fields, malformed JSON, duplicate keys, non-finite confidence, refusals, tool calls, and incomplete generation are rejected. Missing/uncertain/ambiguous/below-threshold values stay blank with one clarification. The 0.85 threshold and model confidence are uncalibrated.
 
 Live calls use inline image bytes, a versioned instruction to treat image text as data, JSON output, temperature 0, a 2048-token output request, and reasoning disabled where supported. No tools or client retries are supplied. One supervised spawned worker handles each call; at most two calls run per adapter. The parent waits at most 20 seconds for a result, then terminates and reaps the worker. Local termination does not cancel accepted upstream work or guarantee billing cancellation. Responses are limited to 64 KiB; redirects, partial HTTP success, wrong content types, and inconsistent framing fail closed.
 
@@ -18,4 +18,4 @@ Successful proposals record the requested and served model IDs, prompt version, 
 
 Before sending images, disable request/response payload logging for the gateway key using its `no_log` setting. This is separate from RecallRelay's own no-body logging. The reused local key has that setting enabled; a startup environment attempt alone did not take effect in the observed session. Verify the gateway summaries contain no payload artifacts. Upstream provider retention is outside this application's control.
 
-See [setup](../README.md), [evaluation scope](../evals/README.md), and [Rajiv's checkpoint](../../docs/rajiv/RUNBOOK.md).
+See [setup](../README.md), [evaluation scope](../evals/README.md), and [the runbook](../../docs/evidence/RUNBOOK.md).

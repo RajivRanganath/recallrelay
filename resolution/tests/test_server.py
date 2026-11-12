@@ -68,7 +68,7 @@ class ServerTests(unittest.TestCase):
     def test_case_detail_keeps_the_shape_the_evidence_handoff_recovery_reads(self):
         # The evidence service (handoff_if_needed) compares these exact fields to decide whether a lost
         # acknowledgement already reached this service. Changing them breaks that recovery; see
-        # docs/vismaya/INTEGRATION-DEPENDENCIES.md.
+        # docs/resolution/INTEGRATION-DEPENDENCIES.md.
         sent = copy.deepcopy(FIXTURE)
         sent['remedy_conditions_met'] = False
         self.call('POST', '/v1/resolutions', sent)

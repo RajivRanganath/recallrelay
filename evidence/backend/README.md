@@ -1,6 +1,6 @@
 # Evidence backend
 
-Run from the repository root with `python -m evidence.backend.server` after installing `evidence/requirements.lock.txt` in your lane environment. See [the evidence README](../README.md) for setup and limits.
+Run from the repository root with `python -m evidence.backend.server` after installing `evidence/requirements.lock.txt` in the `evidence/.venv` environment. See [the evidence README](../README.md) for setup and limits.
 
 - `validation.py`: frozen schemas and confirmed-field validation; no remote schema fetching.
 - `images.py`: PNG/JPEG integrity and pixel decoding, format/dimension/size/animation limits.

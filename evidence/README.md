@@ -1,4 +1,4 @@
-# Rajiv's evidence lane — fixture and opt-in OmniRoute extraction
+# Evidence service: label reading and campaign assessment
 
 Runnable synthetic customer flow with **mock fixture proposals or opt-in OmniRoute image proposals**, **manual confirmed-text assessment**, SQLite assessment history and a read-only resolution HTTP client. Default mode remains mock. Customer authentication, merchant handoff, payment execution and deployment are not implemented.
 
@@ -6,7 +6,7 @@ All code, runtime dependencies, storage and UI belong to `evidence/`. The frozen
 
 ## Rehearse the customer demo
 
-After installing the evidence lock file, run `evidence/.venv/bin/python -B -m evidence.demo`. This starts the real customer app with mock extraction, the committed resolution mock and a fresh temporary evidence database. Open the printed loopback URL; Ctrl+C stops the owned servers and removes the temporary state. Existing provider/resolution environment variables do not select a live adapter. Use `--resolution-url http://127.0.0.1:8102` only to read an already-running local service; it remains externally owned and no case is created by the launcher. See [the 75-second demo outline](../docs/rajiv/history/DEMO.md).
+After installing the evidence lock file, run `evidence/.venv/bin/python -B -m evidence.demo`. This starts the real customer app with mock extraction, the committed resolution mock and a fresh temporary evidence database. Open the printed loopback URL; Ctrl+C stops the owned servers and removes the temporary state. Existing provider/resolution environment variables do not select a live adapter. Use `--resolution-url http://127.0.0.1:8102` only to read an already-running local service; it remains externally owned and no case is created by the launcher. See [the 75-second demo outline](../docs/evidence/history/DEMO.md).
 
 ## Run locally
 
@@ -78,7 +78,7 @@ node --test evidence/tests/test_web.js
 git diff --check
 ```
 
-Direct runtime requirements live in `evidence/requirements.txt`; the tested transitive pins live in `evidence/requirements.lock.txt`. Evidence CI installs the lock and runs lane tests, the fixture-policy replay, and dependency-free Node UI state regressions. See [Rajiv's runbook](../docs/rajiv/RUNBOOK.md) for observed checks and remaining work. Passing fixture checks does not measure extraction accuracy, customer savings or payment behavior. The separately enabled actual-service smoke has the bounded scope documented below.
+Direct runtime requirements live in `evidence/requirements.txt`; the tested transitive pins live in `evidence/requirements.lock.txt`. Evidence CI installs the lock and runs the service tests, the fixture-policy replay, and dependency-free Node UI state regressions. See [the runbook](../docs/evidence/RUNBOOK.md) for observed checks and remaining work. Passing fixture checks does not measure extraction accuracy, customer savings or payment behavior. The separately enabled actual-service smoke has the bounded scope documented below.
 
 Customer-side HTTP integration smoke (temporary databases and loopback fixtures only):
 
@@ -86,9 +86,9 @@ Customer-side HTTP integration smoke (temporary databases and loopback fixtures 
 evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -p 'test_resolution*.py' -v
 ```
 
-This checks the unchanged resolution mock, all seven authored v1 status values, visible dependency failures, and manual assessment during those failures. Status reads do not create or change an evidence assessment. The mock merchant record remains separate from customer assessment; a synthetic `refunded` response is not payment evidence. Six additional actual-service checks require `RECALLRELAY_RESOLUTION_SOURCE`; otherwise they are explicitly skipped. Evidence CI enables them against a separate pinned resolution checkout. See [the actual-service integration runbook](../docs/rajiv/history/INTEGRATION.md) for reproduction, explicit coordinator handoff and review/status-only limits.
+This checks the unchanged resolution mock, all seven authored v1 status values, visible dependency failures, and manual assessment during those failures. Status reads do not create or change an evidence assessment. The mock merchant record remains separate from customer assessment; a synthetic `refunded` response is not payment evidence. Six additional actual-service checks require `RECALLRELAY_RESOLUTION_SOURCE`; otherwise they are explicitly skipped. Evidence CI enables them against a separate pinned resolution checkout. See [the actual-service integration runbook](../docs/evidence/history/INTEGRATION.md) for reproduction, explicit coordinator handoff and review/status-only limits.
 
-The fixture dataset has 12 fictional label variants. Its 60 replay checks validate adapter/uncertainty/confirmation plumbing and the authored typed-entry baseline, not image recognition or human completion. See [evaluation scope](evals/README.md) and [critical review](../docs/rajiv/history/REVIEW.md).
+The fixture dataset has 12 fictional label variants. Its 60 replay checks validate adapter/uncertainty/confirmation plumbing and the authored typed-entry baseline, not image recognition or human completion. See [evaluation scope](evals/README.md) and [critical review](../docs/evidence/history/REVIEW.md).
 
 ## Observed provider development check
 

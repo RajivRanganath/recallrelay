@@ -31,7 +31,7 @@ Unreadable identifiers stay unresolved; excluded batches stay excluded. The merc
 
 ## Implementation boundary
 
-The workspace is served by an evidence-owned, loopback-only gateway that calls the existing customer and merchant APIs over HTTP. It has no application database and never imports merchant code. Services retain their own SQLite stores, dependency files and frozen v1 payloads. Standalone lane UIs remain usable for development; the integrated user journey uses one URL and a new shared frontend, not embedded copies of those pages.
+The workspace is served by an evidence-owned, loopback-only gateway that calls the existing customer and merchant APIs over HTTP. It has no application database and never imports merchant code. Services retain their own SQLite stores, dependency files and frozen v1 payloads. Standalone service UIs remain usable for development; the integrated user journey uses one URL and a new shared frontend, not embedded copies of those pages.
 
 The gateway forwards only explicit allowlisted JSON routes to fixed loopback origins. It rejects foreign/duplicate Host or Origin, transfer encoding, duplicate/oversized body framing and incomplete intake. No arbitrary proxy target, merchant fixture seeder or PayPal webhook route is exposed through it. Secrets, cookies and browser authorization headers are not forwarded. This is a local prototype, without login or production deployment.
 
