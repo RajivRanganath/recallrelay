@@ -1,0 +1,125 @@
+'use strict';
+const assert = require('node:assert/strict');
+const {readFileSync} = require('node:fs');
+const path = require('node:path');
+const test = require('node:test');
+const vm = require('node:vm');
+const source = readFileSync(path.join(__dirname, '../workspace/app.js'), 'utf8');
+const turn = () => new Promise(setImmediate);
+const ok = (data) => ({ok: true, status: 200, json: async () => structuredClone(data)});
+const missing = () => ({ok: false, status: 404, json: async () => ({error: 'Not found'})});
+function detail(status = 'awaiting_approval') {
+  return {
+    resolution: {case_id: 'case-demo-1', status, mode: 'mock', brief: 'Synthetic record', proposed_amount_minor: 4000, operation_id: null, refund_id: null},
+    assessment: {assessment_id: 'saved-1', decision: 'eligible', model: 'LAMP-100', batch: 'B101', reason: 'Matched', evidence: []},
+    order: {order_id: 'order-demo-1', paid_minor: 4000, previously_refunded_minor: 0, age_days: 30, quantity: 1},
+    binding: {assessment_id: 'saved-1', campaign_version: 1, capture_id: 'capture-demo-NOT-PAYPAL', amount_minor: 4000, currency: 'USD'},
+    remedy_conditions_met: status !== 'manual_required'
+  };
+}
+// DOM doubles cover state transitions; actual browser QA is recorded separately.
+async function app(initial = detail(), handlers = {}) {
+  const elements = new Map();
+  const node = () => ({value: '', checked: false, disabled: false, hidden: true, textContent: '', listeners: {},
+    attrs: {}, classes: new Set(), children: [],
+    classList: {toggle() {}},
+    addEventListener(name, work) { this.listeners[name] = work; },
+    setAttribute(name, value) { this.attrs[name] = value; }, removeAttribute(name) { delete this.attrs[name]; },
+    replaceChildren(...children) { this.children = children; }, focus() {}});
+  const element = (id) => { if (!elements.has(id)) elements.set(id, node()); return elements.get(id); };
+  const calls = [];
+  const events = {};
+  let hash = '#review';
+  const location = {get hash() { return hash; }, set hash(value) { hash = value.startsWith('#') ? value : '#' + value; }};
+  let current = initial;
+  const context = vm.createContext({
+    document: {getElementById: element, createElement: node, querySelectorAll: () => [...elements.values()], hidden: false},
+    window: {addEventListener(name, work) { events[name] = work; }}, location,
+    AbortSignal: {timeout() {}}, setInterval(work) { events.interval = work; }, URL,
+    fetch: async (url, options) => {
+      calls.push({url, method: options.method, body: options.body && JSON.parse(options.body)});
+      if (handlers[url]) return handlers[url](options, () => current, (value) => { current = value; });
+      if (url === '/api/customer/health') return ok({handoff_enabled: true, extraction_mode: 'mock'});
+      if (url === '/api/merchant/health') return ok({mode: 'mock', brief: 'template'});
+      if (url === '/api/customer/v1/assessments/case-demo-1') return current ? ok(current.assessment) : missing();
+      if (url === '/api/merchant/v1/cases/case-demo-1') return current ? ok(current) : missing();
+      if (url === '/api/customer/demo/resolution-status') return current ? ok(current.resolution) : missing();
+      throw new Error('Unexpected request: ' + url);
+    }
+  });
+  vm.runInContext(source, context);
+  await turn(); await turn();
+  return {element, calls, events, location, setDetail(value) { current = value; }};
+}
+test('restores the submitted case without posting or selecting a second app', async () => {
+  const ui = await app();
+  assert.equal(ui.element('view-review').hidden, false);
+  assert.equal(ui.element('review-content').hidden, false);
+  assert.equal(ui.element('send-review').disabled, true);
+  assert.ok(ui.calls.every((call) => call.method === 'GET' && call.url.startsWith('/api/')));
+  assert.match(ui.element('customer-status').textContent, /Same case, operation and refund/);
+});
+test('an identifier edit invalidates confirmation and prevents handoff', async () => {
+  const ui = await app();
+  ui.element('batch').listeners.input();
+  assert.equal(ui.element('confirmed').checked, false);
+  assert.equal(ui.element('assessment-result').hidden, true);
+  assert.equal(ui.element('send-review').disabled, true);
+  await ui.element('send-review').listeners.click();
+  assert.equal(ui.calls.some((call) => call.method === 'POST'), false);
+});
+test('wrong typed amount sends no approval; exact amount binds saved assessment', async () => {
+  const ui = await app(detail(), {'/api/merchant/v1/cases/case-demo-1/approve': (_options, get, set) => {
+    const done = structuredClone(get()); done.resolution.status = 'refunded';
+    done.resolution.operation_id = 'op-1'; done.resolution.refund_id = 'fake-1'; set(done);
+    return ok(done.resolution);
+  }});
+  ui.element('typed-amount').value = '39.99'; ui.element('approver').value = 'Synthetic reviewer';
+  await ui.element('approval-form').listeners.submit({preventDefault() {}});
+  await turn(); await turn();
+  assert.equal(ui.calls.some((call) => call.method === 'POST'), false);
+  assert.match(ui.element('review-message').textContent, /exact refund amount/);
+  ui.element('typed-amount').value = '40.00';
+  await ui.element('approval-form').listeners.submit({preventDefault() {}});
+  await turn(); await turn();
+  assert.deepEqual(ui.calls.filter((call) => call.method === 'POST'), [{
+    url: '/api/merchant/v1/cases/case-demo-1/approve', method: 'POST', body: {
+      assessment_id: 'saved-1', campaign_version: 1, capture_id: 'capture-demo-NOT-PAYPAL', amount_minor: 4000, approved_by: 'Synthetic reviewer'
+    }
+  }]);
+  assert.equal(ui.location.hash, '#status');
+  assert.equal(ui.element('outcome-title').textContent, 'Refunded');
+});
+test('navigation and pending polling only read; reconciliation remains explicit', async () => {
+  const ui = await app(detail('pending'));
+  ui.location.hash = '#status'; ui.events.hashchange();
+  await turn(); await turn();
+  ui.events.interval(); await turn(); await turn();
+  assert.equal(ui.calls.some((call) => call.method === 'POST'), false);
+  assert.equal(ui.element('reconcile').hidden, false);
+  assert.equal(ui.element('approval').hidden, true);
+});
+test('a remedy change invalidates the previously generated brief', async () => {
+  const ui = await app(detail('manual_required'), {
+    '/api/merchant/v1/cases/case-demo-1/brief': () => ok({label: 'Template', text: 'Conditions missing', missing_steps: [], citations: ['review']}),
+    '/api/merchant/v1/cases/case-demo-1/remedy-conditions': (_options, _get, set) => { set(detail()); return ok({}); }
+  });
+  await ui.element('write-brief').listeners.click();
+  assert.equal(ui.element('brief-result').hidden, false);
+  await ui.element('confirm-remedy').listeners.click();
+  assert.equal(ui.element('brief-result').hidden, true);
+  assert.equal(ui.element('approval').hidden, false);
+});
+test('lost approval response reads the accepted operation without automatic retry', async () => {
+  const ui = await app(detail(), {'/api/merchant/v1/cases/case-demo-1/approve': (_options, get, set) => {
+    const pending = structuredClone(get()); pending.resolution.status = 'pending'; pending.resolution.operation_id = 'op-1'; set(pending);
+    throw new Error('Response lost; refresh status');
+  }});
+  ui.element('typed-amount').value = '40.00'; ui.element('approver').value = 'Synthetic reviewer';
+  await ui.element('approval-form').listeners.submit({preventDefault() {}});
+  await turn(); await turn();
+  assert.equal(ui.calls.filter((call) => call.method === 'POST').length, 1);
+  assert.equal(ui.element('approval').hidden, true);
+  assert.equal(ui.element('outcome-title').textContent, 'Refund pending');
+  assert.match(ui.element('review-message').textContent, /Response lost/);
+});

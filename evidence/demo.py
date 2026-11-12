@@ -18,6 +18,7 @@ class DemoSession:
     resolution_url: str
     resolution_source: str
     state_directory: Path = field(repr=False)
+    application_url: str | None = None
 
 
 @contextmanager

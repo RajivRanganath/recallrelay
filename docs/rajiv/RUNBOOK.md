@@ -2,7 +2,9 @@
 
 ## Current delivery: 12 November 2026
 
-[HANDOVER-CHECKPOINT.md](HANDOVER-CHECKPOINT.md) is the current source and verification record. The handed-over source passed 161 evidence, 169 merchant, three shared and ten UI tests locally. The malformed-header regression is fixed in `521393a`, pushed after PR #34 merged, and still needs follow-up integration. [FINAL-DEMO.md](FINAL-DEMO.md) covers both halves using the same case; it is a recording script, not a video. Read-only sandbox access was verified. Public webhook delivery and a new sandbox refund remain unperformed and need separate approval.
+[UNIFIED-WORKSPACE.md](UNIFIED-WORKSPACE.md) describes the single-URL integration: one navigation for label check, merchant review and refund status, with the submitted case loaded automatically. Start `evidence/.venv/bin/python -B -m evidence.integrated --port 8101` and open the one printed RecallRelay URL. This is mock extraction, template briefs and fake payments. Internal services keep separate stores and communicate through HTTP.
+
+PRs #35, #36 and #38 are merged. The final merchant deadline correction is integrated, and one approved real sandbox webhook recovery/replay exercise and cleanup completed on 12 November; see [the measured result](../WEBHOOK-RESULTS.md). Public access is closed. [HANDOVER-CHECKPOINT.md](HANDOVER-CHECKPOINT.md) preserves the earlier pre-exercise source/tests. [FINAL-DEMO.md](FINAL-DEMO.md) is a recording outline, not a video; use the unified workspace for the current navigation. Actual recording remains deferred.
 
 ## Historical integration checkpoint: 11 November 2026
 
