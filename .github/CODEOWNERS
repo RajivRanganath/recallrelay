@@ -1,9 +1,2 @@
-# Informational routing; private-repo enforcement depends on GitHub plan/settings.
+# Both contributors review every change.
 * @RajivRanganath @VismayaM2005
-/evidence/ @RajivRanganath
-/docs/evidence/ @RajivRanganath
-/.github/workflows/evidence.yml @RajivRanganath
-/resolution/ @VismayaM2005
-/docs/resolution/ @VismayaM2005
-/.github/workflows/resolution.yml @VismayaM2005
-/contracts/ @RajivRanganath @VismayaM2005
