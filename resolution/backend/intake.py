@@ -3,7 +3,7 @@
 `socket.settimeout` limits each wait for data, not the whole request: a sender that trickles one byte every few
 seconds can hold a handler thread open indefinitely. These helpers add a total receive budget per request and a
 cap on simultaneous connections. They matter most while a temporary public host is enabled
-(docs/vismaya/WEBHOOK-EXCEPTION.md), and they apply to every connection.
+(docs/resolution/WEBHOOK-EXCEPTION.md), and they apply to every connection.
 """
 import io
 from http.server import ThreadingHTTPServer

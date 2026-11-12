@@ -1,6 +1,6 @@
 # Customer handoff dependency and duplicate-review handling
 
-The integrated customer app uses the merchant's existing `GET /v1/cases/{case_id}` endpoint to recover a lost handoff acknowledgement. This endpoint was introduced for the merchant UI and is **not part of the frozen v1 schemas**. Keep its current response compatible until both lanes coordinate a replacement. A future formal contract belongs in a dedicated shared contract PR; this note does not silently freeze or rename shared fields.
+The integrated customer app uses the merchant's existing `GET /v1/cases/{case_id}` endpoint to recover a lost handoff acknowledgement. This endpoint was introduced for the merchant UI and is **not part of the frozen v1 schemas**. Keep its current response compatible until both services coordinate a replacement. A future formal contract belongs in a dedicated shared contract PR; this note does not silently freeze or rename shared fields.
 
 The evidence client relies on:
 

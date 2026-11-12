@@ -1,4 +1,4 @@
-"""The temporary public host (docs/vismaya/WEBHOOK-EXCEPTION.md) may reach the webhook POST and nothing else."""
+"""The temporary public host (docs/resolution/WEBHOOK-EXCEPTION.md) may reach the webhook POST and nothing else."""
 import copy
 import http.client
 import json

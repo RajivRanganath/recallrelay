@@ -31,11 +31,11 @@ Unreadable identifiers stay unresolved; excluded batches stay excluded. The merc
 
 ## Implementation boundary
 
-The workspace is served by an evidence-owned, loopback-only gateway that calls the existing customer and merchant APIs over HTTP. It has no application database and never imports merchant code. Services retain their own SQLite stores, dependency files and frozen v1 payloads. Standalone lane UIs remain usable for development; the integrated user journey uses one URL and a new shared frontend, not embedded copies of those pages.
+The workspace is served by an evidence-owned, loopback-only gateway that calls the existing customer and merchant APIs over HTTP. It has no application database and never imports merchant code. Services retain their own SQLite stores, dependency files and frozen v1 payloads. Standalone service UIs remain usable for development; the integrated user journey uses one URL and a new shared frontend, not embedded copies of those pages.
 
 The gateway forwards only explicit allowlisted JSON routes to fixed loopback origins. It rejects foreign/duplicate Host or Origin, transfer encoding, duplicate/oversized body framing and incomplete intake. No arbitrary proxy target, merchant fixture seeder or PayPal webhook route is exposed through it. Secrets, cookies and browser authorization headers are not forwarded. This is a local prototype, without login or production deployment.
 
-All integrated modes remain explicit: mock extraction, template briefs, fake payments. The separate real sandbox delivery experiment in [the measured webhook record](../WEBHOOK-RESULTS.md) does not make this launcher a real-payment or publicly deployed app. No new provider call or paid service is required.
+The default launch stays mock extraction, template briefs and fake payments, with no credential or network call. The same workspace can also be started with real model calls and PayPal sandbox refunds; the screen reports whichever modes the services are actually running. See [the live workspace guide](LIVE-WORKSPACE.md). No live-money mode exists.
 
 ## Verification: 12 November 2026
 

@@ -16,7 +16,7 @@ Windows PowerShell:
 .\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0 --merchant-port 0
 ```
 
-For installation, follow [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md), then use [the unified workspace](UNIFIED-WORKSPACE.md). Open the one printed RecallRelay URL. The launcher creates fresh, separate temporary stores behind one application, mock fixture extraction, deterministic assessment, template briefs and **fake payments only**. It reads no PayPal credentials. Ctrl+C stops the workspace and both owned services and removes the rehearsal stores.
+For installation, follow [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md), then use [the unified workspace](../UNIFIED-WORKSPACE.md). Open the one printed RecallRelay URL. The launcher creates fresh, separate temporary stores behind one application, mock fixture extraction, deterministic assessment, template briefs and **fake payments only**. It reads no PayPal credentials. Ctrl+C stops the workspace and both owned services and removes the rehearsal stores.
 
 Use the workspace's **Send for merchant review** action. It opens the same case automatically. Keep case-demo-1, its saved assessment ID and the visible mode labels readable.
 
@@ -45,7 +45,7 @@ On 12 November 2026, source `521393a` ran on two ephemeral loopback ports. The b
 
 ## Provider material and recording handoff
 
-- Existing [evaluation results](EVALUATION-RESULTS.md) and the [merchant runbook](../vismaya/RUNBOOK.md) record separate provider experiments and their limits. Do not label this default walkthrough live AI or PayPal sandbox.
-- The separately approved real sandbox webhook exercise and cleanup are recorded in [the measured result](../WEBHOOK-RESULTS.md). The public access exception is over; a future exercise needs new scoped approval.
+- Existing [evaluation results](../EVALUATION-RESULTS.md) and the [merchant runbook](../../resolution/RUNBOOK.md) record separate provider experiments and their limits. Do not label this default walkthrough live AI or PayPal sandbox.
+- The separately approved real sandbox webhook exercise and cleanup are recorded in [the measured result](../../WEBHOOK-RESULTS.md). The public access exception is over; a future exercise needs new scoped approval.
 - Preserve the visible modes, same-case linkage, rejection example and final customer status. Keep credentials, dashboard account details and env files off screen.
 - Save the final recording with its commit, modes, actual duration and retries. Recording and submission remain unperformed until an actual artifact and destination are supplied. Public release or submission is a separate action.
