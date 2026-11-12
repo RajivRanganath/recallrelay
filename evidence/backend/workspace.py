@@ -24,8 +24,7 @@ ROUTES = {
 }
 
 
-def make_workspace(port, customer_url, merchant_url, session=None, public_host=None, on_reset=None):
-    """public_host opts this gateway, and only it, into serving one named host behind a TLS proxy; the two services stay on loopback."""
+def make_workspace(port, customer_url, merchant_url, session=None):
     upstreams = {name: urlsplit(local_origin(url)) for name, url in
                  (('customer', customer_url), ('merchant', merchant_url))}
 
@@ -71,12 +70,12 @@ def make_workspace(port, customer_url, merchant_url, session=None, public_host=N
                 self.reply(408, {'error': 'Request receive deadline exceeded'})
                 return False
             hosts = self.headers.get_all('Host', [])
-            if len(hosts) != 1 or (hosts[0] != public_host and hosts[0] not in {
-                    f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}):
+            if len(hosts) != 1 or hosts[0] not in {
+                    f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}:
                 self.reply(403, {'error': 'Loopback Host required'})
                 return False
             origins = self.headers.get_all('Origin', [])
-            if origins and origins != [f'https://{public_host}' if hosts[0] == public_host else f'http://{hosts[0]}']:
+            if origins and origins != [f'http://{hosts[0]}']:
                 self.reply(403, {'error': 'Cross-origin requests are disabled'})
                 return False
             return True
@@ -95,11 +94,6 @@ def make_workspace(port, customer_url, merchant_url, session=None, public_host=N
             return self.forward()
 
         def do_POST(self):
-            if self.path == '/api/session/reset' and on_reset:
-                # Hosted demo only: every visitor shares one fictional case, so anyone may start it again.
-                # ponytail: no cooldown; add one if resets are abused.
-                self.reply(200, {'reset': True})
-                return on_reset()
             return self.forward()
 
         def forward(self):
@@ -145,4 +139,4 @@ def make_workspace(port, customer_url, merchant_url, session=None, public_host=N
             finally:
                 connection.close()
 
-    return BoundedHTTPServer(('0.0.0.0' if public_host else '127.0.0.1', port), Handler, max_handlers=8, request_timeout=10)
+    return BoundedHTTPServer(('127.0.0.1', port), Handler, max_handlers=8, request_timeout=10)

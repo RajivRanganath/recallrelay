@@ -9,7 +9,6 @@ import json
 import os
 from pathlib import Path
 import queue
-import re
 import subprocess
 import sys
 import tempfile
@@ -131,7 +130,7 @@ def sandbox_order(path):
 
 @contextmanager
 def integrated_session(port=0, merchant_port=0, *, workspace_port=0, extraction_adapter=None,
-                       merchant_options=None, order=None, public_host=None, on_reset=None):
+                       merchant_options=None, order=None):
     for value in (port, merchant_port, workspace_port):
         if type(value) is not int or not 0 <= value <= 65535:
             raise ValueError('Ports must be integers from 0 to 65535')
@@ -139,10 +138,6 @@ def integrated_session(port=0, merchant_port=0, *, workspace_port=0, extraction_
     sandbox = options.get('paypal') == 'sandbox'
     if sandbox != (order is not None) or (order and order['capture_id'].startswith('capture-demo')):
         raise ValueError('PayPal sandbox refunds need a real sandbox capture, and only sandbox mode may use one')
-    if public_host is not None and (sandbox or extraction_adapter is not None or options.get('brief', 'template') != 'template'
-                                    or not re.fullmatch(r'[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?', public_host)):
-        # No login exists, so a public copy must never hold PayPal or model credentials.
-        raise ValueError('A public host serves the mock demo only and must be a plain lowercase host name')
     with ExitStack() as cleanup:
         folder = Path(cleanup.enter_context(tempfile.TemporaryDirectory(prefix='recallrelay-integrated-')))
         merchant = cleanup.enter_context(merchant_process(folder, merchant_port, options))
@@ -150,8 +145,7 @@ def integrated_session(port=0, merchant_port=0, *, workspace_port=0, extraction_
             port, folder / 'evidence.sqlite3', merchant, extraction_adapter, enable_handoff=True, order=order)))
         from evidence.backend.workspace import make_workspace
         workspace = cleanup.enter_context(running(make_workspace(workspace_port, customer, merchant, {
-            'lose_first_refund_response': bool(options.get('lose_first_refund_response'))}
-            | ({'hosted': True} if public_host else {}), public_host, on_reset)))
+            'lose_first_refund_response': bool(options.get('lose_first_refund_response'))})))
         source = 'actual local service / ' + ('PayPal sandbox refunds' if sandbox else 'fake payments')
         yield DemoSession(customer, merchant, source, folder, workspace)
 
@@ -175,13 +169,9 @@ def main():
                         help='Case file from "python -m resolution.sandbox.make_capture"; supplies the sandbox order and capture')
     parser.add_argument('--lose-first-refund-response', action='store_true',
                         help='Recovery demo: discard the first accepted refund acknowledgement so the case stays pending')
-    parser.add_argument('--public-host', help='Hosted mock demo: also accept this host name behind a TLS proxy, on all interfaces. '
-                                              'Mock label reading, template briefs and fake payments only')
     args = parser.parse_args()
     if (args.paypal == 'sandbox') != bool(args.sandbox_case) or (args.paypal_env and args.paypal != 'sandbox'):
         parser.error('--paypal sandbox needs --sandbox-case (and usually --paypal-env); neither is used with fake payments')
-    if args.public_host and (args.extractor != 'mock' or args.brief != 'template' or args.paypal != 'fake'):
-        parser.error('--public-host serves the mock demo only: no model or PayPal credentials on a public copy')
     if args.brief == 'gemini' and not args.gemini_model:
         parser.error('--brief gemini needs --gemini-model')
     adapter = order = None
@@ -197,26 +187,22 @@ def main():
     options = {'paypal': args.paypal, 'paypal_env': path(args.paypal_env), 'brief': args.brief,
                'omniroute_env': path(args.omniroute_env), 'model': args.model, 'gemini_env': path(args.gemini_env),
                'gemini_model': args.gemini_model, 'lose_first_refund_response': args.lose_first_refund_response}
-    reset = threading.Event()  # Set only by the hosted demo's reset route; otherwise this waits for Ctrl+C.
     try:
-        while True:
-            reset.clear()
-            with integrated_session(0, args.merchant_port, workspace_port=args.port, extraction_adapter=adapter,
-                                    merchant_options=options, order=order, public_host=args.public_host,
-                                    on_reset=reset.set if args.public_host else None) as session:
-                print('RecallRelay: ' + (session.application_url or session.customer_url), flush=True)
-                print('Label reading: ' + ('AI via OmniRoute, model ' + args.model if adapter else 'mock fixture lookup')
-                      + '. Assessment: deterministic rules on confirmed text.', flush=True)
-                print('Merchant brief: ' + ('AI via ' + args.brief + ', validated against case records' if args.brief != 'template' else 'template')
-                      + '. Payments: ' + ('PayPal SANDBOX refunds, no live money' if order else 'fake, no money moves') + '.', flush=True)
-                if args.lose_first_refund_response:
-                    print('Fault injection ON: the first accepted refund acknowledgement is discarded to show recovery.', flush=True)
-                print(f"One workspace: confirm label -> send for review -> confirm remedy -> approve {'sandbox' if order else 'fake'} refund -> refund status.", flush=True)
-                print('Fresh temporary session. Ctrl+C stops the workspace and both services and removes rehearsal state.', flush=True)
-                try:
-                    reset.wait()
-                except KeyboardInterrupt:
-                    return
+        with integrated_session(0, args.merchant_port, workspace_port=args.port, extraction_adapter=adapter,
+                                merchant_options=options, order=order) as session:
+            print('RecallRelay: ' + (session.application_url or session.customer_url), flush=True)
+            print('Label reading: ' + ('AI via OmniRoute, model ' + args.model if adapter else 'mock fixture lookup')
+                  + '. Assessment: deterministic rules on confirmed text.', flush=True)
+            print('Merchant brief: ' + ('AI via ' + args.brief + ', validated against case records' if args.brief != 'template' else 'template')
+                  + '. Payments: ' + ('PayPal SANDBOX refunds, no live money' if order else 'fake, no money moves') + '.', flush=True)
+            if args.lose_first_refund_response:
+                print('Fault injection ON: the first accepted refund acknowledgement is discarded to show recovery.', flush=True)
+            print(f"One workspace: confirm label -> send for review -> confirm remedy -> approve {'sandbox' if order else 'fake'} refund -> refund status.", flush=True)
+            print('Fresh temporary session. Ctrl+C stops the workspace and both services and removes rehearsal state.', flush=True)
+            try:
+                threading.Event().wait()
+            except KeyboardInterrupt:
+                pass
     except (OSError, ValueError, RuntimeError) as error:
         parser.error(str(error) if isinstance(error, RuntimeError) else 'Could not start the workspace; check dependencies and choose available ports')
 
