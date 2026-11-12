@@ -82,9 +82,9 @@ On Windows, use `.\evidence\.venv\Scripts\python.exe` for the Python executable 
 
 - Customer label review, mock pilot and separate real-provider human timing: [evaluation results](docs/rajiv/EVALUATION-RESULTS.md). These are familiar synthetic development inputs, not a validated holdout or causal time-saving study.
 - Merchant model evaluation and real PayPal sandbox experiments: [resolution runbook](docs/vismaya/RUNBOOK.md). Historical provider runs are separate from the default fake-payment launcher.
-- [PR #29](https://github.com/RajivRanganath/recallrelay/pull/29) merged the same-case local integration. Tracker issues #1–#9 are closed as of 11 November 2026; [#10](https://github.com/RajivRanganath/recallrelay/issues/10) remains for merchant demo completion. Final joint recording is deferred.
-- Follow-up merchant hardening and Windows maintenance are separately reviewed changes; consult current PR checks before treating them as merged.
-- Real PayPal webhook delivery has not been verified. There is no approved callback or webhook registration. [Prerequisites and approval boundary](docs/WEBHOOK-VERIFICATION.md) explain the remaining external setup without exposing the local app.
+- Integration, merchant hardening and Windows maintenance are merged through [PR #36](https://github.com/RajivRanganath/recallrelay/pull/36) and [PR #35](https://github.com/RajivRanganath/recallrelay/pull/35). Issues #1–#4 and #6–#9 are closed; [#5](https://github.com/RajivRanganath/recallrelay/issues/5) and [#10](https://github.com/RajivRanganath/recallrelay/issues/10) remain open for the deferred recording. [Combined recording outline](docs/rajiv/FINAL-DEMO.md).
+- One real PayPal **sandbox** webhook recovery and replay exercise passed on 12 November 2026: one simulated 20.00 USD refund, two verified deliveries, matching provider read-back and customer status. The temporary registration was deleted and the tunnel stopped. [Measured results and limits](docs/WEBHOOK-RESULTS.md).
+- Public access is disabled. A future external exercise requires a new scoped approval under the [prerequisites and approval boundary](docs/WEBHOOK-VERIFICATION.md). This single result does not establish production readiness or an exactly-once guarantee.
 
 ## Product boundary
 

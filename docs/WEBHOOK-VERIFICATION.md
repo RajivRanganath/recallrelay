@@ -1,5 +1,13 @@
 # Real PayPal sandbox webhook delivery: prerequisites
 
+## Current status: 12 November 2026
+
+One explicitly approved sandbox recovery and replay exercise is complete on source `640a7062a9a20a2e26503944a47f838c9ce44326`. See [measured results and cleanup](WEBHOOK-RESULTS.md) and [issue #37](https://github.com/RajivRanganath/recallrelay/issues/37). A genuine verified event settled the pending synthetic case after a deliberately lost refund acknowledgement; a second verified delivery left it unchanged. The temporary registration and public tunnel have been removed. The exception covered this exercise only; it does not authorize future public access, live money or deployment.
+
+The dated preparation below describes the earlier state. Its absent-credential/callback statements are historical. The approval and evidence requirements remain applicable to a future exercise; do not reuse the expired callback or assume the sandbox capture still has refundable funds.
+
+## Historical preparation: 11 November 2026
+
 Status on 11 November 2026: **not performed**. The owner reports no approved public HTTPS callback and no registered webhook ID. Sandbox credentials exist on Vismaya's Windows machine outside the repository; they are not available in the current Mac environment. No public tunnel, dashboard registration, refund or provider call was performed for this preparation.
 
 PayPal delivers webhooks as HTTPS POSTs to a URL registered for the app that produced the event. Receipt and authenticity verification are separate steps; a 2xx response alone does not establish authenticity. The current app uses PayPal's verification API before processing an event. See the [official webhook overview](https://developer.paypal.com/api/rest/webhooks/) and [management/signature API](https://developer.paypal.com/api/webhooks/v1).
