@@ -11,7 +11,7 @@ RecallRelay is one project made of two services joined by a fixed HTTP contract.
 | `evidence/` | Customer evidence and eligibility | Label extraction and targeted clarification | Evidence storage, campaign rule checks, assessment API, unified workspace gateway | Label upload, confirmation and status; the unified workspace |
 | `resolution/` | Merchant decision and settlement | Evidence-grounded case briefs | Case lifecycle, approval, PayPal refund adapter, webhook receiver | Merchant review, approval and refund status |
 
-Built by [Rajiv](https://github.com/RajivRanganath) and [Vismaya](https://github.com/VismayaM2005). Working rules are in [AGENTS.md](../AGENTS.md).
+Built by [Rajiv](https://github.com/RajivRanganath) and [Vismaya](https://github.com/VismayaM2005).
 
 - API contract, schemas and fixtures: [contracts/](../contracts/README.md)
 - Customer side: [evidence/README.md](../evidence/README.md), [runbook](evidence/RUNBOOK.md)
@@ -53,7 +53,6 @@ Dated records are kept as written, including failures and corrections.
 
 - Integration, merchant hardening and Windows maintenance: [PR #35](https://github.com/RajivRanganath/recallrelay/pull/35), [PR #36](https://github.com/RajivRanganath/recallrelay/pull/36)
 - Unified workspace: [PR #39](https://github.com/RajivRanganath/recallrelay/pull/39), [PR #40](https://github.com/RajivRanganath/recallrelay/pull/40), [guide](evidence/UNIFIED-WORKSPACE.md)
-- Customer-side records (reviews, integration checks, evaluation method, Windows checks): [evidence/history/](evidence/history/)
+- Evaluation method and protocol: [method](evidence/EVALUATION.md), [human protocol](evidence/HUMAN-EVALUATION.md), [timing provenance](evidence/LIVE-AI-TIMING.md)
 - Merchant-side records: [resolution/](resolution/)
-- Planning notes from development: [process/](process/)
 - Webhook approval boundary: [WEBHOOK-VERIFICATION.md](WEBHOOK-VERIFICATION.md)

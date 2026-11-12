@@ -14,5 +14,5 @@
 - [Development guide](DEVELOPMENT.md): the two services, tests, contract mocks
 - [Unified workspace design](evidence/UNIFIED-WORKSPACE.md) and [evidence service runbook](evidence/RUNBOOK.md)
 - [Webhook approval boundary](WEBHOOK-VERIFICATION.md)
-- [process/](process/): planning notes from development
-- [evidence/history/](evidence/history/) and [resolution/](resolution/): dated development records
+- Evaluation method: [method](evidence/EVALUATION.md), [human protocol](evidence/HUMAN-EVALUATION.md), [timing provenance](evidence/LIVE-AI-TIMING.md)
+- [resolution/](resolution/): merchant-side run instructions and records

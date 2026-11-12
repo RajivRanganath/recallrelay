@@ -1,6 +1,6 @@
 # Freeze and replay an evidence evaluation
 
-Current results, 9 November 2026: the reference review, earlier mock pilot and separate completed actual-provider human pilot are recorded in [EVALUATION-RESULTS.md](../EVALUATION-RESULTS.md). That development pilot supplies observed completion effort; the frozen replay tool below still measures provider proposals separately. No holdout or general savings claim is supported. Older pending-work descriptions below retain the tools' original scope.
+Current results, 9 November 2026: the reference review, earlier mock pilot and separate completed actual-provider human pilot are recorded in [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). That development pilot supplies observed completion effort; the frozen replay tool below still measures provider proposals separately. No holdout or general savings claim is supported. Older pending-work descriptions below retain the tools' original scope.
 
 The current twelve fictional labels are a previously inspected development set. Their typed-entry references are authored, not independently human validated. The plan added here freezes that development setup; it does not turn it into a holdout or measure completion effort.
 
@@ -50,7 +50,7 @@ Tests use synthetic placeholders and patched adapter outputs, plus the existing 
 
 ## Audit authored references offline
 
-`evidence.evals.review prepare --output NEW_DIRECTORY` exports a blank standalone form with checked images and a packet fingerprint; `review check --packet PATH --review PATH --output NEW_REPORT` validates a returned self-reported record and retains disagreements. Neither command calls a provider or changes labels/plans/reports. All outputs stay development-only with holdout/human-validation false. The declaration must be completed by an actual reviewer, not an agent. See [the label-review instructions](LABEL-REVIEW.md) for exact commands, exit codes, limits and adjudication. This audits existing development references; a separately reviewed holdout and human timing study remain pending.
+`evidence.evals.review prepare --output NEW_DIRECTORY` exports a blank standalone form with checked images and a packet fingerprint; `review check --packet PATH --review PATH --output NEW_REPORT` validates a returned self-reported record and retains disagreements. Neither command calls a provider or changes labels/plans/reports. All outputs stay development-only with holdout/human-validation false. The declaration must be completed by an actual reviewer, not an agent. Run `evidence.evals.review --help` for the exact commands. This audits existing development references; a separately reviewed holdout and human timing study remain pending.
 
 ## Prospective human evaluation
 

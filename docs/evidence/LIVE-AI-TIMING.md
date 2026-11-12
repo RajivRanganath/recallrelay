@@ -2,7 +2,7 @@
 
 ## Completed collection and analysis
 
-The participant completed all twelve typed and twelve actual-AI tasks. All twelve AI requests returned usable proposals; there were no recorded failures, timeouts, withdrawals, skipped requests or retries. Median completion times were 8.0325 seconds typed and 4.8825 seconds AI-assisted. [EVALUATION-RESULTS.md](../EVALUATION-RESULTS.md) and its linked machine-readable report retain errors, unresolved cases, per-case times, provenance and limitations. The completed mock pilot is separate and unchanged.
+The participant completed all twelve typed and twelve actual-AI tasks. All twelve AI requests returned usable proposals; there were no recorded failures, timeouts, withdrawals, skipped requests or retries. Median completion times were 8.0325 seconds typed and 4.8825 seconds AI-assisted. [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md) and its linked machine-readable report retain errors, unresolved cases, per-case times, provenance and limitations. The completed mock pilot is separate and unchanged.
 
 Actual browser autosaves were recovered from the local journal, preserving its original bytes and the final record's content. The original raw inputs, CSVs, provider call journal and frozen collector are retained under evidence/.local/human-ai-pilot-2026-11-09/. The importer checked all 24 scheduled tasks and successful browser proposals against twelve actual provider records, then the report recomputed final field/decision comparisons. Separate calculations matched medians and outcome counts. No new human interaction is needed for this pilot. Task #4 awaits contributor acceptance/merge; integration and recording in #5 remain deferred.
 
