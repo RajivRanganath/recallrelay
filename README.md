@@ -2,16 +2,16 @@
 
 A two-person, sandbox-only recall-resolution prototype.
 
-**Status: implemented local synthetic prototype.** The customer and merchant apps are connected through HTTP: confirmed label assessment → merchant review and approval → refund result → customer status. AI adapters and a PayPal sandbox adapter are implemented with limited recorded evaluations. The integrated launcher uses mock extraction, template briefs and fake payments by default. Authentication, real customer use, live-money payments and public deployment are outside this prototype.
+**Status: implemented local synthetic prototype.** One workspace presents the complete workflow: confirmed label assessment → merchant review and approval → shared refund status. The services communicate through HTTP and keep separate stores behind the single application URL. AI adapters and a PayPal sandbox adapter are implemented with limited recorded evaluations. The integrated launcher uses mock extraction, template briefs and fake payments. Authentication, real customer use, live-money payments and public deployment are outside this prototype.
 
-## Run both apps
+## Run RecallRelay
 
 From the repository root, on macOS/Linux with Python 3.11:
 
 ```sh
 python3 -m venv evidence/.venv
 evidence/.venv/bin/python -m pip install -r evidence/requirements.lock.txt
-evidence/.venv/bin/python -B -m evidence.integrated --port 0 --merchant-port 0
+evidence/.venv/bin/python -B -m evidence.integrated --port 0
 ```
 
 Windows PowerShell:
@@ -19,14 +19,14 @@ Windows PowerShell:
 ```powershell
 py -3.11 -m venv evidence/.venv
 .\evidence\.venv\Scripts\python.exe -m pip install -r evidence/requirements.lock.txt
-.\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0 --merchant-port 0
+.\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0
 ```
 
-Open the printed customer and merchant URLs. Check and confirm a synthetic label, assess it, then choose **Send for merchant review**. In the merchant app select the same case, review it and confirm remedy conditions before approving the exact fake refund amount. Return to the customer app to read its status. The merchant's **Load demo case** button is a separate fixture seeder and is not the customer handoff.
+Open the single printed **RecallRelay** URL. The navigation follows **Check label → Merchant review → Refund status** in one tab. Confirm a synthetic label, check the campaign match and choose **Send for merchant review**. That exact assessment opens automatically in merchant review. Check the evidence and remedy conditions, explicitly confirm those conditions, then approve the exact fake refund amount. The workspace opens the outcome and reads matching customer status. No second URL, manual case selection or demo-case seeding is needed.
 
-Both services use separate temporary databases. Ctrl+C stops them and removes rehearsal state; restarting creates a fresh session. Port `0` chooses unused ports without terminating other listeners. Reuse an existing lane environment if already installed.
+Both services use separate temporary databases behind the workspace. Ctrl+C stops the workspace and its owned services and removes rehearsal state; restarting creates a fresh session. Port `0` chooses an unused application port; internal ports are automatic. Reuse an existing lane environment if already installed. No PayPal credentials or external AI calls are used by this launcher.
 
-[Full integration instructions and limits](docs/rajiv/FINAL-INTEGRATION.md) · [Verification record](docs/rajiv/FINAL-INTEGRATION-CHECKS.md)
+[Unified workspace and verification](docs/rajiv/UNIFIED-WORKSPACE.md) · [Earlier integration record](docs/rajiv/FINAL-INTEGRATION-CHECKS.md)
 
 ## Equal ownership
 
@@ -73,7 +73,7 @@ Use `X-Mock-Scenario: missing` or `excluded` for evidence; `manual`, `pending`, 
 evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s tests -v
 RECALLRELAY_RESOLUTION_SOURCE="$PWD" evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s evidence/tests -v
 evidence/.venv/bin/python -B -W error::ResourceWarning -m unittest discover -s resolution/tests -v
-node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js
+node --test evidence/tests/test_web.js evidence/tests/test_label_review_web.js evidence/tests/test_workspace_web.js
 ```
 
 On Windows, use `.\evidence\.venv\Scripts\python.exe` for the Python executable and set `$env:RECALLRELAY_RESOLUTION_SOURCE = (Get-Location).Path` before the evidence suite. Tests use synthetic fixtures, local stubs or fake/disabled payments. CI and the dated verification records identify the exact platform, commit and scope; passing these checks does not establish general AI accuracy, user savings or production readiness.
@@ -83,6 +83,7 @@ On Windows, use `.\evidence\.venv\Scripts\python.exe` for the Python executable 
 - Customer label review, mock pilot and separate real-provider human timing: [evaluation results](docs/rajiv/EVALUATION-RESULTS.md). These are familiar synthetic development inputs, not a validated holdout or causal time-saving study.
 - Merchant model evaluation and real PayPal sandbox experiments: [resolution runbook](docs/vismaya/RUNBOOK.md). Historical provider runs are separate from the default fake-payment launcher.
 - Integration, merchant hardening and Windows maintenance are merged through [PR #36](https://github.com/RajivRanganath/recallrelay/pull/36) and [PR #35](https://github.com/RajivRanganath/recallrelay/pull/35). Issues #1–#4 and #6–#9 are closed; [#5](https://github.com/RajivRanganath/recallrelay/issues/5) and [#10](https://github.com/RajivRanganath/recallrelay/issues/10) remain open for the deferred recording. [Combined recording outline](docs/rajiv/FINAL-DEMO.md).
+- [PR #39](https://github.com/RajivRanganath/recallrelay/pull/39) delivers the unified frontend and restricted local gateway; [PR #40](https://github.com/RajivRanganath/recallrelay/pull/40) updates these shared startup instructions. Local checks passed 168 evidence/integration and 16 UI tests, plus 12 fixture cases / 60 checks. Consult the PRs for current review, merge and Windows CI status.
 - One real PayPal **sandbox** webhook recovery and replay exercise passed on 12 November 2026: one simulated 20.00 USD refund, two verified deliveries, matching provider read-back and customer status. The temporary registration was deleted and the tunnel stopped. [Measured results and limits](docs/WEBHOOK-RESULTS.md).
 - Public access is disabled. A future external exercise requires a new scoped approval under the [prerequisites and approval boundary](docs/WEBHOOK-VERIFICATION.md). This single result does not establish production readiness or an exactly-once guarantee.
 

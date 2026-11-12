@@ -6,6 +6,8 @@ Issues #1–#4 and #6–#9 are closed. Both implemented services and the explici
 
 Real sandbox webhook delivery and replay were verified under a specific temporary exception on 12 November, tracked in [#37](https://github.com/RajivRanganath/recallrelay/issues/37). [Measured results](WEBHOOK-RESULTS.md) record one simulated 20.00 USD refund, two genuine verified deliveries, operation-bound provider read-back, matching customer status, negative checks and completed cleanup. No public listener or webhook registration remains. Future public access still requires approval under [the verification boundary](WEBHOOK-VERIFICATION.md). No final video or submission is claimed. The original effort allocation and scope below remain the planning record.
 
+[PR #39](https://github.com/RajivRanganath/recallrelay/pull/39) adds the single-URL workspace for both roles: label assessment → automatically loaded merchant review → matching customer/merchant refund status. It preserves explicit remedy confirmation and exact-amount approval, separate service stores and frozen v1 payloads. [PR #40](https://github.com/RajivRanganath/recallrelay/pull/40) is the dedicated shared startup/status documentation follow-up. See [the unified guide and measured checks](rajiv/UNIFIED-WORKSPACE.md); PR review/merge state remains visible on GitHub. These changes add no recording, provider call or public deployment.
+
 Points express relative effort, not time. Each person has 20 points across the same categories. Re-estimate after the first working slice; reduce scope if needed rather than moving all backend work to one person.
 
 | Task | Rajiv: evidence lane | Vismaya: resolution lane | Points each |
