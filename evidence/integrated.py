@@ -1,4 +1,4 @@
-"""Run both synthetic apps with explicit HTTP handoff and fake payments only."""
+"""Run one local workspace for label assessment, merchant review and fake refunds."""
 import argparse
 from contextlib import contextmanager, ExitStack
 import json
@@ -77,8 +77,8 @@ def merchant_process(folder, port=0):
 
 
 @contextmanager
-def integrated_session(port=0, merchant_port=0):
-    for value in (port, merchant_port):
+def integrated_session(port=0, merchant_port=0, *, workspace_port=0):
+    for value in (port, merchant_port, workspace_port):
         if type(value) is not int or not 0 <= value <= 65535:
             raise ValueError('Ports must be integers from 0 to 65535')
     with ExitStack() as cleanup:
@@ -86,27 +86,28 @@ def integrated_session(port=0, merchant_port=0):
         merchant = cleanup.enter_context(merchant_process(folder, merchant_port))
         customer = cleanup.enter_context(running(make_server(
             port, folder / 'evidence.sqlite3', merchant, enable_handoff=True)))
-        yield DemoSession(customer, merchant, 'actual local service / fake payments', folder)
+        from evidence.backend.workspace import make_workspace
+        workspace = cleanup.enter_context(running(make_workspace(workspace_port, customer, merchant)))
+        yield DemoSession(customer, merchant, 'actual local service / fake payments', folder, workspace)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--port', type=int, default=8101)
-    parser.add_argument('--merchant-port', type=int, default=8102)
+    parser.add_argument('--port', type=int, default=8101, help='Unified application port; 0 chooses an unused port')
+    parser.add_argument('--merchant-port', type=int, default=0, help='Internal merchant port; normally selected automatically')
     args = parser.parse_args()
     try:
-        with integrated_session(args.port, args.merchant_port) as session:
-            print('Customer: ' + session.customer_url, flush=True)
-            print('Merchant: ' + session.resolution_url, flush=True)
+        with integrated_session(0, args.merchant_port, workspace_port=args.port) as session:
+            print('RecallRelay: ' + (session.application_url or session.customer_url), flush=True)
             print('Synthetic only. Mock extraction, deterministic assessment, template briefs, fake payments.', flush=True)
-            print('Confirm label -> check match -> send for merchant review -> open merchant -> confirm remedy -> approve fake refund -> refresh customer status.', flush=True)
-            print('Fresh separate temporary stores. Ctrl+C stops both apps and removes rehearsal state.', flush=True)
+            print('One workspace: confirm label -> send for review -> confirm remedy -> approve fake refund -> refund status.', flush=True)
+            print('Fresh temporary session. Ctrl+C stops the workspace and both services and removes rehearsal state.', flush=True)
             try:
                 threading.Event().wait()
             except KeyboardInterrupt:
                 pass
     except (OSError, ValueError, RuntimeError):
-        parser.error('Could not start both apps; check dependencies and choose two available ports')
+        parser.error('Could not start the workspace; check dependencies and choose available ports')
 
 
 if __name__ == '__main__':

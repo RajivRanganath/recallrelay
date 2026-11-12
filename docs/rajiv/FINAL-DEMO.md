@@ -16,9 +16,9 @@ Windows PowerShell:
 .\evidence\.venv\Scripts\python.exe -B -m evidence.integrated --port 0 --merchant-port 0
 ```
 
-For installation, follow [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md). Open both printed URLs. The launcher creates fresh, separate temporary stores, mock fixture extraction, deterministic assessment, template briefs and **fake payments only**. It reads no PayPal credentials. Ctrl+C stops both owned services and removes the rehearsal stores.
+For installation, follow [FINAL-INTEGRATION.md](FINAL-INTEGRATION.md), then use [the unified workspace](UNIFIED-WORKSPACE.md). Open the one printed RecallRelay URL. The launcher creates fresh, separate temporary stores behind one application, mock fixture extraction, deterministic assessment, template briefs and **fake payments only**. It reads no PayPal credentials. Ctrl+C stops the workspace and both owned services and removes the rehearsal stores.
 
-Use the customer handoff rather than the merchant's separate Load demo case fixture. Keep case-demo-1, its saved assessment ID and the visible mode labels readable.
+Use the workspace's **Send for merchant review** action. It opens the same case automatically. Keep case-demo-1, its saved assessment ID and the visible mode labels readable.
 
 ## Recording outline: 150-second target
 
@@ -30,12 +30,12 @@ The targets allocate screen time; they are not observed task timings.
 | 12–27 s | Choose Unreadable batch, use the sample, confirm readable values and check the campaign. | An unreadable batch stays blank. The app asks for the missing identifier instead of guessing. |
 | 27–40 s | Choose Excluded batch, use the sample, confirm and check B103. | This batch is excluded from this campaign. That does not mean the product is safe. |
 | 40–60 s | Choose Clear label, use the sample, inspect LAMP-100/B101, confirm and check the campaign. | I confirm the identifiers. Deterministic rules find a campaign match; that alone does not authorize a refund. |
-| 60–75 s | Send for merchant review, wait for acknowledgement, open the printed merchant URL and select case-demo-1. | This explicit handoff sends the saved assessment. The merchant reviews the same case and assessment. |
-| 75–95 s | Inspect evidence and order; choose Write brief. | The brief cites case records and stays advisory. This run uses a labeled template, not a live AI model. |
+| 60–75 s | Send for merchant review; the workspace opens case-demo-1 automatically in Merchant review. | This explicit handoff sends the saved assessment. The merchant reviews the same case and assessment in the same app. |
+| 75–95 s | Inspect evidence and order; choose Generate template brief. | The brief cites case records and stays advisory. This run uses a labeled template, not a live AI model. |
 | 95–110 s | Confirm remedy conditions for this synthetic fixture; inspect 40.00 USD. | The merchant separately confirms remedy conditions. Approval is bound to this assessment and exact amount. |
 | 110–125 s | Enter 39.99 and a fictional reviewer name, then attempt approval. Show the error. | A different typed amount is refused. The name is unverified text; this prototype has no merchant login. |
 | 125–140 s | Enter 40.00, approve and show the fake refund result. | This is the fake adapter. No real money moves. Operation and fake refund identifiers remain visible. |
-| 140–150 s | Return to the customer tab and read status; show refunded for case-demo-1. | The customer reads the merchant result for the same case. Real sandbox webhook delivery is a separate verification exercise. |
+| 140–150 s | The workspace opens Refund status; show the matching customer and merchant outcome for case-demo-1. | Both roles read the same case and operation. Real sandbox webhook delivery was checked separately; this screen uses fake payments. |
 
 Wait for visible results when requests are still running. Retake a failed sequence or preserve the failure honestly; do not describe an edited or interrupted take as uninterrupted. Record actual take duration separately from human evaluation results.
 
@@ -46,6 +46,6 @@ On 12 November 2026, source `521393a` ran on two ephemeral loopback ports. The b
 ## Provider material and recording handoff
 
 - Existing [evaluation results](EVALUATION-RESULTS.md) and the [merchant runbook](../vismaya/RUNBOOK.md) record separate provider experiments and their limits. Do not label this default walkthrough live AI or PayPal sandbox.
-- A real webhook exercise follows the reviewed [proposal](../vismaya/WEBHOOK-EXCEPTION.md) and [handover checkpoint](HANDOVER-CHECKPOINT.md). Its public setup, exact callback and permitted refund need separate approval. Exercise the malformed-request correction first.
+- The separately approved real sandbox webhook exercise and cleanup are recorded in [the measured result](../WEBHOOK-RESULTS.md). The public access exception is over; a future exercise needs new scoped approval.
 - Preserve the visible modes, same-case linkage, rejection example and final customer status. Keep credentials, dashboard account details and env files off screen.
 - Save the final recording with its commit, modes, actual duration and retries. Recording and submission remain unperformed until an actual artifact and destination are supplied. Public release or submission is a separate action.
