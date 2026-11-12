@@ -55,7 +55,7 @@ def _evaluate(adapter, dataset, plan=None, progress=None):
             progress(row['case_id'], row['status'])
     successful = [row for row in results if row['status'] == 'proposal']
     return {
-        'evaluation_kind': 'provider-development-smoke', 'mode': 'ai',
+        'evaluation_kind': manifest.get('evaluation_kind', 'provider-development-smoke'), 'mode': 'ai',
         'provider': adapter.provider_name, 'requested_model': adapter.model,
         'dataset_version': manifest['dataset_version'], 'policy_version': POLICY_VERSION,
         'evaluation_snapshot': identity, 'plan_sha256': plan['plan_sha256'] if plan else None,
@@ -68,7 +68,7 @@ def _evaluate(adapter, dataset, plan=None, progress=None):
         'fields_compared': 2 * len(successful),
         'fields_matching_authored_typed_reference': sum(sum(row['field_matches'].values()) for row in successful),
         'false_eligible_against_authored_reference': sum(row['false_eligible_against_authored_reference'] for row in successful),
-        'limitation': 'Previously visible synthetic development fixtures with authored references; not a reviewed holdout or human study. Simulated confirmation does not establish safe autonomous eligibility. Missing-reference guesses and every unavailable call are reported. Auto routing and model self-reported confidence are not controlled/calibrated.',
+        'limitation': manifest.get('limitation') or 'Previously visible synthetic development fixtures with authored references; not a reviewed holdout or human study. Simulated confirmation does not establish safe autonomous eligibility. Missing-reference guesses and every unavailable call are reported. Auto routing and model self-reported confidence are not controlled/calibrated.',
         'results': results
     }
 

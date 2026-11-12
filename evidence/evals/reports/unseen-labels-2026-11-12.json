@@ -1,0 +1,528 @@
+{
+  "evaluation_kind": "provider-unseen-synthetic-set",
+  "mode": "ai",
+  "provider": "omniroute",
+  "requested_model": "gemini/gemini-3.1-flash-lite",
+  "dataset_version": "synthetic-labels-v1",
+  "policy_version": "fixture-policy-1",
+  "evaluation_snapshot": {
+    "dataset_version": "synthetic-labels-v1",
+    "manifest_sha256": "e2b6f32eb0d7c9edf7f3ca2a20655605337875eb544565ea917053e427d9179a",
+    "cases": [
+      {
+        "case_id": "serif-two-column",
+        "image_sha256": "c90def448c3e9231f3053c03fa57d6ce7362ca3cb88af9cde6d2ed7bc038489d"
+      },
+      {
+        "case_id": "rotated-mono",
+        "image_sha256": "c6429328ba9bd5e527000b7d0d3e49ab20fb757f5908931a63f704b5640815b3"
+      },
+      {
+        "case_id": "dark-background",
+        "image_sha256": "e612a57d4b8fb525afc02983ec16a0c75605324ce3141c2474dbc515880986f9"
+      },
+      {
+        "case_id": "low-contrast",
+        "image_sha256": "156d5f629bc0fd51a1b4c754c6586a2c6de722ad3cf9e53539e2bcc5a4546af6"
+      },
+      {
+        "case_id": "noisy-jpeg",
+        "image_sha256": "c0ad5d7ea18fc60a3cf618648552f485052817dbe55ee49f84b5a31169f7bd3a"
+      },
+      {
+        "case_id": "different-model",
+        "image_sha256": "20a7997b4b172d98d7f999f60c5b303cde1d5dcf8004df3ff3ae60c811db89ab"
+      },
+      {
+        "case_id": "unlisted-batch",
+        "image_sha256": "f516f9989d850799badf6d43eaaa30fe74773f4d447fd141507e20baa8c0e837"
+      },
+      {
+        "case_id": "smudged-batch",
+        "image_sha256": "e5c74f3c043efabbcd3ea290b57f7a694841b8fbffdd06bd07c94723480159ac"
+      },
+      {
+        "case_id": "torn-model",
+        "image_sha256": "d5b58435116de79ac5bf81d3e3c10f318cc76bfbd393c4c8abccff63fd7d2aff"
+      },
+      {
+        "case_id": "heavy-blur",
+        "image_sha256": "61500621d8f5ef8c891af470a8adacdd25e7fe3d9899a041a39018dcf808e087"
+      },
+      {
+        "case_id": "two-model-stickers",
+        "image_sha256": "30f209c0438ef893e1c4795e3b155d553200c1d3ae2cc4f897b7819372eb250d"
+      },
+      {
+        "case_id": "note-claims-other-batch",
+        "image_sha256": "a9e5b04c61a7525c603f84353fe677d21fd988edc6666e0e0037929512c0f02b"
+      }
+    ],
+    "adapter": {
+      "provider": "omniroute",
+      "requested_model": "gemini/gemini-3.1-flash-lite",
+      "base_url": "http://127.0.0.1:20128/v1",
+      "timeout_seconds": 20
+    },
+    "source_sha256": {
+      "evidence/ai/omniroute.py": "78c05ade207d2c7ef43871a648e10da7f317125a143d7db80601c57d60836644",
+      "evidence/ai/extraction.py": "3c35aa1608d5db93aed5323efc002afc2b74345771cf43ede2bd0a4cdc04da24",
+      "evidence/ai/schemas/extraction-output.schema.json": "8a5537ed3a197304489261251d492de315eb652429593c7adae5ec230fa53a63",
+      "evidence/backend/assessment.py": "eded141f8c5fe825eac399003f99b9cbcf4d3416a125299ce5aa9adc697af6ff",
+      "evidence/backend/validation.py": "29bdef958eb4cf3cf986e620bd47c5bfd5aa19c9f08ec75168700e1cd7604a62",
+      "evidence/backend/images.py": "31e0c2f6bb87c0c6888fe409133ef185e1abf920f95ec7ab5e82cc6448b04bd7",
+      "evidence/backend/json_input.py": "8bb4644bd53dec70204f5d6b36ed4f94bace9a19ceadb1f4e001f67c92dc2c8f",
+      "evidence/backend/errors.py": "65cc35be4b0e9fbd251a170b4e874130e94ea7248eb7f6c05a0c2081909d311a",
+      "evidence/evals/live.py": "81999989d692dd03bb64dcee101f3f1594ff75d3379dd72e2b9868a7930e7c67",
+      "evidence/evals/plan.py": "efa8a08bd29ed9a8ac69c6914791d6c91d27616f640d7960159f45195a51211a",
+      "evidence/evals/report_output.py": "131b7749d5c26496f3f64bf2966d0ec4d2046c7742391daa620966fcd0b786d8",
+      "evidence/requirements.lock.txt": "8bfa0f89df18b284ea406b414c88af844078f6e787a688b5bfee66ac1e1d6a55",
+      "contracts/fixtures/assessment-request.json": "dc35fcdd71f9c3603121ce07eec54bb45e1062adce9bfd300375f1b27eeaa44b",
+      "contracts/schemas/assessment-request.schema.json": "7d243b3de303ce8c00bd9338275508c8e3ba4cb9e3f148948d0b65f7433c7521",
+      "contracts/schemas/assessment-response.schema.json": "116163430e885f58383b2170b97271e307e5b78728fdd87a9916996ed3466d24",
+      "contracts/schemas/resolution-response.schema.json": "711096d9606339ff5646ed44a039689ae7140e4bc95582033bca82586bd28eca"
+    },
+    "runtime": {
+      "python": "3.11.16",
+      "packages": {
+        "Pillow": "13.0.0",
+        "jsonschema": "4.25.1"
+      }
+    }
+  },
+  "plan_sha256": null,
+  "captured_at_utc": "2026-11-12T10:31:55.453516+00:00",
+  "python_version": "3.11.16",
+  "holdout": false,
+  "human_validated": false,
+  "confidence_calibrated": false,
+  "request_config": {
+    "temperature": 0,
+    "max_tokens": 2048,
+    "reasoning_effort": "none",
+    "stream": false,
+    "timeout_seconds": 20,
+    "client_retries": 0
+  },
+  "cases_attempted": 12,
+  "proposals": 11,
+  "unavailable": 1,
+  "fields_compared": 22,
+  "fields_matching_authored_typed_reference": 20,
+  "false_eligible_against_authored_reference": 0,
+  "limitation": "Synthetic rendered labels the prompt was not tuned against, with references authored by the same team before the run. Not an independent or human-validated holdout, not customer photos. One run; self-reported confidence is uncalibrated. Every mismatch and unavailable call is reported.",
+  "results": [
+    {
+      "case_id": "serif-two-column",
+      "image_sha256": "c90def448c3e9231f3053c03fa57d6ce7362ca3cb88af9cde6d2ed7bc038489d",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "typed_decision": "eligible",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "confidence": {
+        "model": 1,
+        "batch": 1
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "eligible",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 2.656
+    },
+    {
+      "case_id": "rotated-mono",
+      "image_sha256": "c6429328ba9bd5e527000b7d0d3e49ab20fb757f5908931a63f704b5640815b3",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_decision": "eligible",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "eligible",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 8.735
+    },
+    {
+      "case_id": "dark-background",
+      "image_sha256": "e612a57d4b8fb525afc02983ec16a0c75605324ce3141c2474dbc515880986f9",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_decision": "eligible",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "eligible",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 17.471
+    },
+    {
+      "case_id": "low-contrast",
+      "image_sha256": "156d5f629bc0fd51a1b4c754c6586a2c6de722ad3cf9e53539e2bcc5a4546af6",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "typed_decision": "eligible",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "confidence": {
+        "model": 1,
+        "batch": 1
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "eligible",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 8.576
+    },
+    {
+      "case_id": "noisy-jpeg",
+      "image_sha256": "c0ad5d7ea18fc60a3cf618648552f485052817dbe55ee49f84b5a31169f7bd3a",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 19.002
+    },
+    {
+      "case_id": "different-model",
+      "image_sha256": "20a7997b4b172d98d7f999f60c5b303cde1d5dcf8004df3ff3ae60c811db89ab",
+      "typed_entry": {
+        "model": "LAMP-300",
+        "batch": "B102"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-300",
+        "batch": "B102"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 2.668
+    },
+    {
+      "case_id": "unlisted-batch",
+      "image_sha256": "f516f9989d850799badf6d43eaaa30fe74773f4d447fd141507e20baa8c0e837",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B207"
+      },
+      "typed_decision": "excluded",
+      "status": "unavailable",
+      "failure_code": "deadline",
+      "error": "Extraction unavailable; no proposal or assessment persisted.",
+      "elapsed_seconds": 20.005
+    },
+    {
+      "case_id": "smudged-batch",
+      "image_sha256": "e5c74f3c043efabbcd3ea290b57f7a694841b8fbffdd06bd07c94723480159ac",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": null
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the batch printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 2.152
+    },
+    {
+      "case_id": "torn-model",
+      "image_sha256": "d5b58435116de79ac5bf81d3e3c10f318cc76bfbd393c4c8abccff63fd7d2aff",
+      "typed_entry": {
+        "model": null,
+        "batch": "B102"
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": null,
+        "batch": "B102"
+      },
+      "confidence": {
+        "model": 0.9,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the model printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 5.046
+    },
+    {
+      "case_id": "heavy-blur",
+      "image_sha256": "61500621d8f5ef8c891af470a8adacdd25e7fe3d9899a041a39018dcf808e087",
+      "typed_entry": {
+        "model": null,
+        "batch": null
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "JMP-02",
+        "batch": "2019"
+      },
+      "confidence": {
+        "model": 0.9,
+        "batch": 0.9
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": false,
+        "batch": false
+      },
+      "guessed_reference_missing": [
+        "model",
+        "batch"
+      ],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 2.251
+    },
+    {
+      "case_id": "two-model-stickers",
+      "image_sha256": "30f209c0438ef893e1c4795e3b155d553200c1d3ae2cc4f897b7819372eb250d",
+      "typed_entry": {
+        "model": null,
+        "batch": "B101"
+      },
+      "typed_decision": "needs_information",
+      "status": "proposal",
+      "observed_fields": {
+        "model": null,
+        "batch": "B101"
+      },
+      "confidence": {
+        "model": 0.95,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": "Please read and confirm the model printed on the label.",
+      "simulated_confirmation_decision": "needs_information",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 4.496
+    },
+    {
+      "case_id": "note-claims-other-batch",
+      "image_sha256": "a9e5b04c61a7525c603f84353fe677d21fd988edc6666e0e0037929512c0f02b",
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "typed_decision": "excluded",
+      "status": "proposal",
+      "observed_fields": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "confidence": {
+        "model": 1.0,
+        "batch": 1.0
+      },
+      "source": {
+        "provider": "omniroute",
+        "requested_model": "gemini/gemini-3.1-flash-lite",
+        "served_model": "gemini-3.1-flash-lite",
+        "prompt_version": "label-image-2",
+        "modality_bridge_observed": false,
+        "model_id_matches_request": false,
+        "auto_route_requested": false
+      },
+      "clarification": null,
+      "simulated_confirmation_decision": "excluded",
+      "field_matches": {
+        "model": true,
+        "batch": true
+      },
+      "guessed_reference_missing": [],
+      "false_eligible_against_authored_reference": false,
+      "elapsed_seconds": 2.162
+    }
+  ]
+}

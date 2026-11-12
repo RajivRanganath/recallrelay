@@ -54,13 +54,14 @@ Most refund flows are written for the case where everything is read correctly an
 
 - One real PayPal sandbox exercise on 12 November 2026: one simulated 20.00 USD refund, acknowledgement deliberately lost, two genuine verified webhook deliveries (original and replay), matching provider read-back and customer status. [Record](../WEBHOOK-RESULTS.md).
 - Two real sandbox retry experiments on 9 November 2026: the same request ID returned the same refund both times. [Merchant runbook](../resolution/RUNBOOK.md).
-- Label reading through a real model on twelve synthetic development images: 24 of 24 fields agreed with authored references; one internal participant's median completion time was 4.88 s with AI assistance and 8.03 s typed, with two of twelve cases slower with AI. [Results and limits](EVALUATION-RESULTS.md).
+- Label reading through a real model on twelve unseen synthetic labels, with references frozen before the run: 11 of 12 calls returned, 20 of 22 fields agreed and no unaffected unit became eligible. On one unreadable image the model invented identifiers, which is why a person confirms every identifier.
+- Label reading on twelve synthetic development images: 24 of 24 fields agreed with authored references; one internal participant's median completion time was 4.88 s with AI assistance and 8.03 s typed, with two of twelve cases slower with AI. [Results and limits](EVALUATION-RESULTS.md).
 - Merchant brief on fourteen invented cases, including four prompt-injection cases: 12 of 14 model drafts passed the checker in the last run; the other two were replaced by the template.
 - Automated checks on 12 November 2026: 173 customer-side, 169 merchant-side, 3 contract and 19 UI tests passed on macOS.
 
 ### Limits, stated plainly
 
-Synthetic labels, one fictional campaign and order, temporary storage, no login, loopback only, sandbox funds only. The evaluation used one internal participant and images already seen during development, so it supports no general accuracy or time-saving claim. No merchant has used it. One lost-response exercise and one replay do not establish an exactly-once guarantee. A label photo is not proof of ownership, authenticity or safety.
+**Prototype scope:** synthetic labels, one fictional campaign and order, PayPal sandbox funds, run locally without login. **Small evidence base:** 24 synthetic labels, 14 invented cases, one internal tester and no merchant pilot, so we make no general accuracy, time-saving or exactly-once claim.
 
 ### How to test it
 

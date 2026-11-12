@@ -62,3 +62,7 @@ A failed credential read after output reservation leaves a closed empty file, no
 ## Offline completion-effort summaries
 
 `python -m evidence.evals.study_report --sessions PATH --trials PATH --output NEW_JSON` validates actual returned records using the exact blank templates in `study/`. It reports first attempts and retries separately, preserves unavailable/failed/timed-out/unrecorded tasks, and pairs completed first attempts only within one session/case. It recomputes authored-reference field/decision comparisons and leaves sessions/modes separate. Empty sheets produce `no_observations`; all human-validation/holdout flags remain false. No credentials or provider calls are used. See [the human-evaluation protocol](../../docs/evidence/history/HUMAN-EVALUATION.md) for exact session/trial conventions and the remaining human steps.
+
+## Unseen label set
+
+`unseen-2026-11-12/` holds twelve further fictional labels that the extraction prompt was not tuned against, built by `build_unseen.py` with references authored from the rendered images and frozen by hash before any model call. Run a provider on it with `evidence.evals.live --manifest evidence/evals/unseen-2026-11-12/manifest.json`. Results, including one invented reading and one timed-out call, are in [the evaluation results](../../docs/evidence/EVALUATION-RESULTS.md). Do not tune the prompt on these images.
