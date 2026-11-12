@@ -1,6 +1,6 @@
 # Live workspace: real model calls and PayPal sandbox in the one app
 
-The unified workspace has opt-in live modes. The default launch is unchanged: mock extraction, template briefs, fake payments, no credentials. Live modes use the provider adapters each lane already had; this change connects them to the single-URL workspace and makes the screen report the modes actually running. **PayPal sandbox only. No live-money mode exists.** Labels, campaign and case remain synthetic.
+The unified workspace has opt-in live modes. The default launch is unchanged: mock extraction, template briefs, fake payments, no credentials. Live modes use the provider adapters each service already had; this change connects them to the single-URL workspace and makes the screen report the modes actually running. **PayPal sandbox only. No live-money mode exists.** Labels, campaign and case remain synthetic.
 
 ## What each flag turns on
 
@@ -72,6 +72,6 @@ The clear case was then sent for merchant review. **Draft AI brief** returned a 
 
 The local gateway accepted loopback requests without a provider key in the env file on this machine; the key stays inside the gateway's own configuration. These are six model calls on development fixtures the prompt was tuned against. They show the workspace wiring works; they are not an accuracy result.
 
-**Not yet measured:** this unified launcher has not been run against the real PayPal sandbox. The sandbox adapter it starts was exercised against real PayPal earlier ([merchant runbook](../vismaya/RUNBOOK.md), [webhook record](../WEBHOOK-RESULTS.md)). Record the first real unified sandbox run here with its date, capture, operation and refund IDs before describing the workspace as verified against PayPal. Native Windows execution of the new tests is left to CI.
+**Not yet measured:** this unified launcher has not been run against the real PayPal sandbox. The sandbox adapter it starts was exercised against real PayPal earlier ([merchant runbook](../resolution/RUNBOOK.md), [webhook record](../WEBHOOK-RESULTS.md)). Record the first real unified sandbox run here with its date, capture, operation and refund IDs before describing the workspace as verified against PayPal. Native Windows execution of the new tests is left to CI.
 
 These checks cover one synthetic case. They establish no AI accuracy, time saving, exactly-once guarantee or production readiness.

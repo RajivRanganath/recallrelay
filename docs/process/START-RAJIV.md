@@ -1,6 +1,6 @@
 # Start here: RajivRanganath
 
-Current implementation: use the [repository quick start](../../README.md#run-both-apps) and [integrated runbook](../rajiv/history/FINAL-INTEGRATION.md) to run the implemented customer and merchant apps. Issues #1–#5 are closed; the instructions below preserve the original independent scaffold workflow and lane boundaries.
+Current implementation: use the [repository quick start](../../README.md#run-both-apps) and [integrated runbook](../evidence/history/FINAL-INTEGRATION.md) to run the implemented customer and merchant apps. Issues #1–#5 are closed; the instructions below preserve the original independent scaffold workflow and lane boundaries.
 
 You own `evidence/`, `docs/rajiv/`, and `.github/workflows/evidence.yml`. Your slice includes AI, backend, UI and testing. See [task board](TASKS.md) for the equal 20-point split.
 

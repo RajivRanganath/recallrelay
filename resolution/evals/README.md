@@ -1,1 +1,3 @@
-Keep synthetic evaluation fixtures, expected outcomes, evaluation runner and measured results here. Record denominator, failures, latency, provider/model and limitations. Do not commit personal data.
+# Brief evaluation
+
+Fourteen invented labeled cases (`cases.py`), the runner (`run.py`) and saved reports with denominators, failures and provider details. No personal data. Results and limits are in [the runbook](../../docs/resolution/RUNBOOK.md).

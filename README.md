@@ -79,7 +79,7 @@ evidence/.venv/bin/python -B -m evidence.integrated --port 8101 \
   --lose-first-refund-response
 ```
 
-You need your own PayPal sandbox app and a model provider. Setup, the one-command sandbox payment and the measured runs are in the [live workspace guide](docs/rajiv/LIVE-WORKSPACE.md).
+You need your own PayPal sandbox app and a model provider. Setup, the one-command sandbox payment and the measured runs are in the [live workspace guide](docs/evidence/LIVE-WORKSPACE.md).
 
 ## How AI and PayPal are used
 
@@ -96,11 +96,11 @@ You need your own PayPal sandbox app and a model provider. Setup, the one-comman
 | Check | Result | Record |
 |---|---|---|
 | Real sandbox lost-response recovery | One 20.00 USD refund, acknowledgement deliberately lost, settled by a genuine verified webhook; the replay changed nothing | [Webhook results](docs/WEBHOOK-RESULTS.md) |
-| Real sandbox idempotent retry | Two experiments: the same request ID returned the same refund both times | [Merchant runbook](docs/vismaya/RUNBOOK.md) |
-| Unified workspace with a real model | Five labels and one brief in one session: three uncertain labels left unresolved, one excluded, one matched and refunded through the recovery path (fake payments) | [Live workspace](docs/rajiv/LIVE-WORKSPACE.md) |
-| Label reading on 12 synthetic images | 24 of 24 fields agreed with authored references | [Evaluation results](docs/rajiv/EVALUATION-RESULTS.md) |
-| One participant, typed versus AI-assisted | Median 8.03 s typed, 4.88 s assisted; two of twelve cases were slower with AI | [Evaluation results](docs/rajiv/EVALUATION-RESULTS.md) |
-| Merchant brief on 14 invented cases, 4 with prompt injection | 12 of 14 model drafts passed the checker; 2 were replaced by the template | [Merchant runbook](docs/vismaya/RUNBOOK.md) |
+| Real sandbox idempotent retry | Two experiments: the same request ID returned the same refund both times | [Merchant runbook](docs/resolution/RUNBOOK.md) |
+| Unified workspace with a real model | Five labels and one brief in one session: three uncertain labels left unresolved, one excluded, one matched and refunded through the recovery path (fake payments) | [Live workspace](docs/evidence/LIVE-WORKSPACE.md) |
+| Label reading on 12 synthetic images | 24 of 24 fields agreed with authored references | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
+| One participant, typed versus AI-assisted | Median 8.03 s typed, 4.88 s assisted; two of twelve cases were slower with AI | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
+| Merchant brief on 14 invented cases, 4 with prompt injection | 12 of 14 model drafts passed the checker; 2 were replaced by the template | [Merchant runbook](docs/resolution/RUNBOOK.md) |
 | Automated tests, 12 November 2026, macOS | 173 customer-side, 169 merchant-side, 3 contract, 19 UI: all passed | [Development guide](docs/DEVELOPMENT.md) |
 
 ## How it is built
@@ -131,7 +131,7 @@ Two Python services with separate stores and dependencies, joined by a [frozen J
 
 ## More
 
-[Documentation index](docs/README.md) · [Submission summary](docs/rajiv/SUBMISSION.md) · [Development guide and tests](docs/DEVELOPMENT.md) · [API contract](contracts/README.md)
+[Documentation index](docs/README.md) · [Submission summary](docs/evidence/SUBMISSION.md) · [Development guide and tests](docs/DEVELOPMENT.md) · [API contract](contracts/README.md)
 
 ## License
 

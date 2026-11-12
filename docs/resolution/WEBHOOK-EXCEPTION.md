@@ -73,7 +73,7 @@ The forged event is rejected; every other public path is blocked; the real event
 3. Stop the server; delete the throwaway launcher and its temporary database.
 4. Confirm the old tunnel URL no longer answers.
 5. Confirm no webhook ID, tunnel URL or credential was written to any repository file. The only record of the URL is the pull request comment, and after cleanup it no longer answers.
-6. Record the results and the end of the exception in `docs/vismaya/RUNBOOK.md` and `LIVE-CHECKS.md`. The public-host option stays off unless explicitly used.
+6. Record the results and the end of the exception in `docs/resolution/RUNBOOK.md` and `LIVE-CHECKS.md`. The public-host option stays off unless explicitly used.
 
 ## Risks and limits
 
