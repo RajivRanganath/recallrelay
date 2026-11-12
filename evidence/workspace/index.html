@@ -10,7 +10,7 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to workspace</a>
-  <header class="app-header"><a class="brand" href="#label">RecallRelay<span>Recall resolution</span></a><span class="mode">Synthetic demo · fake payments</span></header>
+  <header class="app-header"><a class="brand" href="#label">RecallRelay<span>Recall resolution</span></a><span class="mode" id="mode-chip">Synthetic demo · fake payments</span></header>
   <div class="app-layout">
     <aside class="sidebar">
       <p class="eyebrow">One connected case</p>
@@ -20,7 +20,7 @@
         <a href="#review" id="nav-review"><span class="step-number">02</span><span>Merchant review<small>Conditions &amp; approval</small></span></a>
         <a href="#status" id="nav-status"><span class="step-number">03</span><span>Refund status<small>Shared case outcome</small></span></a>
       </nav>
-      <div class="session-note"><p class="eyebrow">This session</p><p>One fictional order.<br>40.00 USD · one unit.</p><p>Customer and merchant are roles in this workspace. Changing views does not approve a refund.</p></div>
+      <div class="session-note"><p class="eyebrow">This session</p><p id="session-order">One fictional order.<br>40.00 USD · one unit.</p><p>Customer and merchant are roles in this workspace. Changing views does not approve a refund.</p></div>
     </aside>
     <main id="main" tabindex="-1">
       <div class="case-bar"><span id="case-stage">Loading case…</span><button id="refresh" class="text-button" type="button">Refresh case</button></div>
@@ -30,7 +30,7 @@
         <div class="columns">
           <section aria-labelledby="source-title"><h2 id="source-title">Your product label</h2>
             <label for="sample">Try a synthetic example</label><div class="inline"><select id="sample"><option value="clear">Clear label</option><option value="blurred">Unreadable batch</option><option value="excluded">Excluded batch</option></select><button id="use-sample" type="button" class="secondary">Use example</button></div>
-            <figure id="sample-preview"><div class="label-print"><strong>RELAY HOME</strong><span>TABLE LAMP</span><span id="sample-model">MODEL LAMP-100</span><span id="sample-batch">BATCH B101</span><small>SYNTHETIC · NOT A REAL PRODUCT</small></div><figcaption>Fictional product label. Example suggestions use a mock adapter.</figcaption></figure>
+            <figure id="sample-preview"><div class="label-print"><strong>RELAY HOME</strong><span>TABLE LAMP</span><span id="sample-model">MODEL LAMP-100</span><span id="sample-batch">BATCH B101</span><small>SYNTHETIC · NOT A REAL PRODUCT</small></div><figcaption>Fictional product label. Example suggestions are canned, not read by a model.</figcaption></figure>
             <figure id="photo-preview" hidden><img id="photo" alt="Selected synthetic product label"><figcaption>Local preview. Confirm the text yourself.</figcaption></figure>
             <label for="upload">Or choose a synthetic label photo</label><input id="upload" type="file" accept="image/png,image/jpeg" aria-describedby="upload-help"><p id="upload-help" class="hint">PNG or JPEG, up to 2 MiB. Photos are not saved. Fixture suggestions recognize only known repository images; other photos use typed entry.</p>
             <div class="inline"><button id="suggest" type="button" class="secondary" hidden>Suggest fixture text</button><button id="remove-photo" type="button" class="text-button" hidden>Remove photo</button></div>
@@ -53,7 +53,7 @@
           <div class="columns"><section aria-labelledby="evidence-title"><h2 id="evidence-title">Submitted evidence</h2><dl id="evidence-facts" class="facts"></dl><h2>Order</h2><dl id="order-facts" class="facts"></dl>
               <div class="brief-section"><h2>Merchant brief</h2><button id="write-brief" type="button" class="secondary">Generate template brief</button><div id="brief-result" hidden><p id="brief-mode" class="eyebrow"></p><p id="brief-text"></p><ul id="brief-steps"></ul><p id="brief-citations" class="hint"></p><p id="brief-note" class="hint"></p></div></div>
             </section><section aria-labelledby="remedy-title"><h2 id="remedy-title">Remedy conditions</h2><p id="remedy-text"></p><button id="confirm-remedy" type="button" class="secondary" hidden>I confirm the conditions are met</button>
-              <section id="approval" class="result" hidden aria-labelledby="approval-title"><p class="eyebrow">Human approval required</p><h2 id="approval-title">Approve fake refund</h2><p class="refund-total" id="refund-amount"></p><form id="approval-form"><label for="typed-amount">Type the exact amount</label><input id="typed-amount" inputmode="decimal" autocomplete="off" required placeholder="40.00"><label for="approver">Your name</label><input id="approver" maxlength="128" autocomplete="off" required><p class="hint">This local prototype has no login. Names are not verified.</p><button id="approve" type="submit">Approve fake refund</button></form></section>
+              <section id="approval" class="result" hidden aria-labelledby="approval-title"><p class="eyebrow">Human approval required</p><h2 id="approval-title">Approve fake refund</h2><p id="approval-mode" class="hint"></p><p class="refund-total" id="refund-amount"></p><form id="approval-form"><label for="typed-amount">Type the exact amount</label><input id="typed-amount" inputmode="decimal" autocomplete="off" required placeholder="40.00"><label for="approver">Your name</label><input id="approver" maxlength="128" autocomplete="off" required><p class="hint">This local prototype has no login. Names are not verified.</p><button id="approve" type="submit">Approve fake refund</button></form></section>
               <div id="review-outcome" class="result" hidden><h3 id="review-outcome-title"></h3><p id="review-outcome-text"></p><a class="button secondary" href="#status">View refund status</a></div>
             </section></div>
           <p id="review-message" class="feedback" role="status" aria-live="polite"></p>
@@ -62,10 +62,10 @@
       <section id="view-status" hidden aria-labelledby="status-title">
         <div class="intro"><p class="eyebrow">03 / Shared case outcome</p><h1 id="status-title" tabindex="-1">Follow the resolution.</h1><p>Customer and merchant views use the same case and refund operation.</p></div>
         <div id="status-empty" class="empty"><h2>No merchant case yet.</h2><p>Start with the label, then send the assessment for review.</p><a class="button" href="#label">Start label check</a></div>
-        <div id="status-content" hidden><p class="eyebrow" id="outcome-mode"></p><h2 id="outcome-title" class="outcome-title"></h2><p id="outcome-text"></p><dl id="status-facts" class="facts"></dl><p id="customer-status" class="notice"></p><p id="snapshot-note" class="hint"></p><div class="inline"><a href="#review" class="button secondary">Back to merchant review</a><button id="reconcile" type="button" class="secondary" hidden>Check pending refund again</button></div></div>
+        <div id="status-content" hidden><p class="eyebrow" id="outcome-mode"></p><h2 id="outcome-title" class="outcome-title"></h2><p id="outcome-text"></p><dl id="status-facts" class="facts"></dl><p id="recovery-note" class="notice" hidden></p><p id="customer-status" class="notice"></p><p id="snapshot-note" class="hint"></p><div class="inline"><a href="#review" class="button secondary">Back to merchant review</a><button id="reconcile" type="button" class="secondary" hidden>Check pending refund again</button></div></div>
         <p id="status-message" class="feedback" role="status" aria-live="polite"></p>
       </section>
-      <footer>Fictional products and orders only. Mock extraction · template briefs · fake payments.<br>Campaign-demo-1 · version 1. A label is not proof of ownership, authenticity or safety.</footer>
+      <footer><span id="footer-modes">Fictional products and orders only. Mock extraction · template briefs · fake payments.</span><br>Campaign-demo-1 · version 1. A label is not proof of ownership, authenticity or safety.</footer>
     </main>
   </div>
 </body>

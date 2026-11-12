@@ -6,15 +6,17 @@ const statusLabels = {
   pending: 'Refund pending', refunded: 'Refunded', failed: 'Refund failed'
 };
 const decisionLabels = {eligible: 'Identifiers match', excluded: 'Outside this campaign', needs_information: 'A detail needs attention'};
-const state = {busy: false, saved: null, detail: null, customer: null, sent: null, image: null, preview: null, view: 'label', readError: false};
+const state = {busy: false, saved: null, detail: null, customer: null, sent: null, image: null, preview: null, view: 'label', readError: false, wasPending: false};
+// Reported by the two services and the launcher at startup; labels never claim a mode that is not running.
+const modes = {ai: false, aiBrief: false, sandbox: false, loseFirst: false};
 const money = (amount, currency = 'USD') => `${(amount / 100).toFixed(2)} ${currency}`;
 
 async function request(role, path, body) {
-  const response = await fetch(`/api/${role}${path}`, {
+  const response = await fetch(path === undefined ? `/api/${role}` : `/api/${role}${path}`, {
     method: body === undefined ? 'GET' : 'POST',
     headers: body === undefined ? {} : {'Content-Type': 'application/json'},
     body: body === undefined ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(15000)
+    signal: AbortSignal.timeout(50000)
   });
   const data = await response.json();
   if (!response.ok) {
@@ -58,6 +60,21 @@ async function run(id, work) {
   finally { busy(false); }
 }
 
+function applyModes() {
+  const payments = modes.sandbox ? 'PayPal sandbox refunds' : 'fake payments';
+  $('mode-chip').textContent = `${modes.ai ? 'Live AI label reading' : 'Mock label reading'} · ${modes.aiBrief ? 'AI brief' : 'template brief'} · ${payments}`;
+  $('footer-modes').textContent = `Fictional products and cases only. ${modes.ai ? 'AI label suggestions' : 'Mock extraction'} · ${modes.aiBrief ? 'validated AI briefs' : 'template briefs'} · ${modes.sandbox ? 'PayPal sandbox, simulated funds, no live money' : 'fake payments'}.`;
+  $('suggest').textContent = modes.ai ? 'Read label with AI' : 'Suggest fixture text';
+  $('upload-help').textContent = modes.ai
+    ? 'PNG or JPEG, up to 2 MiB. The photo goes to the configured model for a suggestion and is not saved. You confirm every identifier.'
+    : 'PNG or JPEG, up to 2 MiB. Photos are not saved. Fixture suggestions recognize only known repository images; other photos use typed entry.';
+  $('write-brief').textContent = modes.aiBrief ? 'Draft AI brief' : 'Generate template brief';
+  $('approval-title').textContent = $('approve').textContent = modes.sandbox ? 'Approve sandbox refund' : 'Approve fake refund';
+  $('approval-mode').textContent = modes.sandbox
+    ? 'Before sending, PayPal is asked for the payment state, refunded balance and open disputes. The refund is then read back from PayPal before this case says refunded.'
+    : 'Fake adapter: no request leaves this computer.';
+  if (modes.sandbox) $('session-order').textContent = 'One PayPal sandbox order. Simulated funds · one unit.';
+}
 function renderAssessment() {
   const saved = state.saved;
   $('assessment-result').hidden = !saved;
@@ -112,6 +129,14 @@ function renderCase() {
     ? 'The label check has a newer saved assessment. This merchant outcome belongs to the submitted assessment shown above.'
     : 'This outcome belongs to the submitted assessment shown above. Editing a label does not change an existing merchant decision.';
   $('reconcile').hidden = resolution.status !== 'pending';
+  state.wasPending = state.wasPending || resolution.status === 'pending';
+  const recovery = resolution.status === 'pending'
+    ? `${modes.loseFirst ? 'Fault injection for this demo: the refund request was accepted, then its acknowledgement was deliberately discarded. ' : ''}The outcome is unknown, so nothing is retried automatically and no second refund is created. “Check pending refund again” re-sends the same operation ID, which the payment provider treats as the same request.`
+    : resolution.status === 'refunded' && state.wasPending
+      ? 'Recovered from an unknown outcome: the same operation ID was sent again, the provider returned the one existing refund, and its read-back matched the approved amount. No duplicate refund was created.'
+      : '';
+  $('recovery-note').textContent = recovery;
+  $('recovery-note').hidden = !recovery;
   actions();
 }
 
@@ -209,7 +234,7 @@ $('upload').addEventListener('change', () => run('label-message', async () => {
   $('photo-preview').hidden = false;
   $('suggest').hidden = false;
   $('remove-photo').hidden = false;
-  message('label-message', 'Read and confirm the label, or request a known-fixture suggestion.');
+  message('label-message', modes.ai ? 'Read and confirm the label yourself, or ask the model for a suggestion.' : 'Read and confirm the label, or request a known-fixture suggestion.');
 }));
 $('remove-photo').addEventListener('click', () => {
   if (state.busy) return;
@@ -221,7 +246,12 @@ $('suggest').addEventListener('click', () => run('label-message', async () => {
   invalidate(); $('model').value = ''; $('batch').value = '';
   const data = await request('customer', '/demo/image-extraction', state.image);
   $('model').value = data.model || ''; $('batch').value = data.batch || '';
-  $('proposal-note').textContent = `Mock fixture suggestion · ${data.notice}`;
+  const read = ['model', 'batch'].map((field) => data.uncertain_fields.includes(field)
+    ? `${field} uncertain, left blank`
+    : `${field} ${data[field]}${typeof data.confidence[field] === 'number' ? ` (self-reported ${data.confidence[field].toFixed(2)})` : ''}`).join(' · ');
+  $('proposal-note').textContent = data.mode === 'ai'
+    ? `AI suggestion from ${data.source?.served_model || 'the configured model'} · ${read}. ${data.notice}`
+    : `Mock fixture suggestion · ${data.notice}`;
   message('label-message', data.clarification || 'Check the suggestion against the photo, then confirm.');
 }));
 $('label-form').addEventListener('submit', (event) => {
@@ -257,7 +287,11 @@ $('write-brief').addEventListener('click', () => run('review-message', async () 
     const item = document.createElement('li'); item.textContent = text; return item;
   }));
   $('brief-citations').textContent = `Sources: ${brief.citations.join(', ')}`;
-  $('brief-note').textContent = 'Template brief. No AI provider is connected in this local workspace. Approval stays with the merchant.';
+  $('brief-note').textContent = brief.source === 'ai'
+    ? `Drafted by ${brief.served_model || brief.provider}. Shown only because code found every number, identifier and citation in the case records. Advisory: approval stays with the merchant.`
+    : brief.fallback_reason === 'no_provider'
+      ? 'Template brief. No AI provider is connected in this session. Approval stays with the merchant.'
+      : `The AI draft was not shown (${brief.fallback_detail || brief.fallback_reason}); this is the deterministic template instead. Approval stays with the merchant.`;
   $('brief-result').hidden = false;
 }));
 $('approval-form').addEventListener('submit', (event) => {
@@ -293,9 +327,12 @@ $('reconcile').addEventListener('click', () => run('status-message', async () =>
 
 view();
 run('app-message', async () => {
-  const [customer, merchant] = await Promise.all([request('customer', '/health'), request('merchant', '/health')]);
-  if (!customer.handoff_enabled || customer.extraction_mode !== 'mock' || merchant.mode !== 'mock' || merchant.brief !== 'template')
-    throw new Error('This workspace requires the integrated mock/template/fake-payment launcher.');
+  const [customer, merchant, session] = await Promise.all([request('customer', '/health'), request('merchant', '/health'), request('session')]);
+  if (!customer.handoff_enabled || !['mock', 'ai'].includes(customer.extraction_mode) || !['mock', 'sandbox'].includes(merchant.mode))
+    throw new Error('This workspace requires the integrated launcher.');
+  Object.assign(modes, {ai: customer.extraction_mode === 'ai', aiBrief: merchant.brief === 'ai',
+    sandbox: merchant.mode === 'sandbox', loseFirst: session.lose_first_refund_response === true});
+  applyModes();
   try {
     state.saved = await request('customer', '/v1/assessments/case-demo-1');
     $('model').value = state.saved.model || ''; $('batch').value = state.saved.batch || '';

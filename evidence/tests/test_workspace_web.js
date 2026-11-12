@@ -41,6 +41,7 @@ async function app(initial = detail(), handlers = {}) {
       if (handlers[url]) return handlers[url](options, () => current, (value) => { current = value; });
       if (url === '/api/customer/health') return ok({handoff_enabled: true, extraction_mode: 'mock'});
       if (url === '/api/merchant/health') return ok({mode: 'mock', brief: 'template'});
+      if (url === '/api/session') return ok({lose_first_refund_response: false});
       if (url === '/api/customer/v1/assessments/case-demo-1') return current ? ok(current.assessment) : missing();
       if (url === '/api/merchant/v1/cases/case-demo-1') return current ? ok(current) : missing();
       if (url === '/api/customer/demo/resolution-status') return current ? ok(current.resolution) : missing();
@@ -122,4 +123,41 @@ test('lost approval response reads the accepted operation without automatic retr
   assert.equal(ui.element('approval').hidden, true);
   assert.equal(ui.element('outcome-title').textContent, 'Refund pending');
   assert.match(ui.element('review-message').textContent, /Response lost/);
+});
+const live = {
+  '/api/customer/health': () => ok({handoff_enabled: true, extraction_mode: 'ai'}),
+  '/api/merchant/health': () => ok({mode: 'sandbox', brief: 'ai'}),
+  '/api/session': () => ok({lose_first_refund_response: true})
+};
+test('labels follow the modes the services report, never a fixed claim', async () => {
+  const mock = await app();
+  assert.match(mock.element('mode-chip').textContent, /Mock label reading · template brief · fake payments/);
+  assert.equal(mock.element('approve').textContent, 'Approve fake refund');
+  const ui = await app(detail(), live);
+  assert.match(ui.element('mode-chip').textContent, /Live AI label reading · AI brief · PayPal sandbox refunds/);
+  assert.equal(ui.element('approve').textContent, 'Approve sandbox refund');
+  assert.equal(ui.element('suggest').textContent, 'Read label with AI');
+  assert.match(ui.element('footer-modes').textContent, /no live money/);
+});
+test('a rejected AI draft is disclosed and replaced by the template', async () => {
+  const ui = await app(detail(), {...live,
+    '/api/merchant/v1/cases/case-demo-1/brief': () => ok({source: 'template', label: 'Template text, no AI involved', text: 'T',
+      missing_steps: [], citations: ['order'], fallback_reason: 'invalid_output', fallback_detail: 'Number not in the supplied records'})});
+  await ui.element('write-brief').listeners.click();
+  assert.equal(ui.element('brief-mode').textContent, 'Template text, no AI involved');
+  assert.match(ui.element('brief-note').textContent, /AI draft was not shown \(Number not in the supplied records\)/);
+});
+test('a lost refund acknowledgement is explained, then recovery reports one refund', async () => {
+  const pending = detail('pending'); pending.resolution.mode = 'sandbox'; pending.resolution.operation_id = 'op-1';
+  const ui = await app(pending, {...live,
+    '/api/merchant/v1/cases/case-demo-1/reconcile': (options, get, set) => {
+      const done = detail('refunded'); done.resolution.mode = 'sandbox';
+      done.resolution.operation_id = 'op-1'; done.resolution.refund_id = 'REFUND-1'; set(done);
+      return ok(done.resolution);
+    }});
+  assert.equal(ui.element('recovery-note').hidden, false);
+  assert.match(ui.element('recovery-note').textContent, /deliberately discarded.*no second refund/);
+  await ui.element('reconcile').listeners.click();
+  assert.match(ui.element('recovery-note').textContent, /Recovered.*No duplicate refund/);
+  assert.equal(ui.calls.filter((call) => call.url.endsWith('/reconcile')).length, 1);
 });
