@@ -72,6 +72,23 @@ The clear case was then sent for merchant review. **Draft AI brief** returned a 
 
 The local gateway accepted loopback requests without a provider key in the env file on this machine; the key stays inside the gateway's own configuration. These are six model calls on development fixtures the prompt was tuned against. They show the workspace wiring works; they are not an accuracy result.
 
-**Not yet measured:** this unified launcher has not been run against the real PayPal sandbox. The sandbox adapter it starts was exercised against real PayPal earlier ([merchant runbook](../resolution/RUNBOOK.md), [webhook record](../WEBHOOK-RESULTS.md)). Record the first real unified sandbox run here with its date, capture, operation and refund IDs before describing the workspace as verified against PayPal. Native Windows execution of the new tests is left to CI.
+### Real PayPal sandbox run through the unified workspace
+
+One run on 12 November 2026, 21:27 to 21:30 IST, `main` at `e048530`, launched with every live flag in the command above, including `--lose-first-refund-response`. The requests went to the workspace's single URL over HTTP, using the same gateway routes the page calls; nobody clicked through a browser in this run. Sandbox funds only.
+
+| Step | Observed |
+|---|---|
+| Startup | Merchant health reported `sandbox`; the session route reported fault injection on |
+| Read `clear-png.png` with AI | Model LAMP-100, batch B101, served model `gemini-3.1-flash-lite`. It returned in 0.30 s, far quicker than the 2.74 s measured earlier, so the gateway probably answered from its cache |
+| Confirm, check campaign, send for review | Identifiers match; case created with sandbox order `4HL59066CV3584449`, capture `16R987588Y623143H` |
+| Draft AI brief, twice | **No AI brief.** The model provider returned "high demand" errors, so both requests ended after 20 s with the template and fallback reason `network` |
+| Approve 39.99 | Refused with 409 |
+| Approve 40.00 | PayPal accepted the refund; the acknowledgement was discarded. Case **pending**, operation `op-f57200bbfd536feef63aef61`, no refund ID. Customer status showed the same |
+| Approve again | Same pending answer at once; nothing was sent |
+| Check pending refund again | **Refunded**, refund `77E50303VH9314045`, same operation ID. Customer status matched |
+
+Checked afterwards, read-only, straight from PayPal: refund `77E50303VH9314045` is `COMPLETED` for 40.00 USD, carries the operation ID as its `custom_id`, and was created at 2026-11-12T07:57:40-08:00. The order lists the capture as `REFUNDED` with exactly one refund. Two refund requests were sent with one operation ID, and PayPal holds one refund.
+
+This is one refund on one capture. Native Windows execution of the new tests is left to CI.
 
 These checks cover one synthetic case. They establish no AI accuracy, time saving, exactly-once guarantee or production readiness.

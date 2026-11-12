@@ -108,6 +108,7 @@ You need your own PayPal sandbox app and a model provider. Setup, the one-comman
 |---|---|---|
 | Real sandbox lost-response recovery | One 20.00 USD refund, acknowledgement deliberately lost, settled by a genuine verified webhook; the replay changed nothing | [Webhook results](docs/WEBHOOK-RESULTS.md) |
 | Real sandbox idempotent retry | Two experiments: the same request ID returned the same refund both times | [Merchant runbook](docs/resolution/RUNBOOK.md) |
+| Unified workspace against the real PayPal sandbox | One 40.00 USD refund: acknowledgement deliberately discarded, case held pending, then recovered with the same operation ID. PayPal shows exactly one refund on the capture | [Live workspace](docs/evidence/LIVE-WORKSPACE.md) |
 | Unified workspace with a real model | Five labels and one brief in one session: three uncertain labels left unresolved, one excluded, one matched and refunded through the recovery path (fake payments) | [Live workspace](docs/evidence/LIVE-WORKSPACE.md) |
 | Label reading on 12 development images | 24 of 24 fields agreed with authored references | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
 | Label reading on 12 unseen images (new fonts, layouts, damage; references frozen before the run) | 11 of 12 calls returned; 20 of 22 fields agreed; no unaffected unit became eligible. One unreadable image got invented identifiers, and one call timed out | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
@@ -136,7 +137,6 @@ Two Python services with separate stores and dependencies, joined by a [frozen J
 
 - **Prototype scope.** Synthetic labels, one fictional campaign and order, PayPal sandbox funds, run locally without login. A label match is not proof of ownership or safety.
 - **Small evidence base.** The measurements above cover 24 synthetic labels, 14 invented cases and one internal tester, with no merchant pilot. They support no general accuracy, time-saving or exactly-once claim. On one unreadable image the model invented identifiers; customer confirmation and the campaign rules, not the model, are what stand between that and a refund.
-- **Still to run.** The unified workspace has not yet been run against the real PayPal sandbox; the sandbox adapter it starts was exercised separately, as recorded above.
 
 ## More
 
