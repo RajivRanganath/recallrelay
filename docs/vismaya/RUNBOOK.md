@@ -28,7 +28,7 @@ Opt-in modes (each reads secrets from an existing env file you name; the file is
 python -m unittest discover -s resolution/tests -v
 ```
 
-164 tests passed on 12 November 2026 (Python 3.11.9, Windows) with ResourceWarnings treated as errors (`python -B -W error::ResourceWarning`).
+169 tests passed on 12 November 2026 (Python 3.11.9, Windows) with ResourceWarnings treated as errors (`python -B -W error::ResourceWarning`).
 
 | File | Covers |
 |---|---|

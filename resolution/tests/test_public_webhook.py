@@ -333,6 +333,71 @@ class ReceiveBoundsTests(unittest.TestCase):
             worker.join(timeout=10)
         self.assertEqual(sorted(results), [401] * MAX_PUBLIC_HANDLERS)
 
+    def seed(self, confirmed=False):
+        store = CaseStore(self.db)
+        sent = copy.deepcopy(FIXTURE)
+        sent['remedy_conditions_met'] = confirmed
+        store.save_review(sent, review(sent))
+        return store
+
+    def unfinished(self, port, request_head, wait=0.8):
+        """Send a request whose header block never ends, wait past the receive budget, return the first reply bytes."""
+        connection = socket.create_connection(('127.0.0.1', port), timeout=5)
+        try:
+            connection.sendall(request_head)
+            time.sleep(wait)
+            connection.settimeout(2)
+            try:
+                return connection.recv(200)
+            except OSError:
+                return b''
+        finally:
+            connection.close()
+
+    def test_an_unfinished_request_cannot_confirm_the_remedy_after_its_deadline(self):
+        store = self.seed()
+        port = self.serve(receive_seconds=0.3)
+        reply = self.unfinished(port, f'POST /v1/cases/case-demo-1/remedy-conditions HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n'.encode())
+        self.assertTrue(reply.startswith(b'HTTP/1.0 408'), reply)
+        self.assertFalse(store.request('case-demo-1')['remedy_conditions_met'])  # Nothing was dispatched.
+
+    def test_an_unfinished_request_cannot_start_a_refund_after_its_deadline(self):
+        store = self.seed(confirmed=True)
+        port = self.serve(receive_seconds=0.3)
+        reply = self.unfinished(port, (f'POST /v1/cases/case-demo-1/approve HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n'
+                                       'Content-Type: application/json\r\n').encode())
+        self.assertTrue(reply.startswith(b'HTTP/1.0 408'), reply)
+        self.assertEqual((store.latest('case-demo-1')['status'], store.operation('case-demo-1'), self.adapter.calls),
+                         ('awaiting_approval', None, 0))
+
+    def test_an_unfinished_get_is_not_served_after_its_deadline(self):
+        self.seed()
+        port = self.serve(receive_seconds=0.3)
+        reply = self.unfinished(port, f'GET /v1/cases HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n'.encode())
+        self.assertTrue(reply.startswith(b'HTTP/1.0 408'), reply)  # No case data goes out.
+
+    def test_an_unfinished_public_webhook_request_never_reaches_verification(self):
+        calls = []
+
+        class Counting(FakePayPal):
+            def verify_webhook(self, headers, raw, webhook_id):
+                calls.append(1)
+                return True
+
+        port = self.serve(adapter=Counting(), public_host=HOST, webhook_id='WH-1', receive_seconds=0.3)
+        reply = self.unfinished(port, f'POST /v1/paypal/webhook HTTP/1.1\r\nHost: {HOST}\r\nContent-Type: application/json\r\n'.encode())
+        self.assertTrue(reply.startswith(b'HTTP/1.0 408'), reply)
+        self.assertEqual(calls, [])
+
+    def test_a_complete_request_is_still_dispatched_after_the_fix(self):
+        store = self.seed()
+        port = self.serve(receive_seconds=1.0)
+        connection = http.client.HTTPConnection('127.0.0.1', port, timeout=5)
+        connection.request('POST', '/v1/cases/case-demo-1/remedy-conditions')
+        self.assertEqual(connection.getresponse().status, 200)
+        connection.close()
+        self.assertTrue(store.request('case-demo-1')['remedy_conditions_met'])
+
     def test_the_new_limits_are_validated(self):
         for options in ({'receive_seconds': 0}, {'receive_seconds': 61}, {'receive_seconds': -1},
                         {'max_connections': 0}, {'max_connections': 257}):

@@ -18,6 +18,9 @@ class ReceiveDeadline:
         self.connection, self.socket_timeout = connection, socket_timeout
         self._end = time.monotonic() + seconds
         self._done = False
+        # Set for good once the budget cut off a read. `complete()` does not clear it: an end of stream that came
+        # from the budget is not a real end of the request, and the request must not be treated as received.
+        self.timed_out = False
 
     def remaining(self):
         return max(0.0, self._end - time.monotonic())
@@ -48,14 +51,20 @@ class DeadlineReader(io.RawIOBase):
     def readinto(self, buffer):
         timeout = self.deadline.remaining()
         if timeout <= 0:
+            self.deadline.timed_out = True
             return 0
+        # True when the total budget, not the ordinary per-wait timeout, is what limits this wait.
+        limited_by_budget = self.deadline.socket_timeout is None or timeout <= self.deadline.socket_timeout
         if self.deadline.socket_timeout is not None:
             timeout = min(timeout, self.deadline.socket_timeout)
         self.connection.settimeout(timeout)
         try:
             return self.connection.recv_into(buffer)
-        except OSError:
-            if self.deadline.expired():
+        except OSError as error:
+            # The socket timer can fire a few milliseconds before the monotonic clock says the budget is spent
+            # (Windows timer granularity). A timeout that the budget itself caused is budget expiry either way.
+            if self.deadline.expired() or (limited_by_budget and isinstance(error, TimeoutError)):
+                self.deadline.timed_out = True
                 return 0
             raise
 
