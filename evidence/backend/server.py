@@ -26,9 +26,9 @@ WEB = ROOT / 'evidence' / 'web'
 
 
 def make_server(port=8101, db_path=None, resolution_url=None, extraction_adapter=None,
-                *, max_handlers=8, request_timeout=10, enable_handoff=False, order=None):
+                *, max_handlers=8, request_timeout=10, enable_handoff=False, order=None, resolution_timeout=2):
     store = AssessmentStore(db_path or ROOT / 'evidence' / '.local' / 'assessments.sqlite3')
-    client = ResolutionClient(resolution_url or os.environ.get('RESOLUTION_BASE_URL', 'http://127.0.0.1:8102'))
+    client = ResolutionClient(resolution_url or os.environ.get('RESOLUTION_BASE_URL', 'http://127.0.0.1:8102'), resolution_timeout)
     if enable_handoff:
         parsed = urlsplit(client.base_url)
         if parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost') or not parsed.port:

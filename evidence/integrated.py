@@ -147,7 +147,9 @@ def integrated_session(port=0, merchant_port=0, *, workspace_port=0, extraction_
         folder = Path(cleanup.enter_context(tempfile.TemporaryDirectory(prefix='recallrelay-integrated-')))
         merchant = cleanup.enter_context(merchant_process(folder, merchant_port, options))
         customer = cleanup.enter_context(running(make_server(
-            port, folder / 'evidence.sqlite3', merchant, extraction_adapter, enable_handoff=True, order=order)))
+            port, folder / 'evidence.sqlite3', merchant, extraction_adapter, enable_handoff=True, order=order,
+            # Each merchant read starts a supervised helper process; a small shared host needs longer than a laptop.
+            resolution_timeout=30 if public_host else 2)))
         from evidence.backend.workspace import make_workspace
         workspace = cleanup.enter_context(running(make_workspace(workspace_port, customer, merchant, {
             'lose_first_refund_response': bool(options.get('lose_first_refund_response'))}
