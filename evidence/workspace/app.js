@@ -95,7 +95,9 @@ function renderCase() {
   if (!detail) return;
   const {resolution, assessment, order, binding} = detail;
   const title = statusLabels[resolution.status] || resolution.status;
-  $('review-status').textContent = `${title}. ${resolution.mode === 'mock' ? 'Fake payments: no money moves.' : 'PayPal sandbox: no live money.'}`;
+  // A case that has not reached the payment adapter still reports 'mock'; the session's adapter decides the wording.
+  const fake = resolution.mode === 'mock' && !modes.sandbox;
+  $('review-status').textContent = `${title}. ${fake ? 'Fake payments: no money moves.' : 'PayPal sandbox: no live money.'}`;
   facts('evidence-facts', [['Decision', decisionLabels[assessment.decision] || assessment.decision],
     ['Model', assessment.model || 'Not confirmed'], ['Batch', assessment.batch || 'Not confirmed'],
     ['Reason', assessment.reason], ['Assessment', assessment.assessment_id],
@@ -113,7 +115,7 @@ function renderCase() {
   $('review-outcome').hidden = !locked && !['excluded', 'needs_information'].includes(resolution.status);
   $('review-outcome-title').textContent = title;
   $('review-outcome-text').textContent = resolution.brief;
-  $('outcome-mode').textContent = resolution.mode === 'mock' ? 'Mock · fake payments, no money moved' : 'PayPal sandbox · simulated funds';
+  $('outcome-mode').textContent = fake ? 'Mock · fake payments, no money moved' : 'PayPal sandbox · simulated funds';
   $('outcome-title').textContent = title;
   $('outcome-text').textContent = resolution.brief;
   facts('status-facts', [['Case', resolution.case_id], ['Assessment', assessment.assessment_id],
