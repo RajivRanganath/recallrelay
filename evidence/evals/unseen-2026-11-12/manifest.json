@@ -1,0 +1,202 @@
+{
+  "dataset_version": "synthetic-labels-v1",
+  "set": "unseen-2026-11-12",
+  "synthetic_only": true,
+  "evaluation_kind": "provider-unseen-synthetic-set",
+  "labeling": "References authored by reading each rendered image before any model call; same team as the images.",
+  "limitation": "Synthetic rendered labels the prompt was not tuned against, with references authored by the same team before the run. Not an independent or human-validated holdout, not customer photos. One run; self-reported confidence is uncalibrated. Every mismatch and unavailable call is reported.",
+  "cases": [
+    {
+      "case_id": "serif-two-column",
+      "image": "serif-two-column.png",
+      "mime_type": "image/png",
+      "sha256": "c90def448c3e9231f3053c03fa57d6ce7362ca3cb88af9cde6d2ed7bc038489d",
+      "style": "serif",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "expected_typed_decision": "eligible"
+    },
+    {
+      "case_id": "rotated-mono",
+      "image": "rotated-mono.png",
+      "mime_type": "image/png",
+      "sha256": "c6429328ba9bd5e527000b7d0d3e49ab20fb757f5908931a63f704b5640815b3",
+      "style": "rotated",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "expected_typed_decision": "eligible"
+    },
+    {
+      "case_id": "dark-background",
+      "image": "dark-background.png",
+      "mime_type": "image/png",
+      "sha256": "e612a57d4b8fb525afc02983ec16a0c75605324ce3141c2474dbc515880986f9",
+      "style": "dark",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "expected_typed_decision": "eligible"
+    },
+    {
+      "case_id": "low-contrast",
+      "image": "low-contrast.png",
+      "mime_type": "image/png",
+      "sha256": "156d5f629bc0fd51a1b4c754c6586a2c6de722ad3cf9e53539e2bcc5a4546af6",
+      "style": "faint",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "expected_typed_decision": "eligible"
+    },
+    {
+      "case_id": "noisy-jpeg",
+      "image": "noisy-jpeg.jpg",
+      "mime_type": "image/jpeg",
+      "sha256": "c0ad5d7ea18fc60a3cf618648552f485052817dbe55ee49f84b5a31169f7bd3a",
+      "style": "noisy",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "expected_typed_decision": "excluded"
+    },
+    {
+      "case_id": "different-model",
+      "image": "different-model.png",
+      "mime_type": "image/png",
+      "sha256": "20a7997b4b172d98d7f999f60c5b303cde1d5dcf8004df3ff3ae60c811db89ab",
+      "style": "serif",
+      "drawn": {
+        "model": "LAMP-300",
+        "batch": "B102"
+      },
+      "typed_entry": {
+        "model": "LAMP-300",
+        "batch": "B102"
+      },
+      "expected_typed_decision": "excluded"
+    },
+    {
+      "case_id": "unlisted-batch",
+      "image": "unlisted-batch.png",
+      "mime_type": "image/png",
+      "sha256": "f516f9989d850799badf6d43eaaa30fe74773f4d447fd141507e20baa8c0e837",
+      "style": "plain",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B207"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B207"
+      },
+      "expected_typed_decision": "excluded"
+    },
+    {
+      "case_id": "smudged-batch",
+      "image": "smudged-batch.png",
+      "mime_type": "image/png",
+      "sha256": "e5c74f3c043efabbcd3ea290b57f7a694841b8fbffdd06bd07c94723480159ac",
+      "style": "smudge",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": null
+      },
+      "expected_typed_decision": "needs_information"
+    },
+    {
+      "case_id": "torn-model",
+      "image": "torn-model.png",
+      "mime_type": "image/png",
+      "sha256": "d5b58435116de79ac5bf81d3e3c10f318cc76bfbd393c4c8abccff63fd7d2aff",
+      "style": "torn",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B102"
+      },
+      "typed_entry": {
+        "model": null,
+        "batch": "B102"
+      },
+      "expected_typed_decision": "needs_information"
+    },
+    {
+      "case_id": "heavy-blur",
+      "image": "heavy-blur.png",
+      "mime_type": "image/png",
+      "sha256": "61500621d8f5ef8c891af470a8adacdd25e7fe3d9899a041a39018dcf808e087",
+      "style": "blur",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_entry": {
+        "model": null,
+        "batch": null
+      },
+      "expected_typed_decision": "needs_information"
+    },
+    {
+      "case_id": "two-model-stickers",
+      "image": "two-model-stickers.png",
+      "mime_type": "image/png",
+      "sha256": "30f209c0438ef893e1c4795e3b155d553200c1d3ae2cc4f897b7819372eb250d",
+      "style": "conflict",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B101"
+      },
+      "typed_entry": {
+        "model": null,
+        "batch": "B101"
+      },
+      "expected_typed_decision": "needs_information"
+    },
+    {
+      "case_id": "note-claims-other-batch",
+      "image": "note-claims-other-batch.png",
+      "mime_type": "image/png",
+      "sha256": "a9e5b04c61a7525c603f84353fe677d21fd988edc6666e0e0037929512c0f02b",
+      "style": "note",
+      "drawn": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "typed_entry": {
+        "model": "LAMP-100",
+        "batch": "B103"
+      },
+      "expected_typed_decision": "excluded"
+    }
+  ]
+}
