@@ -138,6 +138,11 @@ test('labels follow the modes the services report, never a fixed claim', async (
   assert.equal(ui.element('approve').textContent, 'Approve sandbox refund');
   assert.equal(ui.element('suggest').textContent, 'Read label with AI');
   assert.match(ui.element('footer-modes').textContent, /no live money/);
+  // A sandbox case that has not reached PayPal yet must not be described as fake payments.
+  assert.match(ui.element('review-status').textContent, /PayPal sandbox: no live money/);
+  assert.equal(ui.element('outcome-mode').textContent, 'PayPal sandbox · simulated funds');
+  const fake = await app(detail());
+  assert.match(fake.element('review-status').textContent, /Fake payments: no money moves/);
 });
 test('a rejected AI draft is disclosed and replaced by the template', async () => {
   const ui = await app(detail(), {...live,
