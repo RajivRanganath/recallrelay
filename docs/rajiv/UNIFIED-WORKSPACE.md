@@ -46,3 +46,7 @@ All integrated modes remain explicit: mock extraction, template briefs, fake pay
 - Initial test authoring had one HTTP assertion with an invalid zero-amount precondition and two asynchronous DOM-double assertions that read before the action completed. Those test fixtures were corrected; the complete 168-test and 16-test runs above then passed. The stale-brief display found during browser review was fixed and covered by a regression.
 
 These checks measure the local synthetic workflow. They are not new AI accuracy, human timing, live-payment or production acceptance results. Native Windows execution is left to the PR's full-suite CI job; do not infer it from the local Mac run.
+
+### Post-merge Windows observation
+
+Both Windows PR runs for #39 passed. The first post-merge Windows run (`43166431720`) then passed 167/168 tests: the unfinished-header workspace test expected a complete HTTP 408 but received a closed connection. All other workflow tests passed. Its regression was corrected to accept bounded rejection/close while directly asserting zero upstream connection attempts, single-handler capacity recovery, continued root-page availability, and explicit rejection of the separately truncated body. A socket timeout or forwarded request still fails. This changes only the test and this record; application and payment code are unchanged. Follow-up native CI is the authority for the corrected check.

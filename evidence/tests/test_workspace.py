@@ -3,7 +3,10 @@ import copy
 import http.client
 import json
 import socket
+import threading
+import time
 import unittest
+from unittest.mock import patch
 from urllib.error import URLError
 from urllib.request import urlopen
 
@@ -93,16 +96,37 @@ class WorkspaceTests(unittest.TestCase):
 
     def test_partial_headers_do_not_dispatch_and_truncated_body_is_rejected(self):
         server = make_workspace(0, 'http://127.0.0.1:1', 'http://127.0.0.1:1')
-        server.request_timeout = .15
-        with running(server):
+        server.request_timeout = .3
+        server._slots = threading.BoundedSemaphore(1)
+        # Observe the forwarding boundary directly: neither malformed request
+        # may open an upstream connection, regardless of its best-effort reply.
+        with running(server), patch('evidence.backend.workspace.http.client.HTTPConnection') as upstream:
             port = server.server_port
+            started = time.monotonic()
             with socket.create_connection(('127.0.0.1', port), timeout=2) as peer:
                 peer.sendall(f'POST /api/customer/demo/handoff HTTP/1.0\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/json\r\nContent-Length: 2\r\n'.encode())
-                self.assertIn(b' 408 ', peer.recv(4096))
+                try:
+                    raw = peer.recv(4096)
+                except (ConnectionResetError, ConnectionAbortedError):
+                    raw = b''
+                # Windows may close before delivering the timeout response.
+                # A socket timeout still fails this test; rejection must finish.
+                if raw:
+                    self.assertIn(b' 408 ', raw)
+            self.assertLess(time.monotonic() - started, 1.5)
+            self.assertTrue(server._slots.acquire(timeout=1))
+            server._slots.release()
+            upstream.assert_not_called()
             with socket.create_connection(('127.0.0.1', port), timeout=2) as peer:
                 peer.sendall(f'POST /api/customer/demo/handoff HTTP/1.0\r\nHost: 127.0.0.1:{port}\r\nContent-Type: application/json\r\nContent-Length: 20\r\n\r\n{{}}'.encode())
                 peer.shutdown(socket.SHUT_WR)
                 self.assertIn(b' 400 ', peer.recv(4096))
+            self.assertTrue(server._slots.acquire(timeout=1))
+            server._slots.release()
+            upstream.assert_not_called()
+            with socket.create_connection(('127.0.0.1', port), timeout=2) as peer:
+                peer.sendall(f'GET / HTTP/1.0\r\nHost: 127.0.0.1:{port}\r\n\r\n'.encode())
+                self.assertIn(b' 200 ', peer.recv(4096))
 
     def test_static_workspace_has_one_navigation_no_embedded_old_apps(self):
         with integrated_session() as session:
