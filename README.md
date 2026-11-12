@@ -2,35 +2,22 @@
 
 **Recall refunds that admit uncertainty and survive a lost payment response.**
 
-When a product is recalled, a merchant has to answer one question per customer: *is this unit affected, and was it refunded exactly once?* The evidence is a label photo that may be blurred or cropped. The refund call can time out after the money already moved. RecallRelay is a working prototype built around those two failure points, using AI to read and summarize and the PayPal sandbox to refund.
+[![Evidence service](https://github.com/RajivRanganath/recallrelay/actions/workflows/evidence.yml/badge.svg)](https://github.com/RajivRanganath/recallrelay/actions/workflows/evidence.yml)
+[![Resolution service](https://github.com/RajivRanganath/recallrelay/actions/workflows/resolution.yml/badge.svg)](https://github.com/RajivRanganath/recallrelay/actions/workflows/resolution.yml)
+[![Contracts](https://github.com/RajivRanganath/recallrelay/actions/workflows/contracts.yml/badge.svg)](https://github.com/RajivRanganath/recallrelay/actions/workflows/contracts.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Built for the PayPal AI hackathon by [Rajiv](https://github.com/RajivRanganath) and [Vismaya](https://github.com/VismayaM2005). Sandbox only: no live money, no real customer data.
+When a product is recalled, a merchant has to answer one question per customer: *is this unit affected, and was it refunded exactly once?* The evidence is a label photo that may be blurred or cropped. The refund call can time out after the money already moved. RecallRelay is a working prototype built around those two failure points.
 
 <!-- Demo video: add the YouTube link here before submission. -->
 
-## What it does
-
-One workspace follows a single case through three steps.
-
-### 1. Check the label
-
-The customer uploads a label photo. A model proposes the model and batch identifiers. Anything it cannot read is left blank and the app asks one targeted question instead of guessing. The customer confirms every identifier, and deterministic campaign rules decide the outcome.
-
-![A cropped label: the model read the product model, left the batch blank and asked for it](docs/images/01-label-uncertain.png)
-
-### 2. Merchant review
-
-The same case opens for the merchant. A model drafts a short brief, and code shows it only if every number, identifier and citation appears in the case records. The merchant confirms the remedy conditions and types the exact refund amount; any other amount is refused.
-
-![Merchant review with a validated AI brief and a refused wrong amount](docs/images/02-merchant-review.png)
-
-### 3. Refund status
-
-The refund is sent with a stored operation ID. If the response is lost, the case stays pending and nothing is retried automatically. Checking again sends the same operation ID, so the provider returns the one existing refund. Customer and merchant read the same case.
-
-![A refund recovered after a deliberately discarded acknowledgement, with no duplicate](docs/images/03-refund-recovered.png)
-
-Screenshots are from a run on 12 November 2026 with real model calls (`gemini-3.1-flash-lite`) and fake payments, as the header chip states.
+| | |
+|---|---|
+| **Who it is for** | A merchant's support or operations person running a recall, and the customer checking whether their unit is covered |
+| **AI** | Reads label photos into identifiers and drafts the merchant's case brief. It proposes; it never decides or pays |
+| **PayPal** | Sandbox refunds with idempotent retries, pre-approval payment checks, read-back and verified webhooks |
+| **Try it** | [One command, no account](#try-it-in-two-minutes) |
+| **Status** | Hackathon prototype. Sandbox only: no live money, no real customer data |
 
 ## Why it is different
 
@@ -38,6 +25,30 @@ Screenshots are from a run on 12 November 2026 with real model calls (`gemini-3.
 - **An unknown payment outcome is neither success nor failure.** The operation ID is saved before PayPal is called and is reused as `PayPal-Request-Id`, so a retry cannot knowingly create a second refund.
 - **Events are hints, not truth.** A verified PayPal webhook settles a case only after PayPal's own read-back matches the stored operation, amount, currency and `custom_id`. A replayed event changes nothing.
 - **AI has no authority.** It proposes identifiers and prose. Rules decide eligibility; a person approves; code moves money.
+
+## How it works
+
+One workspace follows a single case through three steps.
+
+### 1. Check the label
+
+The customer uploads a label photo. A model proposes the model and batch identifiers. Anything it cannot read is left blank and the app asks one targeted question instead of guessing. The customer confirms every identifier, and deterministic campaign rules decide the outcome.
+
+<img src="docs/images/01-label-uncertain.png" alt="A cropped label: the model read the product model, left the batch blank and asked for it" width="820">
+
+### 2. Merchant review
+
+The same case opens for the merchant. A model drafts a short brief, and code shows it only if every number, identifier and citation appears in the case records. The merchant confirms the remedy conditions and types the exact refund amount; any other amount is refused.
+
+<img src="docs/images/02-merchant-review.png" alt="Merchant review with a validated AI brief and a refused wrong amount" width="820">
+
+### 3. Refund status
+
+The refund is sent with a stored operation ID. If the response is lost, the case stays pending and nothing is retried automatically. Checking again sends the same operation ID, so the provider returns the one existing refund. Customer and merchant read the same case.
+
+<img src="docs/images/03-refund-recovered.png" alt="A refund recovered after a deliberately discarded acknowledgement, with no duplicate" width="820">
+
+Screenshots are from a run on 12 November 2026 with real model calls (`gemini-3.1-flash-lite`) and fake payments, as the header chip states.
 
 ## Try it in two minutes
 
