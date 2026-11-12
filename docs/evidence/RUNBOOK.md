@@ -163,7 +163,7 @@ evidence/.venv/bin/python -B -m evidence.backend.server
 Opt-in local setup reuses the existing IIT KGP env file in place:
 
 ```sh
-evidence/.venv/bin/python -B -m evidence.backend.server --port 8111 --db evidence/.local/omniroute-demo.sqlite3 --extractor omniroute --omniroute-env '/Users/rajiv/Documents/Projects/Project(kgp)/.env' --model gemini/gemini-3.1-flash-lite
+evidence/.venv/bin/python -B -m evidence.backend.server --port 8111 --db evidence/.local/omniroute-demo.sqlite3 --extractor omniroute --omniroute-env PATH/omniroute.env --model gemini/gemini-3.1-flash-lite
 ```
 
 The existing key was not copied, printed, committed, or replaced. Only `OMNIROUTE_API_KEY` is read from the selected file; other provider credentials are ignored. No IIT KGP source or env file was changed. The gateway's metadata setting `no_log` was enabled for this key, after a startup environment attempt did not take effect. Five payload artifacts created by this session's synthetic tests were removed; older history and status summaries were preserved. Later observed gateway summaries had no request, response, or pipeline payload artifacts.
