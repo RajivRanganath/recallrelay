@@ -98,7 +98,8 @@ You need your own PayPal sandbox app and a model provider. Setup, the one-comman
 | Real sandbox lost-response recovery | One 20.00 USD refund, acknowledgement deliberately lost, settled by a genuine verified webhook; the replay changed nothing | [Webhook results](docs/WEBHOOK-RESULTS.md) |
 | Real sandbox idempotent retry | Two experiments: the same request ID returned the same refund both times | [Merchant runbook](docs/resolution/RUNBOOK.md) |
 | Unified workspace with a real model | Five labels and one brief in one session: three uncertain labels left unresolved, one excluded, one matched and refunded through the recovery path (fake payments) | [Live workspace](docs/evidence/LIVE-WORKSPACE.md) |
-| Label reading on 12 synthetic images | 24 of 24 fields agreed with authored references | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
+| Label reading on 12 development images | 24 of 24 fields agreed with authored references | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
+| Label reading on 12 unseen images (new fonts, layouts, damage; references frozen before the run) | 11 of 12 calls returned; 20 of 22 fields agreed; no unaffected unit became eligible. One unreadable image got invented identifiers, and one call timed out | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
 | One participant, typed versus AI-assisted | Median 8.03 s typed, 4.88 s assisted; two of twelve cases were slower with AI | [Evaluation results](docs/evidence/EVALUATION-RESULTS.md) |
 | Merchant brief on 14 invented cases, 4 with prompt injection | 12 of 14 model drafts passed the checker; 2 were replaced by the template | [Merchant runbook](docs/resolution/RUNBOOK.md) |
 | Automated tests, 12 November 2026, macOS | 173 customer-side, 169 merchant-side, 3 contract, 19 UI: all passed | [Development guide](docs/DEVELOPMENT.md) |
@@ -122,12 +123,9 @@ Two Python services with separate stores and dependencies, joined by a [frozen J
 
 ## Limits
 
-- Synthetic labels, one fictional brand, one approved refund campaign, one order, USD.
-- Temporary storage, no login, loopback only. Not deployed.
-- The evaluation used one internal participant and images already seen during development. It supports no general accuracy or time-saving claim, and no merchant has used the product.
-- One lost-response exercise and one replay do not establish an exactly-once guarantee.
-- The unified workspace has not yet been run against the real PayPal sandbox; the sandbox adapter it starts was exercised separately, as recorded above.
-- A label photo is not proof of ownership, authenticity or safety. "Outside this campaign" is not a safety finding.
+- **Prototype scope.** Synthetic labels, one fictional campaign and order, PayPal sandbox funds, run locally without login. A label match is not proof of ownership or safety.
+- **Small evidence base.** The measurements above cover 24 synthetic labels, 14 invented cases and one internal tester, with no merchant pilot. They support no general accuracy, time-saving or exactly-once claim. On one unreadable image the model invented identifiers; customer confirmation and the campaign rules, not the model, are what stand between that and a refund.
+- **Still to run.** The unified workspace has not yet been run against the real PayPal sandbox; the sandbox adapter it starts was exercised separately, as recorded above.
 
 ## More
 
