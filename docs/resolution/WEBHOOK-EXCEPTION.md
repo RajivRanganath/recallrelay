@@ -44,7 +44,7 @@ Behaviour:
 
 ## Credentials
 
-The sandbox credentials stay in the existing file outside the repository (`C:\Users\VISMAYA\secrets\paypal.env`), read for two named variables only. The webhook ID is not a secret but is passed on the command line and not committed. The server logs nothing, and no value is printed or copied into the repository, issues or chat.
+The sandbox credentials stay in the existing file outside the repository (`C:\path\to\secrets\paypal.env`), read for two named variables only. The webhook ID is not a secret but is passed on the command line and not committed. The server logs nothing, and no value is printed or copied into the repository, issues or chat.
 
 ## Execution plan (to be confirmed separately; do not run)
 
