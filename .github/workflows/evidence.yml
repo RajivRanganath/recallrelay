@@ -19,7 +19,7 @@ jobs:
       # Pin actual resolution source without merging or changing the other lane.
       - uses: actions/checkout@v4
         with:
-          ref: becac32648a6fb8ef3ca96aa12c47fafb4bfd52a
+          ref: 521393a9db8f02ae10a105f8b29a87a6993b570c
           path: .integration-resolution
           sparse-checkout: |
             resolution
@@ -42,7 +42,7 @@ jobs:
       - run: python -m pip install -r evidence/requirements.lock.txt
       - uses: actions/checkout@v4
         with:
-          ref: becac32648a6fb8ef3ca96aa12c47fafb4bfd52a
+          ref: 521393a9db8f02ae10a105f8b29a87a6993b570c
           path: .integration-resolution
           sparse-checkout: |
             resolution

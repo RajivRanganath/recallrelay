@@ -1,6 +1,10 @@
 # Rajiv's evidence runbook
 
-## Current integration: 11 November 2026
+## Current delivery: 12 November 2026
+
+[HANDOVER-CHECKPOINT.md](HANDOVER-CHECKPOINT.md) is the current source and verification record. The handed-over source passed 161 evidence, 169 merchant, three shared and ten UI tests locally. The malformed-header regression is fixed in `521393a`, pushed after PR #34 merged, and still needs follow-up integration. [FINAL-DEMO.md](FINAL-DEMO.md) covers both halves using the same case; it is a recording script, not a video. Read-only sandbox access was verified. Public webhook delivery and a new sandbox refund remain unperformed and need separate approval.
+
+## Historical integration checkpoint: 11 November 2026
 
 Maintenance follow-up: [WINDOWS-CHECKS.md](WINDOWS-CHECKS.md) records full native Windows coverage, portable receive deadlines and report reservation. The current offline evaluator plan is development-v3; old plans/reports remain historical. Integration #29, merchant replay hardening #30 and shared setup/status #31 are merged. Real webhook delivery still requires the approved external prerequisites, and recording stays deferred.
 
