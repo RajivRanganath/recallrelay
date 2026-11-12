@@ -11,6 +11,7 @@ from evidence.backend.validation import MAX_BODY_BYTES, ROOT
 from evidence.demo import local_origin
 
 WEB = ROOT / 'evidence' / 'workspace'
+UPSTREAM_SECONDS = 45  # One bounded wait; a live model call or PayPal sandbox approval outlasts local mocks.
 ROUTES = {
     'customer': {
         'GET': (r'/health', r'/demo/resolution-status', r'/v1/assessments/[A-Za-z0-9_-]{1,128}'),
@@ -23,7 +24,7 @@ ROUTES = {
 }
 
 
-def make_workspace(port, customer_url, merchant_url):
+def make_workspace(port, customer_url, merchant_url, session=None):
     upstreams = {name: urlsplit(local_origin(url)) for name, url in
                  (('customer', customer_url), ('merchant', merchant_url))}
 
@@ -88,6 +89,8 @@ def make_workspace(port, customer_url, merchant_url):
             if self.path in assets:
                 file, mime = assets[self.path]
                 return self.reply(200, (WEB / file).read_bytes(), mime)
+            if self.path == '/api/session':  # Launcher-declared demo settings; the services report their own modes.
+                return self.reply(200, session or {})
             return self.forward()
 
         def do_POST(self):
@@ -121,7 +124,7 @@ def make_workspace(port, customer_url, merchant_url):
             upstream = upstreams[parts[2]]
             # Never forward browser Host, Origin, authorization, cookies or arbitrary
             # destinations. Both upstreams are owned loopback services, fixed at launch.
-            connection = http.client.HTTPConnection(upstream.hostname, upstream.port, timeout=12)
+            connection = http.client.HTTPConnection(upstream.hostname, upstream.port, timeout=UPSTREAM_SECONDS)
             try:
                 connection.request(self.command, '/' + parts[3], body=body,
                                    headers={'Content-Type': 'application/json'} if body is not None else {})
