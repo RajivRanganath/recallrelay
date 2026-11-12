@@ -26,6 +26,8 @@ The commit was exported into a separate temporary directory. Tests used local sy
 
 The owner branch's [resolution CI](https://github.com/RajivRanganath/recallrelay/actions/runs/43083876271) and [shared checks](https://github.com/RajivRanganath/recallrelay/actions/runs/43083876414) succeeded at `521393a`. Hosted CI is separate from local results and Windows evidence reported in the owner's runbook. Three symlink tests can error on a Windows account without symlink permission; earlier hosted Windows evidence checks used a runner with that capability.
 
+The handover follow-up pins both evidence CI platforms to that same final merchant commit for the six actual-service integration checks. Consult the current PR #35 checks for the exact Linux/Windows result; earlier green runs against an older merchant snapshot do not replace it.
+
 ## Read-only PayPal sandbox check
 
 On 12 November 2026, the local credentials file was used for sandbox authentication and read-only capture/order/refund-history calls. Credentials, tokens and full provider responses were not printed or committed. No refund, payment, webhook registration or public access was created by this check.
