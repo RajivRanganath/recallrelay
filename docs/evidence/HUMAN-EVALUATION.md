@@ -4,7 +4,7 @@ Protocol version: `rajiv-human-evaluation-1`, prepared 8 November 2026 for contr
 
 ## 1. Audit the existing development references
 
-The current blank packet is `evidence/.local/completion-prep-2026-11-08/review/review.html`; retain its sibling `packet.json`. The earlier `label-review-development-v2` packet is also usable if kept with its own identity record. If that ignored directory is absent, export a new one using [LABEL-REVIEW.md](LABEL-REVIEW.md). An actual person reads each image and downloads their own JSON. The reviewer must not consult `typed_entry`, source text, mock output or provider output while entering observations. Record any previous exposure honestly; these development images cannot become unseen by hiding their names.
+The current blank packet is `evidence/.local/completion-prep-2026-11-08/review/review.html`; retain its sibling `packet.json`. The earlier `label-review-development-v2` packet is also usable if kept with its own identity record. If that ignored directory is absent, export a new one with `evidence.evals.review prepare`. An actual person reads each image and downloads their own JSON. The reviewer must not consult `typed_entry`, source text, mock output or provider output while entering observations. Record any previous exposure honestly; these development images cannot become unseen by hiding their names.
 
 Run the documented checker against the exact packet and returned record, using a new output path. Exit 0 means all compared values agree; exit 1 means disagreements were saved; exit 2 means a malformed/incomplete or drifted input. Neither 0 nor 1 certifies human effort or ground truth. Preserve both raw records and the audit.
 
@@ -67,7 +67,7 @@ Reports bind raw session/trial/manifest hashes and the reporter source hash, omi
 
 ## Collected development pilot — 9 November 2026
 
-The returned review and actual task records are analysed in [EVALUATION-RESULTS.md](../EVALUATION-RESULTS.md). Preserve all deviations: guided first label, preloaded images, browser monotonic timing, fixed typed-first order, one assigned-assisted task without a suggestion request, and an accidental stop followed by a separate retry. Originals remain local and unchanged. Human timing used mock suggestions; historical real-provider extraction is separate. This collection does not establish a holdout or independent human validation.
+The returned review and actual task records are analysed in [EVALUATION-RESULTS.md](EVALUATION-RESULTS.md). Preserve all deviations: guided first label, preloaded images, browser monotonic timing, fixed typed-first order, one assigned-assisted task without a suggestion request, and an accidental stop followed by a separate retry. Originals remain local and unchanged. Human timing used mock suggestions; historical real-provider extraction is separate. This collection does not establish a holdout or independent human validation.
 
 ## Separate live-AI collection handoff — 9 November 2026
 
@@ -75,4 +75,4 @@ The returned review and actual task records are analysed in [EVALUATION-RESULTS.
 
 ## Completed actual-provider pilot — 9 November 2026
 
-The separate participant run now contains twelve typed and twelve actual AI-assisted first attempts, all completed. Every assisted task made one actual request, with twelve usable proposals and no unavailable calls. Median times were 8.0325 seconds typed and 4.8825 seconds assisted; all twelve pairs completed. Final identifier mismatches were zero on 48 field comparisons, with five unresolved needs_information results per arm. Raw autosaved records, source bindings and actual-call journal were checked and preserved locally. See [the results](../EVALUATION-RESULTS.md). This supersedes the earlier pending-collection status above; the historical mock run remains separate. No new holdout, causal savings, authentication, integration or recording evidence is implied.
+The separate participant run now contains twelve typed and twelve actual AI-assisted first attempts, all completed. Every assisted task made one actual request, with twelve usable proposals and no unavailable calls. Median times were 8.0325 seconds typed and 4.8825 seconds assisted; all twelve pairs completed. Final identifier mismatches were zero on 48 field comparisons, with five unresolved needs_information results per arm. Raw autosaved records, source bindings and actual-call journal were checked and preserved locally. See [the results](EVALUATION-RESULTS.md). This supersedes the earlier pending-collection status above; the historical mock run remains separate. No new holdout, causal savings, authentication, integration or recording evidence is implied.

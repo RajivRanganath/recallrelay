@@ -14,7 +14,7 @@ PayPal delivers webhooks as HTTPS POSTs to a URL registered for the app that pro
 
 ## What must be agreed before an external test
 
-The existing `AGENTS.md` boundary prohibits public deployment. This document is preparation, not an exception or authorization. Before any public setup, record approval identifying:
+The project rules prohibit public deployment. This document is preparation, not an exception or authorization. Before any public setup, record approval identifying:
 
 - The sandbox app/account owner, operator, exact callback URL, and credential-file path on the operator's own machine. Never copy a secret into chat, logs, this document or git.
 - A short start/expiry window, who stops the public listener, and how the temporary PayPal webhook registration is removed.
