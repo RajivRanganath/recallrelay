@@ -4,7 +4,6 @@
 
 | Document | What it covers |
 |---|---|
-| [Submission summary](evidence/SUBMISSION.md) | Problem, audience, AI and PayPal usage, measurements, limits, video script |
 | [Live workspace](evidence/LIVE-WORKSPACE.md) | Running with real model calls and PayPal sandbox refunds; measured runs |
 | [Webhook results](WEBHOOK-RESULTS.md) | The real PayPal sandbox lost-response recovery and replay exercise |
 | [Evaluation results](evidence/EVALUATION-RESULTS.md) | Label-reading and human-timing measurements, with their limits |
